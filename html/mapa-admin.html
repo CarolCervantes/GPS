@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Mapa GPS (Admin)</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/historial.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/mapa-admin.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="shell">
+
+    <header class="navbar">
+        <a href="../index.html" class="navbar-logo">
+            <div class="logo-icon"><i class="fas fa-tint"></i></div>
+            <span class="logo-name">DiaMon</span>
+        </a>
+        <nav class="navbar-menu" id="navbarMenu">
+            <a href="../index.html" class="nav-link">Dashboard</a>
+            <a href="historial.html" class="nav-link">Historial</a>
+            <a href="registros_usuario.html" class="nav-link">Registros</a>
+            <a href="reportes.html" class="nav-link">Reportes</a>
+            <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
+            <a href="perfil.html" class="nav-link">Mi perfil</a>
+        </nav>
+        <div class="navbar-right">
+            <button class="btn-bell" aria-label="Notificaciones">
+                <i class="fas fa-bell"></i>
+                <span class="bell-badge">3</span>
+            </button>
+            <div class="user-menu">
+                <button class="user-avatar-btn" id="userAvatarBtn">
+                    <i class="fas fa-user-circle user-avatar-icon"></i>
+                    <span class="user-name" id="headerUserName">Invitado</span>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="dropdown-name" id="dropdownName">Invitado</div>
+                            <div class="dropdown-email" id="dropdownEmail">No has iniciado sesión</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="perfil.html" class="logout-item profile-link" style="display:none;"><i class="fas fa-user"></i> Mi perfil</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                    <a href="#" class="logout-item profile-link" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-content mapa-page-content">
+
+        <div id="restrictedMessage" class="acceso-restringido" style="display:block;">
+            <div class="icon"><i class="fas fa-lock"></i></div>
+            <h2>Acceso restringido</h2>
+            <p id="restrictedDetail">Esta sección es solo para administradores. Inicia sesión con una cuenta de administrador para continuar.</p>
+            <div class="acceso-actions">
+                <a href="login.html" class="btn-custom btn-login">Iniciar sesión</a>
+                <a href="../index.html" class="btn-custom btn-register">Volver al inicio</a>
+            </div>
+        </div>
+
+        <div id="pageContent" style="display:none;">
+
+            <div id="mapaAdminApp">
+                <aside class="mapa-panel">
+                    <h1><i class="fas fa-map-marked-alt"></i> Mapa GPS</h1>
+                    <p>Diseña rutas personalizadas y simula el movimiento de ambulancias o clínicas sobre el mapa.</p>
+
+                    <div class="mapa-field-group">
+                        <label for="mapaType">Tipo</label>
+                        <select id="mapaType">
+                            <option value="ambulance">Ambulancia</option>
+                            <option value="clinic">Clínica</option>
+                        </select>
+                    </div>
+
+                    <div class="mapa-field-group">
+                        <label for="mapaLatitude">Latitud</label>
+                        <input id="mapaLatitude" type="number" step="0.0001" value="10.3910" />
+                    </div>
+                    <div class="mapa-field-group">
+                        <label for="mapaLongitude">Longitud</label>
+                        <input id="mapaLongitude" type="number" step="0.0001" value="-75.4794" />
+                    </div>
+
+                    <div class="mapa-field-group">
+                        <label for="mapaGlucose">Glucosa (mg/dL)</label>
+                        <input id="mapaGlucose" type="number" step="1" value="98" />
+                    </div>
+                    <div class="mapa-field-group">
+                        <label for="mapaStatus">Estado</label>
+                        <select id="mapaStatus">
+                            <option value="Normal">Normal</option>
+                            <option value="Alerta">Alerta</option>
+                            <option value="Peligro">Peligro</option>
+                        </select>
+                    </div>
+
+                    <div class="mapa-field-group">
+                        <label for="mapaSpeed">Velocidad (segundos por paso)</label>
+                        <input id="mapaSpeed" type="number" min="0.5" max="5" step="0.1" value="1.8" />
+                    </div>
+
+                    <div class="mapa-field-group">
+                        <button id="mapaRouteModeBtn" type="button" class="mapa-btn secondary">Marcar recorrido con clic</button>
+                    </div>
+
+                    <div class="mapa-field-group">
+                        <label for="mapaRoutePoints">Recorrido marcado</label>
+                        <textarea id="mapaRoutePoints" rows="5" readonly placeholder="Haz clic en el mapa para agregar puntos al recorrido"></textarea>
+                    </div>
+
+                    <button id="mapaAddRoutePointBtn" type="button" class="mapa-btn">Agregar punto actual al recorrido</button>
+                    <button id="mapaClearRouteBtn" type="button" class="mapa-btn secondary">Limpiar recorrido</button>
+                    <button id="mapaUpdateBtn" type="button" class="mapa-btn">Actualizar marcador</button>
+                    <button id="mapaSimulateBtn" type="button" class="mapa-btn">Iniciar movimiento</button>
+                    <button id="mapaStopBtn" type="button" class="mapa-btn" disabled>Detener movimiento</button>
+
+                    <div class="mapa-divider"></div>
+
+                    <button id="mapaAutoRutaBtn" type="button" class="mapa-btn mapa-btn-auto">
+                        <i class="fas fa-route"></i> Ruta automática (loop)
+                    </button>
+
+                    <div class="mapa-divider"></div>
+
+                    <button id="mapaTransmitirBtn" type="button" class="mapa-btn mapa-btn-transmit" disabled>
+                        <i class="fas fa-broadcast-tower"></i> Transmitir ruta
+                    </button>
+                    <button id="mapaDetenerTransBtn" type="button" class="mapa-btn mapa-btn-stop-trans" disabled>
+                        <i class="fas fa-stop-circle"></i> Detener transmisión
+                    </button>
+                    <div id="mapaTransmitStatus" class="mapa-transmit-status" style="display:none;">
+                        <span class="mapa-dot-live"></span> Transmitiendo en vivo
+                    </div>
+
+                    <div class="mapa-info-card" id="mapaInfoCard">
+                        <h2>Ficha médica</h2>
+                        <p><strong>Ubicación:</strong> Cartagena</p>
+                        <p><strong>Glucosa:</strong> <span id="mapaInfoGlucose">98</span> mg/dL</p>
+                        <p><strong>Estado:</strong> <span id="mapaInfoStatus">Normal</span></p>
+                        <p><strong>Tipo:</strong> <span id="mapaInfoType">Ambulancia</span></p>
+                    </div>
+
+                    <p class="mapa-hint">Activa "Marcar recorrido con clic" y haz clic en el mapa para diseñar la ruta. Si está desactivado, el clic solo mueve el marcador.</p>
+                </aside>
+
+                <main class="mapa-map-container">
+                    <div id="mapaAdminMap"></div>
+                </main>
+            </div>
+
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/mapa-admin.js"></script>
+</body>
+</html>

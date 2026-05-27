@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Zonas seguras</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/historial.css">
+    <link rel="stylesheet" href="../assets/css/zonas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<div class="shell">
+
+    <header class="navbar">
+        <a href="../index.html" class="navbar-logo">
+            <div class="logo-icon"><i class="fas fa-tint"></i></div>
+            <span class="logo-name">DiaMon</span>
+        </a>
+                <nav class="navbar-menu">
+            <a href="../index.html" class="nav-link">Dashboard</a>
+            <a href="historial.html" class="nav-link">Historial</a>
+            <a href="registros_usuario.html" class="nav-link">Registros</a>
+            <a href="reportes.html" class="nav-link">Reportes</a>
+            <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
+            <a href="perfil.html" class="nav-link">Mi perfil</a>
+        </nav>
+        <div class="navbar-right">
+            <button class="btn-bell" aria-label="Notificaciones">
+                <i class="fas fa-bell"></i>
+                <span class="bell-badge" id="bellBadge" style="display:none;"></span>
+            </button>
+            <div class="user-menu">
+                <button class="user-avatar-btn" id="userAvatarBtn">
+                    <i class="fas fa-user-circle user-avatar-icon"></i>
+                    <span class="user-name" id="headerUserName">Invitado</span>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="dropdown-name" id="dropdownName">Invitado</div>
+                            <div class="dropdown-email" id="dropdownEmail">No has iniciado sesión</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="perfil.html" class="logout-item profile-link" style="display:none;"><i class="fas fa-user"></i> Mi perfil</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                    <a href="#" class="logout-item profile-link" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-content">
+
+        <div id="restrictedMessage" class="acceso-restringido" style="display:block;">
+            <div class="icon"><i class="fas fa-lock"></i></div>
+            <h2>Acceso restringido</h2>
+            <p>Inicia sesión para gestionar zonas seguras.</p>
+            <div class="acceso-actions">
+                <a href="login.html" class="btn-custom btn-login">Iniciar sesión</a>
+            </div>
+        </div>
+
+        <div id="pageContent" class="stagger" style="display:none;">
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h1><i class="fas fa-shield-alt"></i> Zonas seguras</h1>
+                    <p>Define áreas geográficas donde la persona monitoreada puede estar sin generar alertas.</p>
+                </div>
+                <button class="btn-nueva-zona" id="btnNuevaZona">
+                    <i class="fas fa-plus"></i> Nueva zona
+                </button>
+            </div>
+
+            <!-- Banner: persona monitoreada vinculada -->
+            <div id="monitoreadoBanner" class="monit-banner" style="display:none;">
+                <i class="fas fa-user-tag"></i>
+                <div>
+                    <div class="monit-banner-label">Creando zonas para</div>
+                    <div class="monit-banner-name" id="monitBannerName">—</div>
+                </div>
+            </div>
+
+            <!-- Aviso si no hay vinculación -->
+            <div id="sinVinculacion" class="sin-vinculacion" style="display:none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>No tienes ninguna persona monitoreada vinculada. Contacta al administrador para que te asigne una.</p>
+            </div>
+
+            <div class="zonas-layout">
+
+                <!-- Columna izquierda: lista de zonas -->
+                <aside class="zonas-aside">
+                    <div class="zonas-lista" id="zonasList">
+                        <div class="zonas-empty"><i class="fas fa-map-marked-alt"></i><p>Sin zonas creadas</p></div>
+                    </div>
+                </aside>
+
+                <!-- Columna derecha: mapa + formulario -->
+                <section class="zonas-main">
+
+                    <!-- Mapa -->
+                    <div class="zonas-mapa-wrap">
+                        <div id="mapZonas" class="zonas-mapa"></div>
+                        <div class="zonas-mapa-hint" id="mapaHint">
+                            <i class="fas fa-mouse-pointer"></i> Haz clic en el mapa para colocar el centro de la zona
+                        </div>
+                    </div>
+
+                    <!-- Formulario nueva zona -->
+                    <div class="zona-form" id="zonaForm">
+                        <h3 class="zona-form-title" id="zonaFormTitle">
+                            <i class="fas fa-plus-circle"></i> Nueva zona segura
+                        </h3>
+
+                        <input type="hidden" id="zonaEditId">
+
+                        <div class="zona-form-grid">
+                            <div class="zona-field zona-field-full">
+                                <label>Nombre de la zona</label>
+                                <input type="text" id="zonaNombre" placeholder="Ej: Casa, Colegio, Parque">
+                            </div>
+
+                            <div class="zona-field">
+                                <label>Radio (metros)</label>
+                                <input type="number" id="zonaRadio" value="300" min="50" max="5000" step="50">
+                            </div>
+
+                            <div class="zona-field">
+                                <label>Nivel de riesgo</label>
+                                <select id="zonaRiesgo">
+                                    <option value="bajo">Bajo</option>
+                                    <option value="medio" selected>Medio</option>
+                                    <option value="alto">Alto</option>
+                                </select>
+                            </div>
+
+                            <div class="zona-field zona-field-full">
+                                <label>Centro — Latitud, Longitud</label>
+                                <div class="zona-coords-wrap">
+                                    <input type="number" id="zonaLat" placeholder="Latitud" step="any" readonly>
+                                    <input type="number" id="zonaLng" placeholder="Longitud" step="any" readonly>
+                                </div>
+                                <div class="zona-field-hint">Haz clic en el mapa para definir el centro.</div>
+                            </div>
+                        </div>
+
+                        <div class="zona-form-actions">
+                            <button class="zona-btn-cancel" id="btnCancelarZona">Cancelar</button>
+                            <button class="zona-btn-save" id="btnGuardarZona">
+                                <i class="fas fa-save"></i> Guardar zona
+                            </button>
+                        </div>
+
+                        <div id="zonaMsg" class="perfil-mensaje"></div>
+                    </div>
+
+                </section>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/zonas.js"></script>
+</body>
+</html>
