@@ -1,0 +1,244 @@
+/* ============================================================
+   Registros — extensión específica
+   Reutiliza .page-content, .page-header, .kpi-card, .toolbar,
+   .tabla, .badge-status, .segmented de historial.css/styles.css
+   ============================================================ */
+
+/* Tipo badges — dot de color en vez de fondo saturado */
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg-2);
+    background: var(--surface-hover);
+    border: 1px solid var(--border-1);
+}
+
+.tipo-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+}
+
+.tipo-badge.glucosa::before { background: var(--signal-alert); }
+.tipo-badge.actividad::before { background: var(--signal-normal); }
+.tipo-badge.alimentacion::before { background: var(--signal-warn); }
+.tipo-badge.medicacion::before { background: #C084FC; }
+.tipo-badge.nota::before { background: var(--brand); }
+
+/* Etiquetas (tags pequeñas) */
+.etiquetas {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.etiqueta {
+    background: var(--surface-2);
+    border: 1px solid var(--border-1);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    color: var(--fg-3);
+}
+
+/* Iconos de acciones */
+.acciones {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.btn-icon {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    color: var(--fg-4);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    transition: color 140ms var(--ease-out), background-color 140ms var(--ease-out);
+}
+
+.btn-icon::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+}
+
+.btn-icon:hover {
+    color: var(--brand);
+    background: var(--surface-hover);
+}
+
+.btn-icon:active { transform: scale(0.96); }
+
+/* ============================================================
+   Distribución de glucosa — barras unificadas
+   ============================================================ */
+
+.glucosa-resumen {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    margin-top: var(--space-6);
+}
+
+.glucosa-resumen .card-header {
+    margin-bottom: var(--space-4);
+}
+
+.glucosa-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border-1);
+}
+
+.stat-circle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-4);
+}
+
+.stat-value {
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--fg-1);
+    letter-spacing: -0.02em;
+}
+
+/* Rango barras horizontales */
+.rangos-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.rango-item {
+    display: grid;
+    grid-template-columns: 100px 1fr 40px;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-xs);
+}
+
+.rango-label {
+    color: var(--fg-3);
+}
+
+.rango-barra {
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.rango-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transform-origin: left;
+    animation: bar-in 800ms var(--ease-out) both;
+}
+
+.rango-fill.en-rango { background: var(--signal-normal); }
+.rango-fill.alto { background: var(--signal-warn); }
+.rango-fill.bajo { background: var(--signal-alert); }
+
+.rango-pct {
+    font-family: var(--font-mono);
+    color: var(--fg-1);
+    font-weight: 500;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Botón descargar PDF */
+.btn-pdf-reg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-pdf-reg:hover {
+    background: #b91c1c;
+}
+
+/* Filtro fecha con icono */
+.filtro-fecha-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filtro-fecha-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--fg-3);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+#filtroFecha {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    color: var(--fg-1);
+    padding: 8px 12px 8px 30px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    min-width: 160px;
+}
+
+/* Botón limpiar fecha del calendario Flatpickr */
+.flatpickr-clear-btn {
+    display: block;
+    width: calc(100% - 16px);
+    margin: 6px 8px 4px;
+    padding: 6px;
+    background: var(--surface-hover, #f3f4f6);
+    border: 1px solid var(--border-1, #e5e7eb);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--fg-2, #6b7280);
+    text-align: center;
+}
+
+.flatpickr-clear-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}

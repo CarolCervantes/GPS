@@ -1,0 +1,337 @@
+/* ============================================================
+   DiaMon — Zonas seguras
+   ============================================================ */
+
+.zonas-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-5);
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .zonas-layout { grid-template-columns: 1fr; }
+}
+
+/* ---------- Botón nueva zona (page header) ---------- */
+.btn-nueva-zona {
+    padding: 10px var(--space-5);
+    background: var(--brand);
+    color: var(--surface-0);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: background-color 160ms;
+    white-space: nowrap;
+}
+.btn-nueva-zona:hover { background: #4DC4D8; }
+
+/* ---------- Lista de zonas ---------- */
+.zonas-aside {
+    position: sticky;
+    top: calc(var(--navbar-h) + var(--space-6));
+}
+
+.zonas-lista {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.zonas-empty {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+    color: var(--fg-4);
+    font-size: var(--text-sm);
+}
+
+.zonas-empty i {
+    font-size: 32px;
+    display: block;
+    margin-bottom: var(--space-3);
+    opacity: 0.4;
+}
+
+.zona-item {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-1);
+    transition: background-color 120ms;
+}
+
+.zona-item:last-child { border-bottom: none; }
+.zona-item:hover { background: var(--surface-2); }
+
+.zona-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.zona-item-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.zona-item-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--fg-1);
+}
+
+.zona-item-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    margin-top: 2px;
+}
+
+.zona-item-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+}
+
+.zona-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-1);
+    background: var(--surface-2);
+    color: var(--fg-3);
+    cursor: pointer;
+    font-size: 11px;
+    display: grid;
+    place-items: center;
+    transition: all 120ms;
+}
+
+.zona-action-btn:hover { background: var(--surface-3); color: var(--fg-1); }
+
+.zona-action-edit:hover {
+    color: var(--brand);
+    border-color: rgba(60, 180, 201, 0.4);
+    background: rgba(60, 180, 201, 0.06);
+}
+
+.zona-action-del:hover {
+    color: var(--signal-alert);
+    border-color: rgba(178, 58, 72, 0.4);
+    background: rgba(178, 58, 72, 0.06);
+}
+
+/* ---------- Columna derecha ---------- */
+.zonas-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* ---------- Mapa ---------- */
+.zonas-mapa-wrap {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--border-1);
+}
+
+.zonas-mapa {
+    height: 400px;
+    width: 100%;
+    background: var(--surface-2);
+}
+
+.zonas-mapa-hint {
+    position: absolute;
+    bottom: var(--space-3);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 14, 22, 0.85);
+    color: var(--fg-2);
+    font-size: var(--text-xs);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-1);
+    pointer-events: none;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 999;
+}
+
+/* ---------- Formulario ---------- */
+.zona-form {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+}
+
+.zona-form-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--fg-1);
+    margin-bottom: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.zona-form-title i { color: var(--brand); }
+
+.zona-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+@media (max-width: 600px) {
+    .zona-form-grid { grid-template-columns: 1fr; }
+}
+
+.zona-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.zona-field-full { grid-column: 1 / -1; }
+
+.zona-field label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-4);
+}
+
+.zona-field input,
+.zona-field select {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-md);
+    padding: 9px var(--space-3);
+    color: var(--fg-1);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    outline: none;
+    transition: border-color 160ms;
+}
+
+.zona-field input:focus,
+.zona-field select:focus { border-color: var(--brand); }
+
+.zona-field input[readonly] {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.zona-coords-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+}
+
+.zona-field-hint {
+    font-size: var(--text-xs);
+    color: var(--fg-4);
+}
+
+.zona-form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+.zona-btn-save {
+    padding: 10px var(--space-5);
+    background: var(--brand);
+    color: var(--surface-0);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 160ms;
+}
+.zona-btn-save:hover { background: #4DC4D8; }
+.zona-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.zona-btn-cancel {
+    padding: 10px var(--space-5);
+    background: transparent;
+    color: var(--fg-3);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all 160ms;
+}
+.zona-btn-cancel:hover { background: var(--surface-2); color: var(--fg-1); }
+
+/* ---------- Banner persona monitoreada ---------- */
+.monit-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: rgba(60, 180, 201, 0.07);
+    border: 1px solid rgba(60, 180, 201, 0.25);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    margin-bottom: var(--space-5);
+    color: var(--brand);
+    font-size: 18px;
+}
+
+.monit-banner-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-4);
+    margin-bottom: 2px;
+}
+
+.monit-banner-name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--fg-1);
+}
+
+/* ---------- Sin vinculación ---------- */
+.sin-vinculacion {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    background: rgba(232, 154, 60, 0.07);
+    border: 1px solid rgba(232, 154, 60, 0.25);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+    color: var(--signal-warn);
+    font-size: 20px;
+}
+
+.sin-vinculacion p {
+    font-size: var(--text-sm);
+    color: var(--fg-2);
+    margin: 0;
+    line-height: 1.6;
+}

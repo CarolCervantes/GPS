@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Monitoreo de Diabetes</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- ============ NAVBAR ============ -->
+    <header class="navbar">
+        <a href="index.html" class="navbar-logo">
+            <div class="logo-icon"><i class="fas fa-tint"></i></div>
+            <span class="logo-name">DiaMon</span>
+        </a>
+        <nav class="navbar-menu">
+            <a href="index.html" class="nav-link active">Dashboard</a>
+            <a href="historial.html" class="nav-link">Historial</a>
+            <a href="registros_usuario.html" class="nav-link">Registros</a>
+            <a href="reportes.html" class="nav-link">Reportes</a>
+            <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
+            <a href="perfil.html" class="nav-link">Mi perfil</a>
+        </nav>
+        <div class="navbar-right">
+            <button class="btn-bell" aria-label="Notificaciones">
+                <i class="fas fa-bell"></i>
+                <span class="bell-badge">3</span>
+            </button>
+            <div class="user-menu">
+                <button class="user-avatar-btn" id="userAvatarBtn">
+                    <i class="fas fa-user-circle user-avatar-icon"></i>
+                    <span class="user-name" id="headerUserName">Invitado</span>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="dropdown-name" id="dropdownName">Invitado</div>
+                            <div class="dropdown-email" id="dropdownEmail">No has iniciado sesión</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="perfil.html" class="logout-item profile-link" style="display:none;"><i class="fas fa-user"></i> Mi perfil</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                    <a href="#" class="logout-item profile-link" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ DASHBOARD ============ -->
+    <main class="dashboard stagger" id="pageContent">
+
+        <!-- Panel izquierdo: mapas -->
+        <div class="left-panel">
+
+            <!-- Mapa en vivo (transmisión del admin) -->
+            <article class="map-container map-live-container">
+                <div class="map-section-label">
+                    <i class="fas fa-satellite-dish"></i>
+                    <span>Recorrido en vivo</span>
+                </div>
+                <div class="gps-status-bar">
+                    <span id="gpsRouteName" class="gps-route-name">Ruta GPS</span>
+                    <span id="gpsRouteBadge" class="gps-route-badge badge-loading">Cargando...</span>
+                </div>
+                <div class="live-info-bar" id="liveInfoBar" style="display:none;">
+                    <span class="live-info-item"><i class="fas fa-tint"></i> <span id="liveGlucose">—</span> mg/dL</span>
+                    <span class="live-info-sep">·</span>
+                    <span class="live-info-item"><i class="fas fa-heartbeat"></i> <span id="liveStatus">—</span></span>
+                    <span class="live-info-sep">·</span>
+                    <span class="live-info-item" id="liveType">—</span>
+                </div>
+                <div id="map"></div>
+            </article>
+
+            <!-- Historial de ruta (recorridos completados) -->
+            <article class="map-container history-container">
+                <div class="map-section-label">
+                    <i class="far fa-clock"></i>
+                    <span>Historial de recorrido</span>
+                </div>
+                <div class="history-tabs">
+                    <button class="tab active" data-type="hoy">Hoy</button>
+                    <button class="tab" data-type="semana">Últimos 7 días</button>
+                    <button class="tab" data-type="mes">Último mes</button>
+                </div>
+                <div style="position:relative;">
+                    <div id="historyMap"></div>
+                    <div id="historyEmpty" class="history-empty" style="display:none;">
+                        <i class="far fa-map"></i>
+                        <span id="historyEmptyMsg">Sin recorridos en este período</span>
+                    </div>
+                </div>
+                <div class="history-info" id="historyInfo">
+                    <div><span class="key">Puntos</span><span class="val" id="historyPuntos">—</span></div>
+                    <div><span class="key">Rutas</span><span class="val" id="historyRutas">—</span></div>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- Panel derecho: estado del paciente -->
+        <div class="right-panel">
+
+            <!-- Estado del paciente — Pulse Ring -->
+            <article class="card">
+                <div class="card-header">
+                    <i class="fas fa-heartbeat"></i>
+                    <h4>Estado del paciente</h4>
+                </div>
+
+                <div class="glucose-pulse" id="glucosePulse">
+                    <svg class="pulse-ring" viewBox="0 0 220 220">
+                        <circle class="ring-outer" cx="110" cy="110" r="100"/>
+                        <circle class="ring-mid"   cx="110" cy="110" r="85"/>
+                        <circle class="ring-core"  cx="110" cy="110" r="70"/>
+                    </svg>
+                    <div class="glucose-center">
+                        <div class="glucose-number" id="glucoseValue">—</div>
+                        <div class="glucose-unit">mg/dL</div>
+                        <div class="glucose-state" id="glucoseLabel">Cargando…</div>
+                    </div>
+                </div>
+
+                <div class="status-row">
+                    <div class="left">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Cartagena, CO</span>
+                    </div>
+                    <div class="right">
+                        <div class="connection-led"></div>
+                        <span class="status-pill stable">Estable</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Tiempo en rangos -->
+            <article class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i>
+                    <h4>Tiempo en rangos</h4>
+                </div>
+
+                <div class="range-grid">
+                    <div class="range-cell normal">
+                        <div class="label">Normal</div>
+                        <div class="pct" id="rangeNormal">72%</div>
+                        <div class="range-bar"><span style="width:72%"></span></div>
+                    </div>
+                    <div class="range-cell warn">
+                        <div class="label">Alta</div>
+                        <div class="pct" id="rangeHigh">20%</div>
+                        <div class="range-bar"><span style="width:20%"></span></div>
+                    </div>
+                    <div class="range-cell alert">
+                        <div class="label">Baja</div>
+                        <div class="pct" id="rangeLow">8%</div>
+                        <div class="range-bar"><span style="width:8%"></span></div>
+                    </div>
+                </div>
+
+                <div class="range-target">
+                    <span>Objetivo en rango</span>
+                    <span class="val">≥ 70%</span>
+                </div>
+            </article>
+
+            <!-- Tendencias 6h -->
+            <article class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Tendencias · 6h</h4>
+                </div>
+
+                <div class="trend-summary">
+                    <span class="trend-delta up" id="trendDelta">+8</span>
+                    <span class="trend-context">mg/dL en la última hora</span>
+                </div>
+
+                <svg class="sparkline" viewBox="0 0 200 56" preserveAspectRatio="none">
+                    <path class="fill" d="M0,40 C20,38 40,30 60,28 S90,20 110,22 S150,30 170,26 S190,18 200,16 L200,56 L0,56 Z"/>
+                    <polyline points="0,40 30,35 60,28 90,22 110,22 140,28 170,26 200,16"/>
+                </svg>
+
+                <div class="readings-list" id="readingsList">
+                    <div class="reading">
+                        <span class="time">ahora</span>
+                        <span class="value" id="reading0">— mg/dL</span>
+                        <span class="badge">—</span>
+                    </div>
+                    <div class="reading">
+                        <span class="time">hace 1h</span>
+                        <span class="value">— mg/dL</span>
+                        <span class="badge">—</span>
+                    </div>
+                    <div class="reading">
+                        <span class="time">hace 2h</span>
+                        <span class="value">— mg/dL</span>
+                        <span class="badge">—</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Alertas recientes -->
+            <article class="card">
+                <div class="card-header">
+                    <i class="fas fa-bell"></i>
+                    <h4>Alertas recientes</h4>
+                </div>
+
+                <div class="alerts-list" id="alertsList">
+                    <div class="alert-loading"><i class="fas fa-spinner fa-spin"></i> Cargando alertas…</div>
+                </div>
+
+                <!-- Botón SOS — solo visible para rol monitoreado -->
+                <div id="sosWrap" style="display:none; margin-top: var(--space-4);">
+                    <button id="btnSOS" class="btn-sos">
+                        <i class="fas fa-exclamation-circle"></i> EMERGENCIA · SOS
+                    </button>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- Inputs ocultos que map.js necesita (sin mostrar panel de control) -->
+        <div style="display:none;" aria-hidden="true">
+            <input id="mapLatitude" type="number" value="10.3910" />
+            <input id="mapLongitude" type="number" value="-75.4794" />
+            <input id="mapGlucose" type="number" value="98" />
+            <select id="mapStatus"><option value="normal">Normal</option></select>
+            <select id="mapType"><option value="ambulance">Ambulancia</option></select>
+            <input id="mapSpeed" type="number" value="1.8" />
+            <textarea id="mapRoutePoints"></textarea>
+            <button id="mapUpdateBtn"></button>
+            <button id="mapSimulateBtn"></button>
+            <button id="mapStopBtn"></button>
+            <button id="mapRouteModeBtn"></button>
+            <button id="mapAddRoutePointBtn"></button>
+            <button id="mapClearRouteBtn"></button>
+            <span id="mapInfoGlucose"></span>
+            <span id="mapInfoStatus"></span>
+            <span id="mapInfoType"></span>
+        </div>
+
+    </main>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/map.js"></script>
+</body>
+</html>

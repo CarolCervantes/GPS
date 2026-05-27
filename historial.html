@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Historial de Rutas</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/historial.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- ============ NAVBAR ============ -->
+    <header class="navbar">
+        <a href="index.html" class="navbar-logo">
+            <div class="logo-icon"><i class="fas fa-tint"></i></div>
+            <span class="logo-name">DiaMon</span>
+        </a>
+        <nav class="navbar-menu">
+            <a href="index.html" class="nav-link">Dashboard</a>
+            <a href="historial.html" class="nav-link active">Historial</a>
+            <a href="registros_usuario.html" class="nav-link">Registros</a>
+            <a href="reportes.html" class="nav-link">Reportes</a>
+            <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
+            <a href="perfil.html" class="nav-link">Mi perfil</a>
+        </nav>
+        <div class="navbar-right">
+            <button class="btn-bell" aria-label="Notificaciones">
+                <i class="fas fa-bell"></i>
+                <span class="bell-badge">3</span>
+            </button>
+            <div class="user-menu">
+                <button class="user-avatar-btn" id="userAvatarBtn">
+                    <i class="fas fa-user-circle user-avatar-icon"></i>
+                    <span class="user-name" id="headerUserName">Invitado</span>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="dropdown-name" id="dropdownName">Invitado</div>
+                            <div class="dropdown-email" id="dropdownEmail">No has iniciado sesión</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="perfil.html" class="logout-item profile-link" style="display:none;"><i class="fas fa-user"></i> Mi perfil</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                    <a href="#" class="logout-item profile-link" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ HORIZON STRIP ============ -->
+    <div class="horizon" aria-label="Glucosa últimas 24 horas">
+        <div class="horizon-label">
+            <span class="key">24h</span>
+            <span class="val">132 mg/dL</span>
+        </div>
+        <div class="horizon-canvas">
+            <svg class="horizon-bands" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <rect x="0" y="0" width="100" height="18" fill="#E89A3C" fill-opacity="0.06"/>
+                <rect x="0" y="18" width="100" height="58" fill="#5EA889" fill-opacity="0.08"/>
+                <rect x="0" y="76" width="100" height="24" fill="#B23A48" fill-opacity="0.06"/>
+                <line x1="0" y1="18" x2="100" y2="18" stroke="#5EA889" stroke-opacity="0.18" stroke-width="0.3" stroke-dasharray="0.6 0.6"/>
+                <line x1="0" y1="76" x2="100" y2="76" stroke="#5EA889" stroke-opacity="0.18" stroke-width="0.3" stroke-dasharray="0.6 0.6"/>
+            </svg>
+            <svg class="horizon-trace" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline points="0,52 4,55 8,58 12,62 16,64 20,68 24,70 28,72 32,68 36,62 40,55 44,50 48,48 52,52 56,58 60,60 64,55 68,48 72,42 76,40 80,42 84,46 88,50 92,52 96,54 99,55"/>
+                <circle class="now-pulse" cx="99" cy="55" r="1.8"/>
+                <circle class="now-dot" cx="99" cy="55" r="1.2"/>
+            </svg>
+            <div class="horizon-ticks">
+                <span>00</span><span>06</span><span>12</span><span>18</span><span class="now">ahora</span>
+            </div>
+        </div>
+        <div class="horizon-legend">
+            <span><span class="dot warn"></span>Alta</span>
+            <span><span class="dot normal"></span>En rango</span>
+            <span><span class="dot alert"></span>Baja</span>
+        </div>
+    </div>
+
+    <!-- ============ CONTENIDO ============ -->
+    <main class="page-content">
+
+        <div id="restrictedMessage" class="acceso-restringido" style="display:block;">
+            <div class="icon"><i class="fas fa-lock"></i></div>
+            <h2>Acceso restringido</h2>
+            <p>Inicia sesión para ver tu historial de rutas, tendencias de glucosa y recomendaciones personalizadas.</p>
+            <div class="acceso-actions">
+                <a href="login.html" class="btn-custom btn-login">Iniciar sesión</a>
+                <a href="login.html" class="btn-custom btn-register">Crear cuenta</a>
+            </div>
+        </div>
+
+        <div id="pageContent" class="stagger" style="display:none;">
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h1><i class="fas fa-route"></i> Historial de rutas</h1>
+                    <p>Consulta tus rutas recorridas y la glucosa asociada a cada trayecto.</p>
+                </div>
+                <div class="segmented" id="filtroPeriodo">
+                    <button class="active">Hoy</button>
+                    <button>7 días</button>
+                    <button>30 días</button>
+                    <button>Año</button>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="label"><i class="fas fa-route"></i> Rutas realizadas</div>
+                    <div class="value" id="historialTotal">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="label"><i class="fas fa-ruler"></i> Distancia total</div>
+                    <div class="value" id="historialDistance">0<span class="unit">km</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="label"><i class="far fa-clock"></i> Tiempo total</div>
+                    <div class="value" id="historialTime">0<span class="unit">h</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="label"><i class="fas fa-tint"></i> Glucosa promedio</div>
+                    <div class="value" id="historialAvg">0<span class="unit">mg/dL</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="label"><i class="fas fa-arrow-up"></i> Glucosa máxima</div>
+                    <div class="value" id="historialMax">0<span class="unit">mg/dL</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="label"><i class="fas fa-arrow-down"></i> Glucosa mínima</div>
+                    <div class="value" id="historialMin">0<span class="unit">mg/dL</span></div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="buscarRuta" placeholder="Buscar por nombre de ruta...">
+                </div>
+            </div>
+
+            <div class="tabla-wrapper">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Ruta</th>
+                            <th>Distancia</th>
+                            <th>Tiempo</th>
+                            <th>Glucosa prom.</th>
+                            <th>Glucosa máx.</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaRutasBody">
+                        <tr>
+                            <td colspan="7" class="empty">Sin rutas registradas todavía.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-footer">Selecciona una ruta para ver su mapa, glucosa y recomendaciones personalizadas.</div>
+
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/historial.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+/* Mapa Admin — layout con panel lateral y mapa */
+
+.mapa-page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* Override historial.css .page-content constraints */
+  max-width: none !important;
+  margin: 0 !important;
+  padding: var(--space-4, 16px) !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.mapa-page-content #pageContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#mapaAdminApp {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 12px;
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mapa-panel {
+  background: #0f1626;
+  padding: 20px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  overflow-y: auto;
+  border-radius: 16px 0 0 16px;
+}
+
+.mapa-panel h1 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #e8eef5;
+}
+
+.mapa-panel p {
+  font-size: 0.8rem;
+  color: #8893a3;
+  margin-top: 0;
+}
+
+.mapa-field-group {
+  margin-bottom: 14px;
+}
+
+.mapa-field-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #8893a3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mapa-field-group input,
+.mapa-field-group select,
+.mapa-field-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  font-size: 0.85rem;
+  color: #e8eef5;
+}
+
+.mapa-field-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.mapa-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.mapa-btn.secondary {
+  background: #f59e0b;
+}
+
+.mapa-btn.secondary.active {
+  background: #b45309;
+}
+
+.mapa-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.mapa-btn:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+.custom-icon span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.ambulance-icon span {
+  background: #ef4444;
+}
+
+.clinic-icon span {
+  background: #10b981;
+}
+
+.mapa-info-card {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(60, 180, 201, 0.07);
+  border: 1px solid rgba(60, 180, 201, 0.2);
+  font-size: 0.8rem;
+  color: #b8c2cf;
+}
+
+.mapa-info-card h2 {
+  margin-top: 0;
+  font-size: 0.9rem;
+  color: #e8eef5;
+}
+
+.mapa-hint {
+  margin-top: 16px;
+  font-size: 0.75rem;
+  color: #5a6473;
+  line-height: 1.5;
+}
+
+.mapa-map-container {
+  position: relative;
+  border-radius: 0 16px 16px 0;
+  overflow: hidden;
+}
+
+#mapaAdminMap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* Separador entre botones de simulación y transmisión */
+.mapa-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 14px 0 4px;
+}
+
+/* Botón Transmitir ruta */
+.mapa-btn-transmit {
+  background: #059669;
+}
+
+.mapa-btn-transmit:not(:disabled):hover {
+  background: #047857;
+}
+
+/* Botón Detener transmisión */
+.mapa-btn-stop-trans {
+  background: #dc2626;
+}
+
+.mapa-btn-stop-trans:not(:disabled):hover {
+  background: #b91c1c;
+}
+
+/* Botón Ruta automática */
+.mapa-btn-auto {
+  background: #7c3aed;
+}
+
+.mapa-btn-auto:not(:disabled):hover {
+  background: #6d28d9;
+}
+
+.mapa-btn-auto.active {
+  background: #dc2626;
+}
+
+.mapa-btn-auto.active:not(:disabled):hover {
+  background: #b91c1c;
+}
+
+/* Indicador de transmisión en vivo */
+.mapa-transmit-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #065f46;
+}
+
+.mapa-dot-live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  animation: mapa-live-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes mapa-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+@media (max-width: 900px) {
+  #mapaAdminApp {
+    grid-template-columns: 1fr;
+    border-radius: 12px;
+  }
+
+  .mapa-panel {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .mapa-map-container {
+    height: 60vh;
+    border-radius: 0 0 12px 12px;
+  }
+
+  #mapaAdminMap {
+    position: relative;
+    height: 100%;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Leonel\\\\Desktop\\\\GPS-main\\\\mapa\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(xargs grep -l \"admin-strip\")",
+      "Bash(Find c:\\\\Users\\\\Leonel\\\\Desktop\\\\GPS-main\\\\assets\\\\js -type f -name \"*.js\")"
+    ]
+  }
+}
