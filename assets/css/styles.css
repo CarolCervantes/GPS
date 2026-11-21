@@ -27,11 +27,11 @@
     --border-emph: rgba(255, 255, 255, 0.18);
 
     /* Señal — paleta del dominio */
-    --brand: #3CB4C9;
-    --brand-ink: #1E3A52;
-    --signal-normal: #5EA889;
-    --signal-warn: #E89A3C;
-    --signal-alert: #B23A48;
+    --brand: #0284c7;
+    --brand-ink: #0f172a;
+    --signal-normal: #16a34a;
+    --signal-warn: #d97706;
+    --signal-alert: #dc2626;
     --paper: #F4EFE6;
 
     /* Tipografía */
@@ -892,7 +892,7 @@ button {
     height: 6px;
     border-radius: 50%;
     background: var(--signal-normal);
-    box-shadow: 0 0 6px var(--signal-normal);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     animation: now-breath 2s ease-in-out infinite;
 }
 
@@ -998,14 +998,14 @@ button {
     stroke: var(--brand);
     stroke-width: 1;
     opacity: 0.25;
-    animation: pulse-outer 1s ease-in-out infinite;
+    opacity: 0.15;
 }
 
 .pulse-ring .ring-mid {
     stroke: var(--brand);
     stroke-width: 1;
     opacity: 0.4;
-    animation: pulse-mid 1s ease-in-out infinite;
+    opacity: 0.3;
 }
 
 .pulse-ring .ring-core {

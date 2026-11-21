@@ -1,8 +1,8 @@
 // ============ APP.JS — Dashboard principal ============
 // Gestiona el historyMap (conectado a Supabase) y el guardado periódico de glucosa.
 
-const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png';
-const TILE_ATTR = '&copy; OpenStreetMap &copy; CARTO';
+const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTR = '&copy; OpenStreetMap contributors';
 
 // El historyMap se inicializa en DOMContentLoaded pero carga datos desde Supabase
 // tras recibir el evento dashboardListo (auth completada).
@@ -20,18 +20,46 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!historyMapEl) return;
 
   historyMap = L.map('historyMap', {
-    zoomControl: false,
+    zoomControl: true,
     attributionControl: false,
-    dragging: false,
+    dragging: true,
     scrollWheelZoom: false,
+    touchZoom: true
   });
 
-  L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 19 }).addTo(historyMap);
+  L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abc', maxZoom: 19 }).addTo(historyMap);
   historyMap.setView([10.3910, -75.4794], 13);
+  window.historyMapInstance = historyMap;
 
   // Re-invalidate after fonts / layout settle
-  setTimeout(() => historyMap.invalidateSize(), 300);
-  setTimeout(() => historyMap.invalidateSize(), 800);
+  setTimeout(() => historyMap.invalidateSize(), 200);
+  setTimeout(() => historyMap.invalidateSize(), 500);
+  setTimeout(() => historyMap.invalidateSize(), 1200);
+
+  // Ruta de demostración inicial de Cartagena si no hay sesión activa
+  setTimeout(() => {
+    if (adminIds.length === 0 && historyMap && !lineaHistorial) {
+      const demoPuntos = [
+        { lat: 10.4075, lng: -75.5348 }, // Av. Jiménez / Manga Sur
+        { lat: 10.4110, lng: -75.5370 }, // Cra 21 Manga Central
+        { lat: 10.4140, lng: -75.5395 }, // Calle Real de Manga
+        { lat: 10.4170, lng: -75.5422 }, // Acceso Puente Román
+        { lat: 10.4185, lng: -75.5435 }, // Cruzando Puente Román
+        { lat: 10.4198, lng: -75.5458 }, // Calle de la Sierpe / Getsemaní
+        { lat: 10.4208, lng: -75.5472 }, // Calle Larga / Getsemaní
+        { lat: 10.4222, lng: -75.5488 }, // Camellón de los Mártires
+        { lat: 10.4230, lng: -75.5498 }, // Plaza de la Paz / Torre del Reloj
+        { lat: 10.4235, lng: -75.5502 }  // Sede San Agustín (Univ. de Cartagena)
+      ];
+      dibujarHistorial(demoPuntos, 1);
+      const emptyEl = document.getElementById('historyEmpty');
+      if (emptyEl) emptyEl.style.display = 'none';
+      const puntosEl = document.getElementById('historyPuntos');
+      const rutasEl = document.getElementById('historyRutas');
+      if (puntosEl) puntosEl.textContent = '10';
+      if (rutasEl) rutasEl.textContent = '1';
+    }
+  }, 1000);
 
   // Tabs
   const tabs = document.querySelectorAll('.tab');
@@ -355,3 +383,5 @@ async function guardarGlucosaAleatoria(userId) {
 
   return valor;
 }
+
+

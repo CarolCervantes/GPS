@@ -1,3 +1,39 @@
+
+// ============================================================
+// Confirmación Automática de Llegada por Geocerca
+// ============================================================
+let _ultimaLlegadaId = null;
+function verificarLlegadaGeocerca(lat, lng) {
+  const destinos = window.DESTINOS_PREDETERMINADOS_CTG || [
+    { id: 'udc-zarzagocilla', nombre: 'Universidad de Cartagena — Zarzagocilla', coords: [10.3951, -75.4952] },
+    { id: 'udc-san-agustin', nombre: 'Universidad de Cartagena — San Agustín (Centro)', coords: [10.4235, -75.5502] },
+    { id: 'casa', nombre: 'Casa / Hogar (San Fernando)', coords: [10.3887, -75.4789] }
+  ];
+
+  const R = 6371000;
+  for (const d of destinos) {
+    const dLat = (d.coords[0] - lat) * Math.PI / 180;
+    const dLon = (d.coords[1] - lng) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat * Math.PI / 180) * Math.cos(d.coords[0] * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    if (dist <= 300) {
+      if (window.safeWalkInstance && window.safeWalkInstance.isActive && window.safeWalkInstance.destination?.id === d.id) {
+        window.safeWalkInstance.confirmArrival();
+      } else if (_ultimaLlegadaId !== d.id) {
+        _ultimaLlegadaId = d.id;
+        const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (window.mostrarNotificacion) {
+          window.mostrarNotificacion('📍 Confirmación automática: Llegada a ' + d.nombre + ' (' + hora + '). Acudiente notificado.', 'success');
+        }
+      }
+      return;
+    }
+  }
+}
+
 // ============ MAPA INTERACTIVO CON FUNCIONALIDADES GPS ============
 
 const cartagenaCenter = [10.3910, -75.4794];
@@ -11,6 +47,7 @@ function initializeGPSMap(userId) {
     zoomControl: true,
     attributionControl: false
   }).setView(cartagenaCenter, 13);
+  window.mapInstance = map;
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'Mapa © OpenStreetMap contributors',
@@ -270,11 +307,36 @@ function initializeGPSMap(userId) {
     if (stopBtn) stopBtn.disabled = true;
   }
 
-  // ========== INICIALIZACIÓN DEL MARCADOR ==========
+  // ========== INICIALIZACIÓN DEL MARCADOR Y CAPAS CARTAGENA ==========
+  window.liveMapInstance = map;
   const marker = L.marker(cartagenaCenter, {
     icon: icons[form.type.value],
     draggable: true,
   }).addTo(map);
+  window._patientMarker = marker;
+
+  // Círculo de precisión GPS
+  let accuracyCircle = L.circle(cartagenaCenter, {
+    radius: 40,
+    color: '#0284c7',
+    fillColor: '#0284c7',
+    fillOpacity: 0.15,
+    weight: 1.5,
+    dashArray: '3, 6'
+  }).addTo(map);
+  window._accuracyCircle = accuracyCircle;
+
+  // Inicializar capa de Centros Médicos y Farmacias de Cartagena
+  if (window.CentrosMedicosCartagena && !window.centrosMedicosInstance) {
+    const cm = new window.CentrosMedicosCartagena();
+    cm.init(map);
+  }
+
+  // Inicializar capa inteligente de Tráfico de Cartagena
+  if (window.TraficoCartagenaManager && !window.traficoCartagenaInstance) {
+    const tm = new window.TraficoCartagenaManager();
+    tm.init(map);
+  }
 
   const routeLine = L.polyline(route, {
     color: '#f97316',
@@ -284,12 +346,54 @@ function initializeGPSMap(userId) {
 
   marker.bindPopup(medicalPopupContent(cartagenaCenter[0], cartagenaCenter[1])).openPopup();
 
+  // ========== INTEGRACIÓN CON TELEMETRÍA GPS EN TIEMPO REAL ==========
+  window.actualizarMarcadorUbicacionReal = function (lat, lng, accuracy = 20) {
+    if (!map || !marker) return;
+    const newPos = L.latLng(lat, lng);
+    marker.setLatLng(newPos);
+    if (form.latitude) form.latitude.value = Number(lat).toFixed(5);
+    if (form.longitude) form.longitude.value = Number(lng).toFixed(5);
+    if (accuracyCircle) {
+      accuracyCircle.setLatLng(newPos);
+      accuracyCircle.setRadius(Math.max(15, accuracy));
+    }
+    marker.setPopupContent(medicalPopupContent(lat, lng));
+    if (window.centrosMedicosInstance) {
+      window.centrosMedicosInstance.setPatientCoords([lat, lng]);
+    }
+    if (window.traficoCartagenaInstance) {
+      window.traficoCartagenaInstance.procesarTelemetriaGPS(lat, lng);
+    }
+    verificarLlegadaGeocerca(lat, lng);
+
+    if (!window._mapCenteredOnRealGPS) {
+      window._mapCenteredOnRealGPS = true;
+      map.setView(newPos, 15, { animate: true });
+    }
+  };
+
+  if (window.TelemetriaDiaMon && window.TelemetriaDiaMon.gpsFijado && window.TelemetriaDiaMon.ubicacion) {
+    window.actualizarMarcadorUbicacionReal(
+      window.TelemetriaDiaMon.ubicacion.lat,
+      window.TelemetriaDiaMon.ubicacion.lng,
+      window.TelemetriaDiaMon.ubicacion.precision
+    );
+  }
+
   // ========== EVENT LISTENERS ==========
   marker.on('dragend', () => {
     const position = marker.getLatLng();
     form.latitude.value = position.lat.toFixed(5);
     form.longitude.value = position.lng.toFixed(5);
+    if (window.centrosMedicosInstance) {
+      window.centrosMedicosInstance.setPatientCoords([position.lat, position.lng]);
+    }
     marker.setPopupContent(medicalPopupContent(position.lat, position.lng)).openPopup();
+    verificarLlegadaGeocerca(position.lat, position.lng);
+    if (accuracyCircle) accuracyCircle.setLatLng(position);
+    if (window.traficoCartagenaInstance) {
+      window.traficoCartagenaInstance.procesarTelemetriaGPS(position.lat, position.lng);
+    }
   });
 
   map.on('click', function (event) {
@@ -328,6 +432,8 @@ function initializeGPSMap(userId) {
   drawRoute();
 
   setTimeout(() => map.invalidateSize(), 100);
+  setTimeout(() => map.invalidateSize(), 400);
+  setTimeout(() => map.invalidateSize(), 1000);
 
   // ========== CARGA DE RUTA DESDE SUPABASE ==========
 
@@ -399,13 +505,16 @@ function initializeGPSMap(userId) {
 
     // Paso 1: obtener IDs a monitorear según rol del usuario actual
     const { data: { user: currentUser } } = await supabaseClient.auth.getUser();
-    const { data: currentProfile } = await supabaseClient
-      .from('profiles').select('rol').eq('id', currentUser.id).single();
-    const currentRol = currentProfile?.rol;
+    let currentRol = 'anon';
+    if (currentUser && currentUser.id) {
+      const { data: currentProfile } = await supabaseClient
+        .from('profiles').select('rol').eq('id', currentUser.id).single();
+      currentRol = currentProfile?.rol || 'usuario';
+    }
 
     let adminIds = [];
 
-    if (currentRol === 'cuidador') {
+    if (currentRol === 'cuidador' && currentUser) {
       // Cuidador: ver ubicación de su persona monitoreada vinculada
       const { data: vincs } = await supabaseClient
         .from('vinculaciones')
@@ -528,12 +637,29 @@ function initializeGPSMap(userId) {
   return { map, marker, route };
 }
 
-// Cargar cuando el dashboard esté listo (auth verificada)
+// Cargar de inmediato en DOMContentLoaded para que el mapa NUNCA quede vacío
 let mapInitialized = false;
-document.addEventListener('dashboardListo', (e) => {
+
+function arrancarMapa(userId = 'invitado') {
   if (mapInitialized || !document.getElementById('map')) return;
   mapInitialized = true;
-  const userId = e.detail?.user?.id;
-  if (!userId) return;
   initializeGPSMap(userId);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (!mapInitialized) {
+      arrancarMapa('invitado');
+    }
+  }, 150);
 });
+
+document.addEventListener('dashboardListo', (e) => {
+  const userId = e.detail?.user?.id || 'invitado';
+  if (!mapInitialized) {
+    arrancarMapa(userId);
+  }
+});
+
+
+

@@ -3,238 +3,902 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiaMon — Monitoreo de Diabetes</title>
+    <title>DiaMon — Monitoreo Inteligente de Diabetes & Salud GPS</title>
+    <meta name="description" content="DiaMon — Sistema clínico de monitoreo continuo de glucosa con geolocalización GPS en tiempo real en Cartagena de Indias.">
+    
+    <!-- Hojas de Estilo -->
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/dashboard-modern.css">
+    <link rel="stylesheet" href="assets/css/medical-qr.css">
+    <link rel="stylesheet" href="assets/css/diabot.css">
+    <link rel="stylesheet" href="assets/css/acompanamiento.css">
+    <link rel="stylesheet" href="assets/css/salud-diaria.css">
+    <link rel="stylesheet" href="assets/css/voz-sos.css">
+    <link rel="stylesheet" href="assets/css/vencimiento-medicamentos.css">
+    <link rel="stylesheet" href="assets/css/accesibilidad.css">
+    <link rel="stylesheet" href="assets/css/permisos-ubicacion.css">
+    <link rel="stylesheet" href="assets/css/alertas-sistema.css">
+    <link rel="stylesheet" href="assets/css/profile-drawer.css">
+    
+    <!-- Librerías Externas -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<div class="shell">
+<div class="dc-shell">
 
-    <!-- ============ NAVBAR ============ -->
-    <header class="navbar">
-        <a href="index.html" class="navbar-logo">
-            <div class="logo-icon"><i class="fas fa-tint"></i></div>
-            <span class="logo-name">DiaMon</span>
+    <!-- ==================== SIDEBAR LATERAL ==================== -->
+    <aside class="dc-sidebar" aria-label="Menú principal de navegación">
+        <!-- Logo y Marca Oficial DiaMon -->
+        <a href="#" class="dc-brand" onclick="window.switchView('inicio'); return false;" aria-label="DiaMon - Ir al Inicio">
+            <div class="dc-brand-icon">
+                <i class="fas fa-tint" aria-hidden="true"></i>
+            </div>
+            <div class="dc-brand-text">
+                <h1>DiaMon</h1>
+                <span>Monitoreo & Salud GPS</span>
+            </div>
         </a>
-        <nav class="navbar-menu">
-            <a href="index.html" class="nav-link active">Dashboard</a>
-            <a href="historial.html" class="nav-link">Historial</a>
-            <a href="registros_usuario.html" class="nav-link">Registros</a>
-            <a href="reportes.html" class="nav-link">Reportes</a>
-            <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
-            <a href="perfil.html" class="nav-link">Mi perfil</a>
-        </nav>
-        <div class="navbar-right">
-            <button class="btn-bell" aria-label="Notificaciones">
-                <i class="fas fa-bell"></i>
-                <span class="bell-badge">3</span>
+
+        <!-- Menú de Navegación -->
+        <nav class="dc-nav" aria-label="Pestañas del sistema">
+            <button class="dc-nav-item active" data-dc-tab="inicio" aria-label="Ir al Inicio">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Inicio</span>
             </button>
-            <div class="user-menu">
-                <button class="user-avatar-btn" id="userAvatarBtn">
-                    <i class="fas fa-user-circle user-avatar-icon"></i>
-                    <span class="user-name" id="headerUserName">Invitado</span>
-                    <i class="fas fa-chevron-down chevron"></i>
+            <button class="dc-nav-item" data-dc-tab="mapa" aria-label="Ver Mapa en Tiempo Real y Hospitales">
+                <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                <span>Mapa en Tiempo Real</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="salud" aria-label="Ver Salud y Medicamentos">
+                <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                <span>Salud y Medicamentos</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="reportes" aria-label="Ver Historial y Reportes">
+                <i class="fas fa-file-medical-alt" aria-hidden="true"></i>
+                <span>Historial & Reportes</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="alertas" aria-label="Ver Notificaciones">
+                <i class="fas fa-bell" aria-hidden="true"></i>
+                <span>Notificaciones</span>
+                <span class="dc-nav-badge" aria-label="2 notificaciones nuevas">2</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="seguridad" aria-label="Opciones de Seguridad y Ficha QR">
+                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                <span>Seguridad</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="configuracion" aria-label="Configuración del Sistema">
+                <i class="fas fa-cog" aria-hidden="true"></i>
+                <span>Configuración</span>
+            </button>
+            <button class="dc-nav-item" data-dc-tab="ayuda" aria-label="DiaBot y Soporte Médico">
+                <i class="fas fa-robot" aria-hidden="true"></i>
+                <span>DiaBot & Ayuda</span>
+            </button>
+        </nav>
+
+        <!-- Tarjeta Promocional de Seguridad en Sidebar -->
+        <div class="dc-sidebar-card">
+            <div class="dc-sidebar-card-icon">
+                <i class="fas fa-user-shield" aria-hidden="true"></i>
+            </div>
+            <h4>Tu seguridad es nuestra prioridad</h4>
+            <p>Herramientas médicas y botón SOS activos para proteger a tu familiar en Cartagena.</p>
+            <button class="dc-btn-card" onclick="window.switchView('seguridad')" aria-label="Conocer más sobre seguridad">
+                Más información <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <!-- Perfil / Acceso en Sidebar (Invitado vs Usuario) -->
+        <div class="dc-sidebar-profile" onclick="window.abrirModalPerfil()" style="cursor: pointer;" title="Abrir Mi Perfil">
+            <div class="dc-profile-avatar" id="sidebarAvatar">
+                <i class="fas fa-user" aria-hidden="true"></i>
+            </div>
+            <div class="dc-profile-info">
+                <div class="dc-profile-name" id="sidebarUserName">Modo Invitado</div>
+                <div class="dc-profile-role" id="sidebarUserRole">Sin iniciar sesión</div>
+            </div>
+            <div id="sidebarAuthAction">
+                <button class="dc-btn-login-quick" onclick="event.stopPropagation(); window.abrirModalPerfil();" aria-label="Ver Perfil o Iniciar Sesión">
+                    <i class="fas fa-user-circle" aria-hidden="true"></i> Perfil
                 </button>
-                <div class="dropdown-menu" id="dropdownMenu">
-                    <div class="dropdown-header">
-                        <i class="fas fa-user-circle"></i>
-                        <div>
-                            <div class="dropdown-name" id="dropdownName">Invitado</div>
-                            <div class="dropdown-email" id="dropdownEmail">No has iniciado sesión</div>
-                        </div>
-                    </div>
-                    <div class="dropdown-divider"></div>
-                    <a href="perfil.html" class="logout-item profile-link" style="display:none;"><i class="fas fa-user"></i> Mi perfil</a>
-                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
-                    <a href="login.html" class="logout-item auth-link"><i class="fas fa-user-plus"></i> Registrarse</a>
-                    <a href="#" class="logout-item profile-link" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-                </div>
             </div>
         </div>
-    </header>
+    </aside>
 
-    <!-- ============ DASHBOARD ============ -->
-    <main class="dashboard stagger" id="pageContent">
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="dc-main">
 
-        <!-- Panel izquierdo: mapas -->
-        <div class="left-panel">
+        <!-- Topbar Superior -->
+        <header class="dc-topbar">
+            <!-- Buscador Accesible -->
+            <div class="dc-search">
+                <label for="dcSearchInput" class="sr-only">Buscar información</label>
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input id="dcSearchInput" type="text" placeholder="Buscar información clínica..." aria-label="Buscar en DiaMon">
+            </div>
 
-            <!-- Mapa en vivo (transmisión del admin) -->
-            <article class="map-container map-live-container">
-                <div class="map-section-label">
-                    <i class="fas fa-satellite-dish"></i>
-                    <span>Recorrido en vivo</span>
+            <!-- Utilidades: Fecha, Reloj, Alertas, Avatar -->
+            <div class="dc-topbar-actions">
+                <div class="dc-pill-indicator" title="Fecha actual en Cartagena">
+                    <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                    <span id="dcLiveDate">Cargando fecha...</span>
                 </div>
-                <div class="gps-status-bar">
-                    <span id="gpsRouteName" class="gps-route-name">Ruta GPS</span>
-                    <span id="gpsRouteBadge" class="gps-route-badge badge-loading">Cargando...</span>
-                </div>
-                <div class="live-info-bar" id="liveInfoBar" style="display:none;">
-                    <span class="live-info-item"><i class="fas fa-tint"></i> <span id="liveGlucose">—</span> mg/dL</span>
-                    <span class="live-info-sep">·</span>
-                    <span class="live-info-item"><i class="fas fa-heartbeat"></i> <span id="liveStatus">—</span></span>
-                    <span class="live-info-sep">·</span>
-                    <span class="live-info-item" id="liveType">—</span>
-                </div>
-                <div id="map"></div>
-            </article>
-
-            <!-- Historial de ruta (recorridos completados) -->
-            <article class="map-container history-container">
-                <div class="map-section-label">
-                    <i class="far fa-clock"></i>
-                    <span>Historial de recorrido</span>
-                </div>
-                <div class="history-tabs">
-                    <button class="tab active" data-type="hoy">Hoy</button>
-                    <button class="tab" data-type="semana">Últimos 7 días</button>
-                    <button class="tab" data-type="mes">Último mes</button>
-                </div>
-                <div style="position:relative;">
-                    <div id="historyMap"></div>
-                    <div id="historyEmpty" class="history-empty" style="display:none;">
-                        <i class="far fa-map"></i>
-                        <span id="historyEmptyMsg">Sin recorridos en este período</span>
-                    </div>
-                </div>
-                <div class="history-info" id="historyInfo">
-                    <div><span class="key">Puntos</span><span class="val" id="historyPuntos">—</span></div>
-                    <div><span class="key">Rutas</span><span class="val" id="historyRutas">—</span></div>
-                </div>
-            </article>
-
-        </div>
-
-        <!-- Panel derecho: estado del paciente -->
-        <div class="right-panel">
-
-            <!-- Estado del paciente — Pulse Ring -->
-            <article class="card">
-                <div class="card-header">
-                    <i class="fas fa-heartbeat"></i>
-                    <h4>Estado del paciente</h4>
+                <div class="dc-pill-indicator" title="Hora en tiempo real">
+                    <i class="far fa-clock" aria-hidden="true"></i>
+                    <span id="dcLiveClock">--:--:--</span>
                 </div>
 
-                <div class="glucose-pulse" id="glucosePulse">
-                    <svg class="pulse-ring" viewBox="0 0 220 220">
-                        <circle class="ring-outer" cx="110" cy="110" r="100"/>
-                        <circle class="ring-mid"   cx="110" cy="110" r="85"/>
-                        <circle class="ring-core"  cx="110" cy="110" r="70"/>
-                    </svg>
-                    <div class="glucose-center">
-                        <div class="glucose-number" id="glucoseValue">—</div>
-                        <div class="glucose-unit">mg/dL</div>
-                        <div class="glucose-state" id="glucoseLabel">Cargando…</div>
-                    </div>
-                </div>
+                <!-- Botón Ficha Médica QR SOS -->
+                <button class="dc-btn-icon" onclick="window.medicalQRManager.abrirModalQR()" title="Abrir Ficha QR Médica SOS" aria-label="Abrir Ficha Médica QR SOS">
+                    <i class="fas fa-qrcode" style="color:var(--dc-primary);" aria-hidden="true"></i>
+                </button>
 
-                <div class="status-row">
-                    <div class="left">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Cartagena, CO</span>
-                    </div>
-                    <div class="right">
-                        <div class="connection-led"></div>
-                        <span class="status-pill stable">Estable</span>
-                    </div>
-                </div>
-            </article>
+                <!-- Campana de Notificaciones -->
+                <button class="dc-btn-icon" onclick="window.switchView('alertas')" aria-label="Ver 3 notificaciones de salud">
+                    <i class="fas fa-bell" aria-hidden="true"></i>
+                    <span class="dc-btn-badge" aria-label="3 pendientes">3</span>
+                </button>
 
-            <!-- Tiempo en rangos -->
-            <article class="card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h4>Tiempo en rangos</h4>
-                </div>
-
-                <div class="range-grid">
-                    <div class="range-cell normal">
-                        <div class="label">Normal</div>
-                        <div class="pct" id="rangeNormal">72%</div>
-                        <div class="range-bar"><span style="width:72%"></span></div>
-                    </div>
-                    <div class="range-cell warn">
-                        <div class="label">Alta</div>
-                        <div class="pct" id="rangeHigh">20%</div>
-                        <div class="range-bar"><span style="width:20%"></span></div>
-                    </div>
-                    <div class="range-cell alert">
-                        <div class="label">Baja</div>
-                        <div class="pct" id="rangeLow">8%</div>
-                        <div class="range-bar"><span style="width:8%"></span></div>
-                    </div>
-                </div>
-
-                <div class="range-target">
-                    <span>Objetivo en rango</span>
-                    <span class="val">≥ 70%</span>
-                </div>
-            </article>
-
-            <!-- Tendencias 6h -->
-            <article class="card">
-                <div class="card-header">
-                    <i class="fas fa-chart-line"></i>
-                    <h4>Tendencias · 6h</h4>
-                </div>
-
-                <div class="trend-summary">
-                    <span class="trend-delta up" id="trendDelta">+8</span>
-                    <span class="trend-context">mg/dL en la última hora</span>
-                </div>
-
-                <svg class="sparkline" viewBox="0 0 200 56" preserveAspectRatio="none">
-                    <path class="fill" d="M0,40 C20,38 40,30 60,28 S90,20 110,22 S150,30 170,26 S190,18 200,16 L200,56 L0,56 Z"/>
-                    <polyline points="0,40 30,35 60,28 90,22 110,22 140,28 170,26 200,16"/>
-                </svg>
-
-                <div class="readings-list" id="readingsList">
-                    <div class="reading">
-                        <span class="time">ahora</span>
-                        <span class="value" id="reading0">— mg/dL</span>
-                        <span class="badge">—</span>
-                    </div>
-                    <div class="reading">
-                        <span class="time">hace 1h</span>
-                        <span class="value">— mg/dL</span>
-                        <span class="badge">—</span>
-                    </div>
-                    <div class="reading">
-                        <span class="time">hace 2h</span>
-                        <span class="value">— mg/dL</span>
-                        <span class="badge">—</span>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Alertas recientes -->
-            <article class="card">
-                <div class="card-header">
-                    <i class="fas fa-bell"></i>
-                    <h4>Alertas recientes</h4>
-                </div>
-
-                <div class="alerts-list" id="alertsList">
-                    <div class="alert-loading"><i class="fas fa-spinner fa-spin"></i> Cargando alertas…</div>
-                </div>
-
-                <!-- Botón SOS — solo visible para rol monitoreado -->
-                <div id="sosWrap" style="display:none; margin-top: var(--space-4);">
-                    <button id="btnSOS" class="btn-sos">
-                        <i class="fas fa-exclamation-circle"></i> EMERGENCIA · SOS
+                <!-- Avatar de Usuario y Modal de Perfil Flotante -->
+                <div class="user-menu" style="position:relative;">
+                    <button class="dc-btn-icon" id="userAvatarBtn" onclick="window.abrirModalPerfil()" aria-label="Abrir Mi Perfil">
+                        <i class="fas fa-user-circle" style="font-size:22px; color:var(--dc-primary);" aria-hidden="true"></i>
                     </button>
                 </div>
-            </article>
+            </div>
+        </header>
+
+        <!-- Cuerpo de Vistas -->
+        <div class="dc-content-body">
+
+            <!-- ==================== VISTA 1: INICIO (DASHBOARD) ==================== -->
+            <section class="dc-view active" id="view-inicio">
+                <!-- Saludo Inteligente Reactivo a la Sesión -->
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title" id="dcWelcomeGreeting">Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span> 👋</h2>
+                        <p class="dc-welcome-subtitle" id="dcWelcomeSubtitle">Modo Demostración · Inicia sesión o crea tu cuenta para ver tus medicamentos y monitoreo en tiempo real.</p>
+                    </div>
+                </div>
+
+                <!-- TOP 4 KPI CARDS (Telemetría en Vivo de Celular/PC) -->
+                <div class="dc-kpi-grid">
+                    <!-- Glucosa Actual -->
+                    <div class="dc-kpi-card">
+                        <div class="dc-kpi-icon-wrap blue">
+                            <i class="fas fa-tint" aria-hidden="true"></i>
+                        </div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Glucosa Actual</div>
+                            <div class="dc-kpi-val" id="kpiGlucoseVal">92 mg/dL</div>
+                            <span class="dc-kpi-badge success"><i class="fas fa-check-circle" aria-hidden="true"></i> En rango normal</span>
+                        </div>
+                    </div>
+
+                    <!-- Pasos Hoy (Podómetro con Reinicio 24 Horas) -->
+                    <div class="dc-kpi-card" title="Se reinicia automáticamente a 0 pasos cada 24 horas (a medianoche)">
+                        <div class="dc-kpi-icon-wrap blue">
+                            <i class="fas fa-walking" aria-hidden="true"></i>
+                        </div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Pasos Hoy (Ciclo 24h)</div>
+                            <div class="dc-kpi-val" id="kpiPasosVal">0</div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="dc-kpi-badge success" id="kpiPasosBadge"><i class="fas fa-history" aria-hidden="true"></i> Reinicio 24h</span>
+                                <button onclick="window.simularPasoEnPC(10)" style="background:none; border:none; color:var(--dc-primary); font-size:10.5px; cursor:pointer; text-decoration:underline;" title="Probar incremento de pasos desde computadora">+10 pasos</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ubicación Actual (GPS en Vivo) -->
+                    <div class="dc-kpi-card" style="cursor:pointer;" onclick="if(window.actualizarUbicacionGPSManual) window.actualizarUbicacionGPSManual();" title="Haz clic para actualizar tu ubicación GPS en tiempo real">
+                        <div class="dc-kpi-icon-wrap blue">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="dc-kpi-info" style="min-width:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="dc-kpi-label">Ubicación GPS (En Vivo)</div>
+                                <button type="button" class="btn-refresh-gps" onclick="event.stopPropagation(); if(window.actualizarUbicacionGPSManual) window.actualizarUbicacionGPSManual();" title="Actualizar ubicación ahora" style="background:none; border:none; color:var(--dc-primary); cursor:pointer; font-size:12px; padding:0 2px;"><i class="fas fa-sync-alt" id="gpsSyncIcon"></i></button>
+                            </div>
+                            <div class="dc-kpi-val" id="kpiUbicacionVal" style="font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Ubicación en tiempo real">Obteniendo GPS...</div>
+                            <span class="dc-kpi-badge info" id="kpiUbicacionBadge"><i class="fas fa-spinner fa-spin" style="font-size:8px;"></i> Buscando señal...</span>
+                        </div>
+                    </div>
+
+                    <!-- Batería del Dispositivo (Battery Status API en Vivo) -->
+                    <div class="dc-kpi-card" title="Lee el nivel real de la batería de tu dispositivo">
+                        <div class="dc-kpi-icon-wrap green">
+                            <i class="fas fa-battery-three-quarters" aria-hidden="true"></i>
+                        </div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Batería del GPS / Móvil</div>
+                            <div class="dc-kpi-val" id="kpiBateriaVal">87%</div>
+                            <span class="dc-kpi-badge success" id="kpiBateriaBadge"><i class="fas fa-bolt" aria-hidden="true"></i> Óptima</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRID PRINCIPAL DEL DASHBOARD -->
+                <div class="dc-dashboard-grid">
+
+                    <!-- Columna Principal (Izquierda) -->
+                    <div class="dc-col-main">
+
+                        <!-- Tarjeta de Ubicación en Tiempo Real (Mapa) -->
+                        <div class="dc-card dc-map-card">
+                            <div class="dc-card-header">
+                                <div class="dc-card-title">
+                                    <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                                    <span>Ubicación en Tiempo Real · Cartagena</span>
+                                </div>
+                                <span class="dc-kpi-badge success"><i class="fas fa-circle" style="font-size:6px;" aria-hidden="true"></i> Telemetría activa</span>
+                            </div>
+
+                            <!-- Barra de Filtros de Red Médica y Tráfico -->
+                            <div class="dc-map-toolbar">
+                                <button class="dc-filter-chip active" data-med-filter="todos" aria-label="Mostrar todos los centros médicos"><i class="fas fa-layer-group" aria-hidden="true"></i> Todos (12)</button>
+                                <button class="dc-filter-chip" data-med-filter="urgencias" aria-label="Filtrar por urgencias 24 horas"><i class="fas fa-ambulance" aria-hidden="true"></i> Urgencias 24h</button>
+                                <button class="dc-filter-chip" data-med-filter="hospitales" aria-label="Filtrar por clínicas y hospitales"><i class="fas fa-hospital" aria-hidden="true"></i> Clínicas</button>
+                                <button class="dc-filter-chip" data-med-filter="farmacias" aria-label="Filtrar por farmacias 24 horas"><i class="fas fa-pills" aria-hidden="true"></i> Farmacias 24h</button>
+                                <button class="dc-filter-chip active" id="btnToggleCentrosCartagena" aria-label="Conmutar clínicas de Cartagena"><i class="fas fa-hospital-alt" aria-hidden="true"></i> Clínicas CTG</button>
+                                <button class="dc-filter-chip active" id="btnToggleTrafico" aria-label="Conmutar tráfico vehicular"><i class="fas fa-traffic-light" aria-hidden="true"></i> Tráfico CTG</button>
+                            </div>
+
+                            <!-- Contenedor del Mapa con Floating Badges -->
+                            <div class="dc-map-viewport-wrapper">
+                                <div class="dc-map-badge-eta">
+                                    <i class="fas fa-car-side" aria-hidden="true"></i>
+                                    <span>Ubicación en vivo · Cartagena de Indias</span>
+                                </div>
+
+                                <div id="map" role="application" aria-label="Mapa interactivo de Cartagena"></div>
+
+                                <div class="dc-map-actions-floating">
+                                    <button class="dc-map-btn-float" onclick="window.switchView('mapa')" aria-label="Ver mapa ampliado y red de hospitales">
+                                        <i class="fas fa-expand" aria-hidden="true"></i> Ver Hospitales
+                                    </button>
+                                    <a href="https://maps.google.com/?q=10.3910,-75.4794" target="_blank" rel="noopener" class="dc-map-btn-float" aria-label="Abrir en Google Maps exterior">
+                                        <i class="fas fa-external-link-alt" aria-hidden="true"></i> Ver en Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subgrid: Control Semanal de Salud + Medicamentos del Día -->
+                        <div class="dc-subgrid-2">
+                            <!-- Control de Salud Semanal -->
+                            <div class="dc-card">
+                                <div class="dc-card-header">
+                                    <div class="dc-card-title">
+                                        <i class="fas fa-chart-line" aria-hidden="true"></i>
+                                        <span>Control de Salud Semanal</span>
+                                    </div>
+                                    <a class="dc-card-link" onclick="window.switchView('reportes')" role="button" tabindex="0" aria-label="Ver reporte clínico completo">Ver reporte →</a>
+                                </div>
+
+                                <div class="dc-chart-legend">
+                                    <div class="dc-chart-legend-item"><span class="dc-dot blue"></span> Glucosa (mg/dL)</div>
+                                    <div class="dc-chart-legend-item"><span class="dc-dot purple"></span> Actividad física</div>
+                                </div>
+
+                                <!-- Gráfico SVG Estilizado -->
+                                <div class="dc-chart-wrap" aria-label="Gráfica de evolución semanal de glucosa">
+                                    <svg viewBox="0 0 340 120" style="width:100%; height:100%;" role="img" aria-label="Valores estables de glucosa de lunes a domingo">
+                                        <line x1="30" y1="20" x2="330" y2="20" stroke="#f1f5f9" stroke-width="1"/>
+                                        <line x1="30" y1="50" x2="330" y2="50" stroke="#f1f5f9" stroke-width="1"/>
+                                        <line x1="30" y1="80" x2="330" y2="80" stroke="#f1f5f9" stroke-width="1"/>
+
+                                        <text x="25" y="24" font-size="9" fill="#94a3b8" text-anchor="end">200</text>
+                                        <text x="25" y="54" font-size="9" fill="#94a3b8" text-anchor="end">100</text>
+                                        <text x="25" y="84" font-size="9" fill="#94a3b8" text-anchor="end">0</text>
+
+                                        <!-- Curva de Glucosa -->
+                                        <polyline fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                            points="45,62 90,56 135,50 180,42 225,52 270,58 315,60" />
+                                        
+                                        <circle cx="45" cy="62" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+                                        <circle cx="90" cy="56" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+                                        <circle cx="135" cy="50" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+                                        <circle cx="180" cy="42" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                                        <circle cx="225" cy="52" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+                                        <circle cx="270" cy="58" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+                                        <circle cx="315" cy="60" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+
+                                        <!-- Curva de Actividad -->
+                                        <polyline fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            points="45,80 90,75 135,70 180,65 225,72 270,68 315,70" />
+
+                                        <text x="45" y="105" font-size="10" fill="#64748b" text-anchor="middle">Lun</text>
+                                        <text x="90" y="105" font-size="10" fill="#64748b" text-anchor="middle">Mar</text>
+                                        <text x="135" y="105" font-size="10" fill="#64748b" text-anchor="middle">Mié</text>
+                                        <text x="180" y="105" font-size="10" fill="#2563eb" font-weight="700" text-anchor="middle">Jue</text>
+                                        <text x="225" y="105" font-size="10" fill="#64748b" text-anchor="middle">Vie</text>
+                                        <text x="270" y="105" font-size="10" fill="#64748b" text-anchor="middle">Sáb</text>
+                                        <text x="315" y="105" font-size="10" fill="#64748b" text-anchor="middle">Dom</text>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Medicamentos del Día -->
+                            <div class="dc-card">
+                                <div class="dc-card-header">
+                                    <div class="dc-card-title">
+                                        <i class="fas fa-pills" aria-hidden="true"></i>
+                                        <span>Medicamentos del Día</span>
+                                    </div>
+                                    <a class="dc-card-link" onclick="window.switchView('salud')" role="button" tabindex="0" aria-label="Gestionar todos los medicamentos">Ver todos →</a>
+                                </div>
+
+                                <div class="dc-meds-list">
+                                    <div class="dc-med-item">
+                                        <div class="dc-med-icon">
+                                            <i class="fas fa-capsules" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="dc-med-details">
+                                            <div class="dc-med-name">Metformina</div>
+                                            <div class="dc-med-dose">500 mg · Próxima dosis: 2:00 PM</div>
+                                        </div>
+                                        <span class="dc-med-badge active">Activa</span>
+                                    </div>
+
+                                    <div class="dc-med-item">
+                                        <div class="dc-med-icon amber">
+                                            <i class="fas fa-syringe" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="dc-med-details">
+                                            <div class="dc-med-name">Insulina Glargina</div>
+                                            <div class="dc-med-dose">10 UI · Próxima dosis: 1:00 PM</div>
+                                        </div>
+                                        <span class="dc-med-badge warn">En 3 h</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Lateral (Derecha) -->
+                    <div class="dc-col-side">
+
+                        <!-- Alerta Importante -->
+                        <div class="dc-alert-card">
+                            <div class="dc-alert-header">
+                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                <span>Alerta de Geocerca</span>
+                            </div>
+                            <p class="dc-alert-text">Tu familiar ha salido de la zona segura designada (Av. Pedro de Heredia, San Fernando).</p>
+                            <div class="dc-alert-meta">
+                                <span class="dc-alert-time"><i class="far fa-clock" aria-hidden="true"></i> Hace 5 min</span>
+                                <button class="dc-btn-alert-action" onclick="window.switchView('mapa')" aria-label="Ver detalles de la alerta en el mapa">Ver detalles →</button>
+                            </div>
+                        </div>
+
+                        <!-- Actividad Reciente (Timeline) -->
+                        <div class="dc-card">
+                            <div class="dc-card-header">
+                                <div class="dc-card-title">
+                                    <i class="far fa-clock" aria-hidden="true"></i>
+                                    <span>Actividad Reciente</span>
+                                </div>
+                                <a class="dc-card-link" onclick="window.switchView('alertas')" role="button" tabindex="0" aria-label="Ver todas las actividades">Ver todo →</a>
+                            </div>
+
+                            <div class="dc-timeline">
+                                <div class="dc-timeline-step">
+                                    <div class="dc-timeline-dot green"><i class="fas fa-check" aria-hidden="true"></i></div>
+                                    <div class="dc-timeline-content">
+                                        <div>
+                                            <div class="dc-timeline-title">Medicamento tomado</div>
+                                            <div class="dc-timeline-desc">Metformina 500mg</div>
+                                        </div>
+                                        <div class="dc-timeline-time">Hace 1h</div>
+                                    </div>
+                                </div>
+
+                                <div class="dc-timeline-step">
+                                    <div class="dc-timeline-dot purple"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></div>
+                                    <div class="dc-timeline-content">
+                                        <div>
+                                            <div class="dc-timeline-title">Ubicación actualizada</div>
+                                            <div class="dc-timeline-desc">Centro Comercial Caribe Plaza</div>
+                                        </div>
+                                        <div class="dc-timeline-time">Hace 1 min</div>
+                                    </div>
+                                </div>
+
+                                <div class="dc-timeline-step">
+                                    <div class="dc-timeline-dot amber"><i class="fas fa-bell" aria-hidden="true"></i></div>
+                                    <div class="dc-timeline-content">
+                                        <div>
+                                            <div class="dc-timeline-title">Alerta preventiva</div>
+                                            <div class="dc-timeline-desc">Zona: San Fernando Casa</div>
+                                        </div>
+                                        <div class="dc-timeline-time">Hace 5 min</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Banner de Emergencia SOS -->
+                        <div class="dc-emergency-card">
+                            <div class="dc-emergency-icon">
+                                <i class="fas fa-bell" aria-hidden="true"></i>
+                            </div>
+                            <h3>Emergencia Médica</h3>
+                            <p>Solicita ayuda médica inmediata y comparte la ubicación GPS con acudientes.</p>
+                            <button class="dc-btn-emergency" onclick="window.medicalQRManager.abrirModalQR()" aria-label="Activar Alerta SOS y Ficha QR de Emergencia">
+                                <i class="fas fa-phone-alt" aria-hidden="true"></i> Activar Alerta SOS / Ficha QR
+                            </button>
+                        </div>
+
+                        <!-- SafeWalk (Acompañamiento en Cartagena) -->
+                        <div class="dc-card safewalk-card" style="margin:0;">
+                            <div class="safewalk-header">
+                                <div class="safewalk-title">
+                                    <i class="fas fa-shield-alt" style="color:var(--dc-success);" aria-hidden="true"></i>
+                                    <span>Acompañamiento SafeWalk</span>
+                                </div>
+                                <span class="safewalk-badge">Cartagena GPS</span>
+                            </div>
+
+                            <div id="safeWalkSetup">
+                                <p style="font-size:12px; color:var(--dc-text-muted); margin:0 0 10px 0; line-height:1.4;">
+                                    Monitorea el trayecto en transporte por Cartagena y genera aviso si expira el tiempo.
+                                </p>
+                                <div style="margin-bottom:8px;">
+                                    <label for="safeWalkTransportSelect" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Transporte</label>
+                                    <select id="safeWalkTransportSelect" class="safewalk-select" aria-label="Modo de transporte">
+                                        <option value="transcaribe" selected>🚌 Transcaribe / Buseta</option>
+                                        <option value="vehiculo">🚗 Particular / Moto / Taxi</option>
+                                        <option value="pie">🚶 A pie</option>
+                                    </select>
+                                </div>
+                                <div class="safewalk-form-grid">
+                                    <div>
+                                        <label for="safeWalkDestSelect" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Destino</label>
+                                        <select id="safeWalkDestSelect" class="safewalk-select" aria-label="Destino en Cartagena">
+                                            <option value="udc-zarzagocilla">UDC Zarzagocilla</option>
+                                            <option value="udc-san-agustin">UDC San Agustín</option>
+                                            <option value="casa">Casa (San Fernando)</option>
+                                            <option value="mall-plaza">Mall Plaza</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="safeWalkMinutes" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Tiempo</label>
+                                        <select id="safeWalkMinutes" class="safewalk-input" aria-label="Tiempo de viaje">
+                                            <option value="15">15 min</option>
+                                            <option value="25" selected>25 min</option>
+                                            <option value="40">40 min</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button id="btnStartSafeWalk" class="btn-start-safewalk" style="margin-top:10px;" aria-label="Iniciar Recorrido Seguro SafeWalk">
+                                    <i class="fas fa-location-arrow" aria-hidden="true"></i> Iniciar Recorrido Seguro
+                                </button>
+                            </div>
+
+                            <div id="safeWalkActive" class="safewalk-active-box" style="display:none;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <div class="safewalk-active-dest"><i class="fas fa-map-pin" aria-hidden="true"></i> <span id="safeWalkActiveDest">—</span></div>
+                                    <span id="safeWalkActiveTransport" style="font-size:10px; background:#f1f5f9; padding:2px 8px; border-radius:10px; color:#475569;">Transcaribe</span>
+                                </div>
+                                <div class="safewalk-timer-wrap">
+                                    <div class="safewalk-timer-text" id="safeWalkTimerText">25:00</div>
+                                    <div style="font-size:11px; color:#64748b;">Tiempo restante estimado</div>
+                                    <div class="safewalk-progress-track">
+                                        <div class="safewalk-progress-bar" id="safeWalkProgressBar"></div>
+                                    </div>
+                                </div>
+                                <div class="safewalk-active-actions">
+                                    <button id="btnSafeWalkArrived" class="btn-walk-arrived" aria-label="Confirmar que he llegado a salvo"><i class="fas fa-check-circle" aria-hidden="true"></i> He llegado</button>
+                                    <button id="btnSafeWalkCancel" class="btn-walk-cancel" aria-label="Cancelar supervisión de recorrido">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 2: MAPA & HOSPITALES ==================== -->
+            <section class="dc-view" id="view-mapa">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">Ubicación y Hospitales Cercanos</h2>
+                        <p class="dc-welcome-subtitle">Red asistencial de Cartagena con disponibilidad 24 horas y cálculo de rutas seguras.</p>
+                    </div>
+                </div>
+
+                <div class="dc-hospitals-grid">
+                    <!-- Historial y mapa corregido (dimensiones completas sin recuadros negros) -->
+                    <div class="dc-card">
+                        <div class="dc-card-header">
+                            <div class="dc-card-title"><i class="fas fa-history" aria-hidden="true"></i> Recorridos Históricos</div>
+                            <div class="history-tabs" role="tablist">
+                                <button class="tab active" data-type="hoy" role="tab" aria-selected="true">Hoy</button>
+                                <button class="tab" data-type="semana" role="tab" aria-selected="false">Últimos 7 días</button>
+                                <button class="tab" data-type="mes" role="tab" aria-selected="false">Último mes</button>
+                            </div>
+                        </div>
+                        <div style="position:relative; width:100%; height:380px; border-radius:12px; overflow:hidden; border:1px solid var(--dc-border);">
+                            <div id="historyMap" style="width:100%; height:100%;" role="application" aria-label="Mapa de recorridos históricos"></div>
+                            <div id="historyEmpty" class="history-empty" style="display:none;">
+                                <i class="far fa-map" aria-hidden="true"></i>
+                                <span id="historyEmptyMsg">Sin recorridos registrados en este período</span>
+                            </div>
+                        </div>
+                        <div class="history-info" id="historyInfo" style="margin-top:14px; display:flex; gap:20px;">
+                            <div><span class="key" style="color:var(--dc-text-muted); font-size:12px;">Puntos GPS: </span><strong class="val" id="historyPuntos">—</strong></div>
+                            <div><span class="key" style="color:var(--dc-text-muted); font-size:12px;">Rutas completadas: </span><strong class="val" id="historyRutas">—</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Hospitales Cercanos -->
+                    <div class="dc-card">
+                        <div class="dc-card-header">
+                            <div class="dc-card-title"><i class="fas fa-hospital-alt" aria-hidden="true"></i> Hospitales Cercanos</div>
+                            <a class="dc-card-link" href="https://maps.google.com/?q=hospitales+cartagena" target="_blank" rel="noopener" aria-label="Abrir mapa externo con todos los hospitales">Ver todos →</a>
+                        </div>
+
+                        <div class="dc-hospital-item">
+                            <div class="dc-hospital-info">
+                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+                                <div>
+                                    <div class="dc-hospital-name">Hospital Naval de Cartagena</div>
+                                    <div class="dc-hospital-meta">A 2.5 km · ★ 4.8 (Urgencias 24h)</div>
+                                </div>
+                            </div>
+                            <a href="https://maps.google.com/?q=Hospital+Naval+Cartagena" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar al Hospital Naval">Cómo llegar</a>
+                        </div>
+
+                        <div class="dc-hospital-item">
+                            <div class="dc-hospital-info">
+                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+                                <div>
+                                    <div class="dc-hospital-name">Clínica Blas de Lezo</div>
+                                    <div class="dc-hospital-meta">A 3.1 km · ★ 4.7 (Urgencias 24h)</div>
+                                </div>
+                            </div>
+                            <a href="https://maps.google.com/?q=Clinica+Blas+de+Lezo+Cartagena" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar a la Clínica Blas de Lezo">Cómo llegar</a>
+                        </div>
+
+                        <div class="dc-hospital-item">
+                            <div class="dc-hospital-info">
+                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+                                <div>
+                                    <div class="dc-hospital-name">Hospital Universitario del Caribe</div>
+                                    <div class="dc-hospital-meta">A 4.2 km · ★ 4.6 (Zarzagocilla)</div>
+                                </div>
+                            </div>
+                            <a href="https://maps.google.com/?q=Hospital+Universitario+del+Caribe" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar al Hospital Universitario del Caribe">Cómo llegar</a>
+                        </div>
+
+                        <div class="dc-hospital-item">
+                            <div class="dc-hospital-info">
+                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+                                <div>
+                                    <div class="dc-hospital-name">Clínica MediHelp Bocagrande</div>
+                                    <div class="dc-hospital-meta">A 5.0 km · ★ 4.8 (Alta Complejidad)</div>
+                                </div>
+                            </div>
+                            <a href="https://maps.google.com/?q=Clinica+Medihelp+Bocagrande" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar a la Clínica MediHelp Bocagrande">Cómo llegar</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 3: SALUD & MEDICAMENTOS ==================== -->
+            <section class="dc-view" id="view-salud">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">Salud y Medicamentos</h2>
+                        <p class="dc-welcome-subtitle">Plan terapéutico, control de vencimiento y registro de bienestar del paciente.</p>
+                    </div>
+                </div>
+
+                <!-- Aviso para usuarios no autenticados -->
+                <div class="dc-guest-notice" id="guestNoticeMeds">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <h4>Inicia sesión para gestionar medicamentos</h4>
+                    <p>Para proteger la confidencialidad médica de tu familiar, inicia sesión o crea una cuenta antes de registrar tomas de insulina o recetas.</p>
+                    <button class="dc-btn-submit-auth" style="max-width:240px; margin:0 auto;" onclick="window.abrirModalAuth('login')" aria-label="Iniciar sesión o registrarse">
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Iniciar sesión
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                    <div>
+                        <div id="medicamentosWidget"></div>
+                        <div id="vencimientoMedsWidget" style="margin-top:20px;"></div>
+                    </div>
+                    <div>
+                        <div id="estadoDiarioWidget"></div>
+                        <div id="consejoDiarioWidget" style="margin-top:20px;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 4: REPORTES ==================== -->
+            <section class="dc-view" id="view-reportes">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">Reporte Semanal de Monitoreo</h2>
+                        <p class="dc-welcome-subtitle">Evolución de glucemia, adherencia farmacológica y actividad física en Cartagena.</p>
+                    </div>
+                    <button class="dc-btn-alert-action" style="background:var(--dc-primary);" onclick="window.print();" aria-label="Descargar reporte clínico en PDF">
+                        <i class="fas fa-download" aria-hidden="true"></i> Descargar Reporte PDF
+                    </button>
+                </div>
+
+                <div class="dc-guest-notice" id="guestNoticeReport">
+                    <i class="fas fa-user-lock" aria-hidden="true"></i>
+                    <h4>Reporte clínico confidencial</h4>
+                    <p>Inicia sesión con tu rol de familiar o administrador para consultar el historial completo descargable.</p>
+                    <button class="dc-btn-submit-auth" style="max-width:240px; margin:0 auto;" onclick="window.abrirModalAuth('login')">
+                        Iniciar sesión
+                    </button>
+                </div>
+
+                <div class="dc-kpi-grid">
+                    <div class="dc-kpi-card">
+                        <div class="dc-kpi-icon-wrap blue"><i class="fas fa-tint" aria-hidden="true"></i></div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Glucosa Promedio</div>
+                            <div class="dc-kpi-val">96 mg/dL</div>
+                            <span class="dc-kpi-badge success">En rango ideal</span>
+                        </div>
+                    </div>
+                    <div class="dc-kpi-card">
+                        <div class="dc-kpi-icon-wrap blue"><i class="fas fa-walking" aria-hidden="true"></i></div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Pasos Totales</div>
+                            <div class="dc-kpi-val">32,540</div>
+                            <span class="dc-kpi-badge success">+8% actividad</span>
+                        </div>
+                    </div>
+                    <div class="dc-kpi-card">
+                        <div class="dc-kpi-icon-wrap green"><i class="fas fa-pills" aria-hidden="true"></i></div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Medicamentos</div>
+                            <div class="dc-kpi-val">7 / 7 días</div>
+                            <span class="dc-kpi-badge success">100% adherencia</span>
+                        </div>
+                    </div>
+                    <div class="dc-kpi-card">
+                        <div class="dc-kpi-icon-wrap amber"><i class="far fa-clock" aria-hidden="true"></i></div>
+                        <div class="dc-kpi-info">
+                            <div class="dc-kpi-label">Tiempo Activo</div>
+                            <div class="dc-kpi-val">12.5 h</div>
+                            <span class="dc-kpi-badge success">Meta cumplida</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 5: ALERTAS (DISEÑO OFICIAL DE REFERENCIA) ==================== -->
+            <section class="dc-view" id="view-alertas">
+                <div class="dm-alerts-view-wrap">
+                    <!-- Botón Volver -->
+                    <div class="dm-alerts-topbar">
+                        <button class="dm-alerts-back-btn" onclick="window.switchView('inicio')" aria-label="Volver al inicio">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </button>
+                    </div>
+
+                    <!-- Barra de Monitoreo Activo 24/7 -->
+                    <div class="dm-alerts-247-bar">
+                        <div class="dm-247-status">
+                            <span class="dm-status-pulse"></span>
+                            <strong>Monitoreo Activo 24/7</strong> · Satélites GPS & Biosensor en línea
+                        </div>
+                        <div class="dm-247-controls">
+                            <button type="button" class="dm-btn-247-opt" id="btnNotif24h" onclick="window.activarNotificaciones24h()" title="Activar notificaciones en segundo plano">
+                                <i class="fas fa-bell"></i> Activar Push 24/7
+                            </button>
+                            <button type="button" class="dm-btn-247-opt" id="btnAudio24h" onclick="window.probarSonidoAlerta()" title="Probar sonido de alarma acústica">
+                                <i class="fas fa-volume-up"></i> Probar Alarma
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Título y selector de rango de días -->
+                    <div class="dm-alerts-header-row">
+                        <h1 class="dm-alerts-title">Alertas Importantes</h1>
+                        <div class="dm-alerts-dropdown-wrapper">
+                            <button type="button" class="dm-filter-dropdown-btn" id="btnFiltroDias" onclick="window.toggleDropdownFiltroAlertas(event)">
+                                <span id="filtroDiasLabel">Últimos 7 días</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dm-filter-dropdown-menu" id="menuFiltroDias" style="display:none;">
+                                <button type="button" class="dm-dropdown-item active" onclick="window.seleccionarFiltroRango('7d', 'Últimos 7 días')">
+                                    <span>Últimos 7 días</span> <i class="fas fa-check" style="font-size:11px;"></i>
+                                </button>
+                                <button type="button" class="dm-dropdown-item" onclick="window.seleccionarFiltroRango('24h', 'Hoy (24 horas)')">
+                                    <span>Hoy (24 horas)</span>
+                                </button>
+                                <button type="button" class="dm-dropdown-item" onclick="window.seleccionarFiltroRango('30d', 'Últimos 30 días')">
+                                    <span>Últimos 30 días</span>
+                                </button>
+                                <button type="button" class="dm-dropdown-item" onclick="window.seleccionarFiltroRango('todas', 'Todas las alertas')">
+                                    <span>Todas las alertas</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banner superior de aviso -->
+                    <div class="dm-alerts-banner">
+                        <div class="dm-alerts-banner-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="dm-alerts-banner-text">
+                            Aquí encontrarás todas las alertas y notificaciones importantes.
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta con la lista de alertas -->
+                    <div class="dm-alerts-card-list" id="alertsList">
+                        <!-- Renderizado en tiempo real por alertas-sistema.js -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 6: SEGURIDAD (CON ALERTAS IMPORTANTES) ==================== -->
+            <section class="dc-view" id="view-seguridad">
+                <div class="dm-alerts-view-wrap">
+                    <div class="dm-alerts-topbar">
+                        <button class="dm-alerts-back-btn" onclick="window.switchView('inicio')" aria-label="Volver al inicio">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </button>
+                    </div>
+
+                    <!-- Título y selector de rango de días -->
+                    <div class="dm-alerts-header-row">
+                        <h1 class="dm-alerts-title">Alertas Importantes</h1>
+                        <div class="dm-alerts-dropdown-wrapper">
+                            <button type="button" class="dm-filter-dropdown-btn" onclick="window.toggleDropdownFiltroAlertas(event)">
+                                <span>Últimos 7 días</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Banner superior de aviso -->
+                    <div class="dm-alerts-banner">
+                        <div class="dm-alerts-banner-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="dm-alerts-banner-text">
+                            Aquí encontrarás todas las alertas y notificaciones importantes.
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta con la lista de alertas de seguridad -->
+                    <div class="dm-alerts-card-list" id="alertsListSecurity" style="margin-bottom: 28px;">
+                        <!-- Renderizado en tiempo real por alertas-sistema.js -->
+                    </div>
+
+                    <!-- Opciones clínicas adicionales de seguridad y Ficha QR -->
+                    <div class="dc-security-hero" style="border-radius:18px; margin-bottom:20px;">
+                        <div class="dc-security-hero-icon">
+                            <i class="fas fa-user-shield" aria-hidden="true"></i>
+                        </div>
+                        <h2>Herramientas de Protección y Ficha Médica QR</h2>
+                        <p>Acceso rápido a protocolos de emergencia, ficha de antecedentes y cifrado clínico en Cartagena.</p>
+                    </div>
+
+                    <div class="dc-security-options-grid">
+                        <div class="dc-security-opt-card" onclick="window.medicalQRManager.abrirModalQR()" role="button" tabindex="0" aria-label="Abrir Ficha Médica QR PulseCard">
+                            <div class="dc-security-opt-icon">
+                                <i class="fas fa-qrcode" aria-hidden="true"></i>
+                            </div>
+                            <div class="dc-security-opt-text">
+                                <h4>Ficha Médica QR (PulseCard)</h4>
+                                <p>Acceso instantáneo a antecedentes de diabetes y contacto SOS para paramédicos.</p>
+                            </div>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </div>
+
+                        <div class="dc-security-opt-card" onclick="window.abrirModalLegal('privacidad')" role="button" tabindex="0" aria-label="Ver política de privacidad y protección de datos">
+                            <div class="dc-security-opt-icon">
+                                <i class="fas fa-lock" aria-hidden="true"></i>
+                            </div>
+                            <div class="dc-security-opt-text">
+                                <h4>Protección y Cifrado de Datos</h4>
+                                <p>Solo datos necesarios bajo la Ley 1581 de 2012 y confidencialidad médica.</p>
+                            </div>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </div>
+
+                        <div class="dc-security-opt-card" onclick="window.abrirModalLegal('terminos')" role="button" tabindex="0" aria-label="Ver términos y condiciones">
+                            <div class="dc-security-opt-icon">
+                                <i class="fas fa-file-contract" aria-hidden="true"></i>
+                            </div>
+                            <div class="dc-security-opt-text">
+                                <h4>Términos de Servicio y Reembolsos</h4>
+                                <p>Condiciones claras de uso y derecho de retracto Ley 1480.</p>
+                            </div>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </div>
+
+                        <div class="dc-security-opt-card" onclick="window.switchView('ayuda')" role="button" tabindex="0" aria-label="Ir a DiaBot y Asistencia">
+                            <div class="dc-security-opt-icon">
+                                <i class="fas fa-headset" aria-hidden="true"></i>
+                            </div>
+                            <div class="dc-security-opt-text">
+                                <h4>Soporte y Asistencia 24/7</h4>
+                                <p>Asistente virtual DiaBot y enlace con líneas de emergencia de Cartagena.</p>
+                            </div>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 7: CONFIGURACIÓN ==================== -->
+            <section class="dc-view" id="view-configuracion">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">Configuración de DiaMon</h2>
+                        <p class="dc-welcome-subtitle">Ajustes de geocercas, alertas sonoras y preferencias de monitoreo.</p>
+                    </div>
+                </div>
+                <div class="dc-card">
+                    <p style="color:var(--dc-text-muted); font-size:13.5px; line-height:1.6;">
+                        Puedes gestionar tus zonas seguras predeterminadas desde <a href="zonas-seguras.html" style="color:var(--dc-primary); font-weight:600;">Zonas Seguras</a> o actualizar tu perfil en <a href="perfil.html" style="color:var(--dc-primary); font-weight:600;">Mi Perfil</a>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ==================== VISTA 8: AYUDA & DIABOT ==================== -->
+            <section class="dc-view" id="view-ayuda">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">DiaBot — Asistente Clínico Inteligente</h2>
+                        <p class="dc-welcome-subtitle">Resuelve dudas sobre hipoglucemia, hiperglucemia, alimentación e insulinas.</p>
+                    </div>
+                </div>
+                <div class="dc-card">
+                    <p style="color:var(--dc-text-body); font-size:14px; line-height:1.6;">
+                        El asistente clínico DiaBot está activo en tu pantalla. Puedes consultarle en cualquier momento pulsando el botón flotante en la esquina inferior derecha para recibir orientación médica validada.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ==================== FOOTER LEGAL (POLÍTICAS Y CUMPLIMIENTO) ==================== -->
+            <footer class="dc-footer-legal-links" aria-label="Enlaces legales y de privacidad">
+                <span>© 2026 DiaMon — Monitoreo Inteligente de Diabetes en Cartagena.</span>
+                <a href="#" onclick="window.abrirModalLegal('privacidad'); return false;">Política de Privacidad (Datos Necesarios)</a>
+                <span>·</span>
+                <a href="#" onclick="window.abrirModalLegal('cookies'); return false;">Política de Cookies</a>
+                <span>·</span>
+                <a href="#" onclick="window.abrirModalLegal('terminos'); return false;">Términos y Condiciones</a>
+                <span>·</span>
+                <a href="#" onclick="window.abrirModalLegal('reembolsos'); return false;">Consentimiento en Reembolsos</a>
+            </footer>
 
         </div>
 
-        <!-- Inputs ocultos que map.js necesita (sin mostrar panel de control) -->
+        <!-- ==================== INPUTS OCULTOS DE COMPATIBILIDAD CON MAP.JS ==================== -->
         <div style="display:none;" aria-hidden="true">
+            <span id="gpsRouteName">Ruta GPS · Cartagena</span>
+            <span id="gpsRouteBadge">Activo</span>
+            <span id="liveGlucose">92</span>
+            <span id="liveStatus">Normal</span>
+            <span id="liveType">Ambulancia</span>
+            <div id="glucoseValue">92</div>
+            <div id="glucoseLabel">Normal</div>
+            <div id="liveInfoBar"></div>
             <input id="mapLatitude" type="number" value="10.3910" />
             <input id="mapLongitude" type="number" value="-75.4794" />
-            <input id="mapGlucose" type="number" value="98" />
+            <input id="mapGlucose" type="number" value="92" />
             <select id="mapStatus"><option value="normal">Normal</option></select>
             <select id="mapType"><option value="ambulance">Ambulancia</option></select>
             <input id="mapSpeed" type="number" value="1.8" />
@@ -248,17 +912,174 @@
             <span id="mapInfoGlucose"></span>
             <span id="mapInfoStatus"></span>
             <span id="mapInfoType"></span>
+            <button id="btnSOS" onclick="window.medicalQRManager.abrirModalQR()"></button>
         </div>
 
     </main>
 </div>
 
+<!-- ==================== MODAL DE POLÍTICAS Y CUMPLIMIENTO LEGAL ==================== -->
+<div class="dc-modal-backdrop" id="dcLegalModal" role="dialog" aria-modal="true" aria-labelledby="legalModalTitle" aria-hidden="true">
+    <div class="dc-modal-dialog wide">
+        <button class="dc-modal-close" onclick="window.cerrarModalLegal()" aria-label="Cerrar modal legal">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <h3 id="legalModalTitle" style="font-size:20px; font-weight:700; color:var(--dc-text-heading); margin-bottom:4px;">Centro de Privacidad & Cumplimiento Legal</h3>
+        <p style="font-size:12px; color:var(--dc-text-muted);">Cumplimiento de la Ley 1581 de 2012 (Colombia), confidencialidad clínica y protección al consumidor.</p>
+
+        <div class="dc-legal-container">
+            <nav class="dc-legal-nav" aria-label="Secciones de políticas legales">
+                <button class="dc-legal-nav-btn active" data-legal-tab="privacidad" onclick="window.switchLegalTab('privacidad')">
+                    <i class="fas fa-user-shield" aria-hidden="true"></i> Privacidad (Solo Datos Necesarios)
+                </button>
+                <button class="dc-legal-nav-btn" data-legal-tab="cookies" onclick="window.switchLegalTab('cookies')">
+                    <i class="fas fa-cookie-bite" aria-hidden="true"></i> Cookies & Analítica
+                </button>
+                <button class="dc-legal-nav-btn" data-legal-tab="terminos" onclick="window.switchLegalTab('terminos')">
+                    <i class="fas fa-file-contract" aria-hidden="true"></i> Términos de Servicio
+                </button>
+                <button class="dc-legal-nav-btn" data-legal-tab="reembolsos" onclick="window.switchLegalTab('reembolsos')">
+                    <i class="fas fa-hand-holding-usd" aria-hidden="true"></i> Reembolsos & Retracto
+                </button>
+            </nav>
+
+            <div class="dc-legal-content">
+                <!-- Privacidad -->
+                <article class="dc-legal-pane active" id="legal-pane-privacidad">
+                    <h3>Política de Privacidad y Tratamiento de Datos Personales</h3>
+                    <p>En <strong>DiaMon</strong> nos regimos por el principio ético y legal de recolección de <strong>única y exclusivamente los datos necesarios</strong> para salvaguardar la vida y salud del paciente con diabetes.</p>
+                    <h4>1. ¿Qué datos recolectamos?</h4>
+                    <p>• <strong>Datos Clínicos:</strong> Niveles de glucosa en mg/dL, tomas de insulina y síntomas reportados durante recorridos.</p>
+                    <p>• <strong>Datos de Telemetría GPS:</strong> Coordenadas de geolocalización únicamente activas durante acompañamiento o emergencias SOS.</p>
+                    <p>• <strong>Telemetría del Dispositivo:</strong> Nivel de batería del sensor/teléfono para alertar oportunamente al acudiente si el equipo está por apagarse.</p>
+                    <h4>2. No compartición con terceros comerciales</h4>
+                    <p>Tus datos no son vendidos ni cedidos a ninguna red publicitaria externa. Los datos solo se comparten con los contactos de emergencia autorizados y personal médico de rescate de Cartagena.</p>
+                </article>
+
+                <!-- Cookies -->
+                <article class="dc-legal-pane" id="legal-pane-cookies">
+                    <h3>Política de Cookies y Seguimiento de Analítica</h3>
+                    <p>DiaMon utiliza cookies técnicas esenciales y telemetría analítica anónima para garantizar el correcto funcionamiento del sistema de monitoreo en tiempo real.</p>
+                    <h4>1. Cookies Esenciales</h4>
+                    <p>Permiten mantener la sesión segura del usuario (tokens JWT de Supabase) y guardar tus preferencias de accesibilidad.</p>
+                    <h4>2. Analítica de Desempeño</h4>
+                    <p>Mide la latencia de respuesta de los servidores en Cartagena y tiempos de carga de los mapas, sin rastrear tu actividad en sitios externos ni crear perfiles comerciales.</p>
+                </article>
+
+                <!-- Términos -->
+                <article class="dc-legal-pane" id="legal-pane-terminos">
+                    <h3>Términos y Condiciones del Servicio</h3>
+                    <p>DiaMon es una plataforma tecnológica de apoyo preventivo y monitoreo para personas con diabetes y sus cuidadores.</p>
+                    <h4>1. Alcance y Descargo Médico</h4>
+                    <p>DiaMon no sustituye el diagnóstico ni la intervención médica hospitalaria presencial. En casos de crisis glucémica severa, el acudiente debe contactar inmediatamente al servicio de urgencias 123 / CRUE de Cartagena.</p>
+                    <h4>2. Responsabilidad de Credenciales</h4>
+                    <p>El usuario es responsable de custodiar sus claves de acceso y de verificar los números telefónicos registrados en la Ficha Médica QR.</p>
+                </article>
+
+                <!-- Reembolsos -->
+                <article class="dc-legal-pane" id="legal-pane-reembolsos">
+                    <h3>Consentimiento en Reembolsos y Derecho de Retracto</h3>
+                    <p>De conformidad con la Ley 1480 de 2011 (Estatuto del Consumidor de Colombia):</p>
+                    <h4>1. Derecho de Retracto</h4>
+                    <p>Cualquier suscripción, servicio premium de telemetría médica o donación cuenta con un plazo de cinco (5) días hábiles para solicitar el retracto y la devolución íntegra del dinero sin penalidad alguna.</p>
+                    <h4>2. Procedimiento</h4>
+                    <p>Para tramitar un reembolso o resolver dudas de facturación, comunícate a través de los canales oficiales de soporte o directamente en la pestaña de Ayuda.</p>
+                </article>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== BANNER DE CONSENTIMIENTO DE COOKIES ==================== -->
+<aside class="dc-cookie-banner" id="dcCookieBanner" role="region" aria-label="Consentimiento de cookies y privacidad">
+    <div class="dc-cookie-text">
+        <strong>Privacidad y Cookies en DiaMon:</strong> Utilizamos cookies necesarias para el inicio de sesión y telemetría analítica anónima para optimizar la seguridad médica en Cartagena. Cumplimos con la Ley 1581 de 2012 y el principio de <em>solo datos necesarios</em>.
+    </div>
+    <div class="dc-cookie-actions">
+        <button class="dc-cookie-btn accept" onclick="window.guardarConsentimientoCookies('todas')" aria-label="Aceptar todas las cookies">Aceptar todas</button>
+        <button class="dc-cookie-btn necessary" onclick="window.guardarConsentimientoCookies('necesarias')" aria-label="Aceptar solo cookies necesarias">Solo necesarias</button>
+        <button class="dc-cookie-btn link" onclick="window.abrirModalLegal('cookies')" aria-label="Ver política de cookies completa">Ver políticas</button>
+    </div>
+</aside>
+
+<!-- ==================== BARRA DE NAVEGACIÓN INFERIOR NATIVA PARA MÓVILES ==================== -->
+<nav class="dc-mobile-bottom-nav" aria-label="Navegación principal en móviles">
+    <button class="dc-mob-nav-btn active" data-dc-tab="inicio" aria-label="Ir a Inicio">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        <span>Inicio</span>
+    </button>
+    <button class="dc-mob-nav-btn" data-dc-tab="mapa" aria-label="Ver Mapa GPS">
+        <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+        <span>Mapa</span>
+    </button>
+    <button class="dc-mob-nav-btn" data-dc-tab="salud" aria-label="Monitoreo de Glucosa y Salud">
+        <i class="fas fa-heartbeat" aria-hidden="true"></i>
+        <span>Salud</span>
+    </button>
+    <button class="dc-mob-nav-btn" data-dc-tab="medicamentos" aria-label="Control de Medicamentos">
+        <i class="fas fa-pills" aria-hidden="true"></i>
+        <span>Medicinas</span>
+    </button>
+    <button class="dc-mob-nav-btn" data-dc-tab="seguridad" aria-label="Herramientas SOS de Emergencia">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        <span>SOS</span>
+    </button>
+</nav>
+
+<!-- ==================== MODAL DE PERFIL FLOTANTE (RÉPLICA EXACTA IMAGEN 3) ==================== -->
+<div class="dc-profile-drawer-backdrop" id="dcProfileModal" style="display: none;" onclick="window.cerrarModalPerfil(event)">
+    <div class="dc-profile-drawer-card" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="dc-profile-drawer-header">
+            <div class="dc-profile-drawer-title">
+                <i class="fas fa-user-circle" id="profileDrawerHeaderIcon"></i>
+                <span id="profileDrawerHeaderTitle">Mi Perfil</span>
+            </div>
+            <button class="dc-profile-close-btn" onclick="window.cerrarModalPerfil()" aria-label="Cerrar perfil">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Contenido Dinámico: Usuario Registrado vs Modo Invitado -->
+        <div id="profileDrawerContent">
+            <!-- Inyectado por assets/js/profile-drawer.js -->
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SCRIPTS BASE ==================== -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/app.js"></script>
+
+<!-- ==================== MÓDULOS DE INNOVACIÓN ==================== -->
+<script src="assets/js/vendor/qrcode.min.js"></script>
+<script src="assets/js/medical-qr.js"></script>
+<script src="assets/js/centros-medicos-ctg.js"></script>
+<script src="assets/js/trafico-cartagena.js"></script>
 <script src="assets/js/map.js"></script>
+<script src="assets/js/acompanamiento.js"></script>
+<script src="assets/js/diabot.js"></script>
+<script src="assets/js/salud-diaria.js"></script>
+<script src="assets/js/voz-sos.js"></script>
+<script src="assets/js/vencimiento-medicamentos.js"></script>
+<script src="assets/js/accesibilidad.js"></script>
+<script src="assets/js/permisos-ubicacion.js"></script>
+<script src="assets/js/telemetria-dispositivo.js"></script>
+<script src="assets/js/alertas-sistema.js"></script>
+<script src="assets/js/profile-drawer.js"></script>
+<script src="assets/js/dashboard-controller.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.medicalQRManager) {
+            window.medicalQRManager.renderPulseCardSummary('pulseCardSummary');
+        }
+    });
+</script>
 </body>
 </html>

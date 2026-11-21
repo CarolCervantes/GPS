@@ -93,6 +93,7 @@ async function iniciarCompartir() {
         lng: pos.coords.longitude,
         velocidad: pos.coords.speed || 0,
       };
+      if (window.traficoCartagenaInstance) { window.traficoCartagenaInstance.procesarTelemetriaGPS(pos.coords.latitude, pos.coords.longitude, Math.round((pos.coords.speed || 0) * 3.6)); }
       actualizarStatus(`${ultimaPos.lat.toFixed(5)}, ${ultimaPos.lng.toFixed(5)}`);
     },
     (err) => {

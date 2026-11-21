@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiaMon — Mi perfil</title>
-    <link rel="stylesheet" href="../assets/css/styles.css">
-    <link rel="stylesheet" href="../assets/css/historial.css">
-    <link rel="stylesheet" href="../assets/css/perfil.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/historial.css">
+    <link rel="stylesheet" href="assets/css/perfil.css">
+    <link rel="stylesheet" href="assets/css/medical-qr.css">
+    <link rel="stylesheet" href="assets/css/diabot.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -14,19 +16,22 @@
 <div class="shell">
 
     <header class="navbar">
-        <a href="../index.html" class="navbar-logo">
+        <a href="index.html" class="navbar-logo">
             <div class="logo-icon"><i class="fas fa-tint"></i></div>
             <span class="logo-name">DiaMon</span>
         </a>
-                <nav class="navbar-menu">
-            <a href="../index.html" class="nav-link">Dashboard</a>
+        <nav class="navbar-menu">
+            <a href="index.html" class="nav-link">Dashboard</a>
             <a href="historial.html" class="nav-link">Historial</a>
             <a href="registros_usuario.html" class="nav-link">Registros</a>
             <a href="reportes.html" class="nav-link">Reportes</a>
             <a href="zonas-seguras.html" class="nav-link">Zonas seguras</a>
-            <a href="perfil.html" class="nav-link">Mi perfil</a>
+            <a href="perfil.html" class="nav-link active">Mi perfil</a>
         </nav>
         <div class="navbar-right">
+            <button class="btn-custom" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; font-size:12px; font-weight:700; padding:6px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="window.medicalQRManager.abrirModalQR()" title="Ver Identificación Médica QR">
+                <i class="fas fa-qrcode"></i> Ficha QR SOS
+            </button>
             <button class="btn-bell" aria-label="Notificaciones">
                 <i class="fas fa-bell"></i>
                 <span class="bell-badge" id="bellBadge" style="display:none;"></span>
@@ -63,7 +68,7 @@
             <p>Inicia sesión para ver tu perfil.</p>
             <div class="acceso-actions">
                 <a href="login.html" class="btn-custom btn-login">Iniciar sesión</a>
-                <a href="../index.html" class="btn-custom btn-register">Volver al inicio</a>
+                <a href="index.html" class="btn-custom btn-register">Volver al inicio</a>
             </div>
         </div>
 
@@ -72,7 +77,7 @@
             <div class="page-header">
                 <div class="page-title">
                     <h1><i class="fas fa-user-circle"></i> Mi perfil</h1>
-                    <p>Tus datos personales y configuración de cuenta.</p>
+                    <p>Tus datos personales, ficha médica y configuración de cuenta.</p>
                 </div>
             </div>
 
@@ -143,6 +148,82 @@
                         <div id="perfilMensaje" class="perfil-mensaje"></div>
                     </div>
 
+                    <!-- Ficha Médica PulseCard & QR de Emergencia -->
+                    <div class="perfil-section">
+                        <h3 class="perfil-section-title"><i class="fas fa-id-card-alt" style="color:#ef4444;"></i> Ficha Médica PulseCard & Código QR SOS</h3>
+                        <p class="perfil-field-hint" style="margin-bottom:14px;">
+                            Esta información se codifica en tu Código QR para que los paramédicos y servicios de emergencia en Cartagena puedan atenderte rápidamente.
+                        </p>
+
+                        <div class="perfil-field">
+                            <label class="perfil-label">Condición / Diagnóstico</label>
+                            <div class="perfil-input-wrap">
+                                <input type="text" id="inputMedCondicion" placeholder="Ej. Diabetes Tipo 1 (Insulinodependiente)">
+                            </div>
+                        </div>
+
+                        <div class="perfil-field">
+                            <label class="perfil-label">Tratamiento / Esquema de Insulina</label>
+                            <div class="perfil-input-wrap">
+                                <input type="text" id="inputMedTratamiento" placeholder="Ej. Insulina Glargina 20 UI nocturna + Lispro rápida">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div class="perfil-field">
+                                <label class="perfil-label">Grupo Sanguíneo</label>
+                                <div class="perfil-input-wrap">
+                                    <input type="text" id="inputMedSangre" placeholder="Ej. O+">
+                                </div>
+                            </div>
+                            <div class="perfil-field">
+                                <label class="perfil-label">Alergias a Medicamentos</label>
+                                <div class="perfil-input-wrap">
+                                    <input type="text" id="inputMedAlergias" placeholder="Ej. Penicilina, Sulfas">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div class="perfil-field">
+                                <label class="perfil-label">Nombre Contacto SOS (Acudiente)</label>
+                                <div class="perfil-input-wrap">
+                                    <input type="text" id="inputMedContactoNombre" placeholder="Nombre de familiar">
+                                </div>
+                            </div>
+                            <div class="perfil-field">
+                                <label class="perfil-label">Teléfono Contacto SOS</label>
+                                <div class="perfil-input-wrap">
+                                    <input type="tel" id="inputMedContactoTel" placeholder="+57 300 123 4567">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="perfil-field">
+                            <label class="perfil-label">Centro Médico / EPS de Referencia en Cartagena</label>
+                            <div class="perfil-input-wrap">
+                                <input type="text" id="inputMedCentro" placeholder="Ej. Hospital Universitario del Caribe / Clínica Blas de Lezo">
+                            </div>
+                        </div>
+
+                        <div class="perfil-field">
+                            <label class="perfil-label">Indicaciones Críticas para Primeros Auxilios</label>
+                            <div class="perfil-input-wrap">
+                                <textarea id="inputMedNotas" rows="2" style="width:100%; background:var(--surface-2); border:1px solid var(--border-2); color:white; border-radius:8px; padding:8px 12px; font-size:12px;"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                            <button class="perfil-save-btn" id="btnGuardarFichaMedica" style="padding:10px 18px;">
+                                <i class="fas fa-save"></i> Guardar Ficha Médica
+                            </button>
+                            <button class="btn-custom btn-login" id="btnVerQRModal" style="padding:10px 16px;" onclick="window.medicalQRManager.abrirModalQR()">
+                                <i class="fas fa-qrcode"></i> Ver / Descargar Mi QR
+                            </button>
+                        </div>
+                        <div id="perfilMedMsg" class="perfil-mensaje"></div>
+                    </div>
+
                     <div class="perfil-section">
                         <h3 class="perfil-section-title"><i class="fas fa-key"></i> Seguridad</h3>
 
@@ -204,9 +285,54 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/auth.js"></script>
-<script src="../assets/js/perfil.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/perfil.js"></script>
+
+<!-- Scripts módulos innovadores DiaMon -->
+<script src="assets/js/vendor/qrcode.min.js"></script>
+<script src="assets/js/medical-qr.js"></script>
+<script src="assets/js/diabot.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.medicalQRManager) return;
+        const p = window.medicalQRManager.profile;
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+        
+        setVal('inputMedCondicion', p.condicion);
+        setVal('inputMedTratamiento', p.tratamiento);
+        setVal('inputMedSangre', p.grupoSanguineo);
+        setVal('inputMedAlergias', p.alergias);
+        setVal('inputMedContactoNombre', p.contactoNombre);
+        setVal('inputMedContactoTel', p.contactoTelefono);
+        setVal('inputMedCentro', p.centroReferencia);
+        setVal('inputMedNotas', p.notasEmergencia);
+
+        const btnGuardar = document.getElementById('btnGuardarFichaMedica');
+        const msgEl = document.getElementById('perfilMedMsg');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', () => {
+                const updated = {
+                    condicion: document.getElementById('inputMedCondicion').value,
+                    tratamiento: document.getElementById('inputMedTratamiento').value,
+                    grupoSanguineo: document.getElementById('inputMedSangre').value,
+                    alergias: document.getElementById('inputMedAlergias').value,
+                    contactoNombre: document.getElementById('inputMedContactoNombre').value,
+                    contactoTelefono: document.getElementById('inputMedContactoTel').value,
+                    centroReferencia: document.getElementById('inputMedCentro').value,
+                    notasEmergencia: document.getElementById('inputMedNotas').value
+                };
+                window.medicalQRManager.saveProfile(updated);
+                if (msgEl) {
+                    msgEl.textContent = '¡Ficha médica y Código QR actualizados exitosamente!';
+                    msgEl.className = 'perfil-mensaje visible exito';
+                    setTimeout(() => { msgEl.className = 'perfil-mensaje'; }, 3000);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

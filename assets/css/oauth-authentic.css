@@ -1,0 +1,402 @@
+/* ============================================================
+   DIAMON — EXPERIENCIA AUTÉNTICA OAUTH (GOOGLE, FACEBOOK, APPLE)
+   Réplica exacta del Selector Nativo de Cuentas Google Dark Theme
+   (Idéntico a Brave/Chrome Móvil y Escritorio)
+   ============================================================ */
+
+.dm-google-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dm-google-dialog-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Card Google Dark Theme (Color #1f1f1f exacto de Google) */
+.dm-google-dialog-card {
+  width: 100%;
+  max-width: 440px;
+  background: #1f1f1f;
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  color: #e8eaed;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.96);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dm-google-dialog-backdrop.active .dm-google-dialog-card {
+  transform: scale(1);
+}
+
+/* Barra superior de ventana de Google */
+.dm-google-window-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px 20px;
+  background: #1f1f1f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dm-google-window-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dm-google-logo-sm {
+  width: 20px;
+  height: 20px;
+}
+
+.dm-google-bar-title {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #e8eaed;
+}
+
+.dm-google-window-close {
+  background: transparent;
+  border: none;
+  color: #9aa0a6;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dm-google-window-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* Contenido Principal */
+.dm-google-body-content {
+  padding: 24px 22px 26px 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Icono DiaMon Salud (Gota Azul en Caja Redondeada) */
+.dm-google-app-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 20px;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  margin-bottom: 14px;
+}
+
+.dm-google-title {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  font-weight: 500;
+  color: #e8eaed;
+  letter-spacing: -0.2px;
+}
+
+.dm-google-subtitle {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #9aa0a6;
+}
+
+.dm-google-app-pill {
+  color: #8ab4f8;
+  font-weight: 500;
+}
+
+/* Lista de Cuentas */
+.dm-google-accounts-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.dm-google-account-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-radius: 8px;
+}
+
+.dm-google-account-row:last-child {
+  border-bottom: none;
+}
+
+.dm-google-account-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dm-google-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.dm-google-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dm-google-account-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.dm-google-account-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e8eaed;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dm-google-account-email {
+  font-size: 12.5px;
+  color: #9aa0a6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Formulario personalizado para "Usar otra cuenta" */
+.dm-google-custom-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 14px;
+  margin: 10px 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dm-google-custom-box input {
+  background: #121212;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #ffffff;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dm-google-custom-box input:focus {
+  border-color: #8ab4f8;
+}
+
+/* Disclaimer legal inferior */
+.dm-google-disclaimer {
+  font-size: 12px;
+  color: #9aa0a6;
+  line-height: 1.5;
+  margin: 0;
+  text-align: left;
+}
+
+.dm-google-disclaimer a {
+  color: #8ab4f8;
+  text-decoration: none;
+}
+
+.dm-google-disclaimer a:hover {
+  text-decoration: underline;
+}
+
+/* PASO 2: CONSENTIMIENTO DE PERMISOS */
+.dm-google-selected-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  padding: 6px 14px 6px 8px;
+  margin-bottom: 20px;
+}
+
+.dm-google-consent-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 22px;
+}
+
+.dm-google-consent-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #e8eaed;
+  line-height: 1.4;
+}
+
+.dm-google-consent-item:last-child {
+  margin-bottom: 0;
+}
+
+.dm-google-consent-item i {
+  color: #8ab4f8;
+  margin-top: 2px;
+}
+
+.dm-google-consent-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dm-google-btn-cancel {
+  background: transparent;
+  border: none;
+  color: #8ab4f8;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dm-google-btn-cancel:hover {
+  background: rgba(138, 180, 248, 0.08);
+}
+
+.dm-google-btn-allow {
+  background: #8ab4f8;
+  color: #202124;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.dm-google-btn-allow:hover {
+  background: #a8c7fa;
+  transform: translateY(-1px);
+}
+
+/* PASO 3: SPINNER DE CARGA DE GOOGLE */
+.dm-google-loading-box {
+  text-align: center;
+  padding: 40px 10px;
+}
+
+.dm-google-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #8ab4f8;
+  border-radius: 50%;
+  animation: dmGSpin 0.8s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+@keyframes dmGSpin {
+  to { transform: rotate(360deg); }
+}
+
+.dm-google-loading-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #e8eaed;
+}
+
+/* ============================================================
+   CARD DE FACEBOOK Y APPLE
+   ============================================================ */
+.dm-fb-header {
+  background: #1877f2;
+  color: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dm-apple-header {
+  background: #000000;
+  color: #ffffff;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Adaptación exacta a Móvil (Bottom Sheet deslizante) */
+@media (max-width: 768px) {
+  .dm-google-dialog-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .dm-google-dialog-card {
+    max-width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: dmSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes dmSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
