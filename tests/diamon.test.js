@@ -13,6 +13,23 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const diabotHandler = require('../api/diabot');
+const { PacienteEntity } = require('../src/domain/entities/PacienteEntity');
+const { EvaluadorClinicoDomainService } = require('../src/domain/services/EvaluadorClinicoDomainService');
+const { MonitorearPacienteUseCase } = require('../src/application/usecases/MonitorearPacienteUseCase');
+
+test('0. Arquitectura Hexagonal: Dominio, Puertos y Casos de Uso desacoplados', async () => {
+  const paciente = new PacienteEntity();
+  assert.equal(paciente.nombre, 'Damián Díaz Balseiro');
+  assert.equal(paciente.coordenadasCasa.lat, 10.39991);
+
+  const useCase = new MonitorearPacienteUseCase({
+    async guardarPosicionGPS() { return { ok: true }; }
+  });
+  const enCasa = await useCase.procesarUbicacionGPS(10.39991, -75.47886, paciente);
+  assert.equal(enCasa.dentro, true);
+  assert.equal(EvaluadorClinicoDomainService.evaluarGlucosa(64).estado, 'hipoglucemia');
+  assert.equal(EvaluadorClinicoDomainService.evaluarPresion(164, 96).estado, 'crisis_hipertensiva');
+});
 
 function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
   const R = 6371000;
@@ -77,5 +94,22 @@ test('5. Endpoint /api/diabot: Rechaza peticiones vacías y no acepta API Keys d
   assert.equal(statusCode, 200);
   const parsed = JSON.parse(responseBody);
   assert.equal(parsed.usedLiveContext, true);
+});
+
+test('6. Autenticación: no acepta sesiones demo locales como sesión Supabase', () => {
+  const auth = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'auth.js'), 'utf8');
+  const profile = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'profile-drawer.js'), 'utf8');
+
+  assert.ok(!auth.includes("sessionStorage.getItem('diamon_demo_user')"), 'auth.js no debe reconstruir usuarios desde datos locales');
+  assert.ok(profile.includes('window.currentUser'), 'profile-drawer debe consumir el usuario verificado');
+});
+
+test('7. PWA: manifiesto y caché usan rutas consistentes', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8'));
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+
+  assert.equal(manifest.start_url, '/');
+  assert.equal(manifest.scope, '/');
+  assert.ok(sw.includes("addEventListener('fetch'"), 'el service worker debe mantener soporte offline');
 });
 

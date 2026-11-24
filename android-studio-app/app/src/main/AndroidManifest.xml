@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="co.diamon.salud.gps">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permisos de Red y Telemetría GPS para Monitoreo del Paciente Diabético e Hipertenso -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -13,6 +11,8 @@
 
     <application
         android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="DiaMon GPS Salud"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"

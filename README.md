@@ -26,3 +26,23 @@ node server.js
 ```
 
 Abrir en el navegador: `http://localhost:8080`
+
+## Pruebas
+
+```bash
+node --test tests/diamon.test.js
+```
+
+## Preparación para presentación
+
+1. Ejecuta el esquema SQL de `database/supabase-schema.sql` y la migración `database/02_caso_estudio_abuelo.sql` en tu proyecto Supabase.
+2. Configura `GEMINI_API_KEY` únicamente como variable de entorno del servidor:
+
+```powershell
+$env:GEMINI_API_KEY="tu-clave"
+node server.js
+```
+
+3. Crea el usuario administrador siguiendo `database/seed-admin.sql`.
+4. Usa HTTPS para GPS real y concede permisos de ubicación en el navegador.
+5. Presenta el sistema como prototipo académico de apoyo. No lo presentes como un dispositivo médico certificado ni como sustituto de diagnóstico profesional.

@@ -18,17 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const restrictedMessage = document.getElementById('restrictedMessage');
   const pageContent = document.getElementById('pageContent');
 
-  // Verificación síncrona: si hay token en localStorage, ocultar #restrictedMessage
-  // de inmediato para evitar el flash mientras auth async resuelve.
-  try {
-    const haySession = Object.keys(localStorage).some(
-      k => k.startsWith('sb-') && k.endsWith('-auth-token')
-    );
-    if (haySession && restrictedMessage) {
-      restrictedMessage.style.display = 'none';
-    }
-  } catch (_) {}
-
   function setDropdownOpen(open) {
     if (!dropdownMenu) return;
     dropdownMenu.classList.toggle('show', open);
@@ -52,20 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: { user: null } }));
   let localUser = null;
-
-  if (!user) {
-    try {
-      const rawSession = sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user');
-      if (rawSession) {
-        localUser = JSON.parse(rawSession);
-        user = {
-          id: localUser.id || 'pac-damian-diaz-01',
-          email: localUser.email || 'damian.diaz@diamon.co',
-          user_metadata: { nombre: localUser.nombre || 'Damián Díaz Balseiro' }
-        };
-      }
-    } catch (_) {}
-  }
 
   if (!user) {
     authLinks.forEach(el => el.style.display = '');

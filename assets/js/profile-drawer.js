@@ -7,16 +7,7 @@
 
   // Obtener usuario actual
   function obtenerUsuarioActual() {
-    try {
-      const demo = sessionStorage.getItem('diamon_demo_user');
-      if (demo) return JSON.parse(demo);
-    } catch (e) {}
-
-    try {
-      const stored = localStorage.getItem('diamon_current_user');
-      if (stored) return JSON.parse(stored);
-    } catch (e) {}
-
+    if (window.currentUser) return window.currentUser;
     return null;
   }
 

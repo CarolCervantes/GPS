@@ -197,14 +197,6 @@
       }
     } catch (_) {}
 
-    // Modo Demo local si se guardó en sessionStorage o localStorage
-    const localDemoSession = sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user');
-    if (!currentUser && localDemoSession) {
-      try {
-        currentUser = JSON.parse(localDemoSession);
-      } catch (_) {}
-    }
-
     if (!currentUser) {
       // ESTADO INVITADO (No logueado)
       if (greetingTitle) {
