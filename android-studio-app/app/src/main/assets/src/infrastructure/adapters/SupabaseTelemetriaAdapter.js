@@ -1,6 +1,4 @@
-// Infraestructura: Adaptador de Persistencia en Supabase y Almacenamiento Local
-// Arquitectura Hexagonal - Driven Adapter (Implementa TelemetriaRepositoryPort)
-
+// Adaptador para guardar las lecturas de glucosa, presion y GPS en Supabase
 (function (root) {
   'use strict';
 

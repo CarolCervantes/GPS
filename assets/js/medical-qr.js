@@ -1,7 +1,4 @@
-// ============================================================
-// DiaMon — PulseCard: Identificación Médica y Código QR de Emergencia
-// Genera y gestiona la ficha de emergencia accesible por QR
-// ============================================================
+// Ficha medica y codigo QR de emergencia (PulseCard)
 
 const DEFAULT_MEDICAL_PROFILE = {
   nombre: 'Damián Díaz Balseiro',
@@ -11,9 +8,9 @@ const DEFAULT_MEDICAL_PROFILE = {
   glucosaObjetivo: 'Glucosa: 80 - 180 mg/dL | Presión Arterial: < 140/90 mmHg',
   grupoSanguineo: 'O+',
   alergias: 'Ninguna alergia medicamentosa reportada',
-  contactoNombre: 'Valentina Díaz Martínez (Nieta / Cuidadora Principal)',
+  contactoNombre: 'Familiar / Cuidador Principal',
   contactoTelefono: '+57 300 456 7890',
-  contactoRelacion: 'Nieta / Cuidadora Principal',
+  contactoRelacion: 'Familiar / Cuidador Principal',
   medicoTratante: 'Enf. Jefe Elizabeth Vargas Caro',
   medicoTelefono: '+57 310 987 6543',
   ciudad: 'Barrio Chapacuá, Cartagena de Indias',

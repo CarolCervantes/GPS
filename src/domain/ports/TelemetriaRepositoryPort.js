@@ -1,6 +1,4 @@
-// Dominio: Puertos de Entrada y Salida (Interfaces de Repositorio y Notificación)
-// Arquitectura Hexagonal - Ports
-
+// Puerto del repositorio para definir los metodos de guardado de telemetria
 (function (root) {
   'use strict';
 

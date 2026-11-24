@@ -1,21 +1,4 @@
-/**
- * DiaMon — Motor Clínico del Caso de Estudio (Diabetes Mellitus + Hipertensión Arterial)
- * Paciente Índice: Sr. Damián Díaz Balseiro (Chapacuá, Cartagena de Indias)
- * Guía Clínica: Enf. Jefe Elizabeth Vargas Caro
- * 
- * Incluye:
- *   1. Emisor GPS Satelital en Vivo (Funciona desde CUALQUIER celular o portátil sin requerir que el abuelo esté presente)
- *   2. Reproductor de Rutas Reales de Chapacuá y Alertas Clínicas en Tiempo Real (Supabase Realtime + BroadcastChannel)
- *   3. Esquema Farmacológico Completo de Damián Díaz Balseiro:
- *      - 08:00 AM: Pantoprazol + Metformina + Firialta (Finerenona) + Nifedipina
- *      - 02:00 PM: Valsartán
- *      - 08:00 PM: Atorvastatina + Metformina + Gabapentina + Lipotic (Ácido Tióctico) + Nifedipino
- *      - 09:00 PM: Insulina Basal (24 Unidades Internacionales)
- *      - Sábados:  Ozempic (Semaglutida semanal)
- *   4. Registro manual de Glucosa Capilar y Presión Arterial con evaluación de metas personalizadas
- *   5. Modo Pantalla Adulto Mayor (4 botones gigantes de alto contraste)
- */
-
+// Logica principal del caso de estudio (diabetes, hipertension y GPS en Chapacua)
 (function () {
   'use strict';
 
@@ -29,13 +12,11 @@
     REGISTROS: 'diamon_damian_registros_v5'
   };
 
-  // Canal local multi-pestaña + Canal Supabase Realtime multi-dispositivo (entre celulares/PC)
+  // Canales para sincronizar entre pestañas y entre dispositivos
   const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('diamon_telemetria_sync') : null;
   let supabaseLiveChannel = null;
 
-  // ============================================================
-  // 1. DATOS REALES DEL CASO DE ESTUDIO: DAMIÁN DÍAZ BALSEIRO
-  // ============================================================
+  // Datos base del paciente del caso de estudio
   const PACIENTE_CASO_DEFAULT = {
     id: 'pac-damian-diaz-01',
     codigoPaciente: 'DM-8492',
@@ -50,11 +31,11 @@
     centroReferencia: 'Hospital Universitario del Caribe / Clínica Blas de Lezo',
     profesionalGuia: 'Enf. Jefe Elizabeth Vargas Caro',
     registroProfesional: 'Guía Clínica Adulto Mayor · Control Glucémico y Cardiovascular',
-    cuidadorPrincipal: 'Valentina Díaz Martínez (Nieta / Cuidadora Principal)',
+    cuidadorPrincipal: 'Familiar / Cuidador Principal',
     telefonoCuidador: '+57 300 456 7890',
     telefonoEmergencia2: '+57 310 987 6543',
     barrioResidencia: 'Barrio Chapacuá, Cartagena de Indias',
-    coordenadasCasa: { lat: 10.39991, lng: -75.47886 }, // Casa exacta de Damián Díaz Balseiro en Chapacuá
+    coordenadasCasa: { lat: 10.39991, lng: -75.47886 },
     radioSeguroMetros: 400
   };
 
@@ -1107,9 +1088,7 @@
       }
     }
 
-    // ============================================================
-    // 8. VISTA SIMPLIFICADA PARA DAMIÁN DÍAZ BALSEIRO (MODO ABUELO)
-    // ============================================================
+    // Vista simplificada de lectura grande para el paciente o adulto mayor
     toggleModoAdultoMayor(forzar) {
       this.modoAdultoMayor = forzar !== undefined ? forzar : !this.modoAdultoMayor;
       let overlay = document.getElementById('vistaAdultoMayorOverlay');
@@ -1122,40 +1101,50 @@
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'vistaAdultoMayorOverlay';
-        overlay.style.cssText = 'position:fixed; inset:0; background:#082032; color:#ffffff; z-index:9500; overflow-y:auto; padding:20px; font-family:var(--dc-font-main);';
+        overlay.style.cssText = 'position:fixed; inset:0; background:linear-gradient(155deg, #061b2e 0%, #082f49 55%, #042f2e 100%); color:#ffffff; z-index:9500; overflow-y:auto; padding:20px; font-family:var(--dc-font-main);';
         document.body.appendChild(overlay);
       }
 
       const res = this.obtenerResumenClinicoActual();
+      let nombreMostrar = res.paciente.nombre || 'Damián Díaz Balseiro';
+      try {
+        const ses = JSON.parse(sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user') || 'null');
+        if (ses && ses.rol === 'usuario' && ses.nombre) {
+          nombreMostrar = ses.nombre;
+        } else if (ses && ses.pacienteVinculado && ses.pacienteVinculado.nombre) {
+          nombreMostrar = ses.pacienteVinculado.nombre;
+        }
+      } catch (_) {}
+
       overlay.innerHTML = `
         <div style="max-width:640px; margin:0 auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.15); flex-wrap:wrap; gap:10px;">
             <div>
-              <span style="background:#0d9488; color:#ffffff; font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px; text-transform:uppercase;">
-                <i class="fas fa-universal-access"></i> Modo Adulto Mayor · Barrio Chapacuá
+              <span style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px; text-transform:uppercase;">
+                <i class="fas fa-universal-access"></i> Vista Simplificada del Paciente
               </span>
-              <h2 style="font-size:26px; font-weight:800; margin:8px 0 0 0; color:#ffffff;">Hola, Don Damián Díaz</h2>
+              <h2 style="font-size:26px; font-weight:800; margin:8px 0 0 0; color:#ffffff;">Hola, ${nombreMostrar}</h2>
             </div>
             <button onclick="window.casoEstudio.toggleModoAdultoMayor(false)" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); color:#ffffff; padding:10px 16px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer;">
-              <i class="fas fa-exchange-alt"></i> Volver a Vista Cuidador
+              <i class="fas fa-exchange-alt"></i> Volver al Panel
             </button>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-            <div style="background:#112b3c; border:2px solid rgba(255,255,255,0.15); border-radius:18px; padding:16px; text-align:center;">
+            <div style="background:rgba(15, 42, 64, 0.85); border:2px solid rgba(94,234,212,0.3); border-radius:18px; padding:16px; text-align:center;">
               <div style="font-size:15px; color:#94a3b8; font-weight:600;">Mi Azúcar (Glucosa)</div>
-              <div id="amGlucosaVal" style="font-size:34px; font-weight:800; color:#38bdf8; margin:4px 0;">${res.ultimaGlucosa.valor} <span style="font-size:17px;">mg/dL</span></div>
+              <div id="amGlucosaVal" style="font-size:34px; font-weight:800; color:#5eead4; margin:4px 0;">${res.ultimaGlucosa.valor} <span style="font-size:17px;">mg/dL</span></div>
               <div style="font-size:13.5px; color:#86efac; font-weight:600;">${res.evalG.etiqueta}</div>
             </div>
-            <div style="background:#112b3c; border:2px solid rgba(255,255,255,0.15); border-radius:18px; padding:16px; text-align:center;">
+            <div style="background:rgba(15, 42, 64, 0.85); border:2px solid rgba(56,189,248,0.3); border-radius:18px; padding:16px; text-align:center;">
               <div style="font-size:15px; color:#94a3b8; font-weight:600;">Mi Presión Arterial</div>
-              <div id="amPresionVal" style="font-size:34px; font-weight:800; color:#c084fc; margin:4px 0;">${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica}</div>
+              <div id="amPresionVal" style="font-size:34px; font-weight:800; color:#38bdf8; margin:4px 0;">${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica}</div>
               <div style="font-size:13.5px; color:#86efac; font-weight:600;">${res.evalP.etiqueta}</div>
             </div>
           </div>
 
           <!-- Recordatorio claro de sus horarios de medicamentos -->
-          <div style="background:#112b3c; border:1px solid rgba(94,234,212,0.3); border-radius:16px; padding:14px 16px; margin-bottom:16px; font-size:14px; line-height:1.5;">
+          <div style="background:rgba(15, 42, 64, 0.85); border:1px solid rgba(94,234,212,0.35); border-radius:16px; padding:14px 16px; margin-bottom:16px; font-size:14px; line-height:1.5;">
             <div style="font-weight:800; color:#5eead4; margin-bottom:6px; font-size:15px;"><i class="fas fa-clock"></i> Mis Horarios de Medicamentos:</div>
             <div>• <strong>8:00 AM:</strong> Pantoprazol, Metformina, Firialta y Nifedipina</div>
             <div>• <strong>2:00 PM:</strong> Valsartán</div>
@@ -1165,22 +1154,22 @@
 
           <!-- 4 BOTONES GIGANTES -->
           <div style="display:grid; grid-template-columns:1fr; gap:14px;">
-            <button onclick="if(window.vozSOSInstance) window.vozSOSInstance.abrirPantallaEmergenciaGrande('Botón SOS Don Damián Díaz');" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; border-radius:20px; padding:22px; color:#ffffff; font-size:21px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:14px; cursor:pointer; box-shadow:0 10px 25px rgba(220,38,38,0.4);">
-              <i class="fas fa-bell" style="font-size:28px;"></i> ¡PEDIR AYUDA SOS A MI FAMILIA!
+            <button onclick="if(window.vozSOSInstance) window.vozSOSInstance.abrirPantallaEmergenciaGrande('Botón SOS Paciente');" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; border-radius:20px; padding:22px; color:#ffffff; font-size:21px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:14px; cursor:pointer; box-shadow:0 10px 25px rgba(220,38,38,0.4);">
+              <i class="fas fa-bell" style="font-size:28px;"></i> ¡PEDIR AYUDA SOS A MI CUIDADOR!
             </button>
 
-            <button onclick="window.casoEstudio.confirmarPastillaRapidaAbuelo()" style="background:linear-gradient(135deg, #0d9488, #0f766e); border:none; border-radius:20px; padding:20px; color:#ffffff; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;">
+            <button onclick="window.casoEstudio.confirmarPastillaRapidaAbuelo()" style="background:linear-gradient(135deg, #0d9488, #0284c7); border:none; border-radius:20px; padding:20px; color:#ffffff; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;">
               <i class="fas fa-pills" style="font-size:26px;"></i> YA TOMÉ MIS MEDICAMENTOS / INSULINA
             </button>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <button onclick="window.casoEstudio.abrirModalRegistroClinico('glucosa')" style="background:#1e3a5f; border:2px solid #38bdf8; border-radius:18px; padding:18px 12px; color:#ffffff; font-size:17px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px;">
-                <i class="fas fa-tint" style="font-size:26px; color:#38bdf8;"></i>
+              <button onclick="window.casoEstudio.abrirModalRegistroClinico('glucosa')" style="background:rgba(15, 42, 64, 0.9); border:2px solid #5eead4; border-radius:18px; padding:18px 12px; color:#ffffff; font-size:17px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <i class="fas fa-tint" style="font-size:26px; color:#5eead4;"></i>
                 <span>Anotar mi Azúcar</span>
               </button>
 
-              <button onclick="window.casoEstudio.abrirModalRegistroClinico('presion')" style="background:#1e3a5f; border:2px solid #c084fc; border-radius:18px; padding:18px 12px; color:#ffffff; font-size:17px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px;">
-                <i class="fas fa-heartbeat" style="font-size:26px; color:#c084fc;"></i>
+              <button onclick="window.casoEstudio.abrirModalRegistroClinico('presion')" style="background:rgba(15, 42, 64, 0.9); border:2px solid #38bdf8; border-radius:18px; padding:18px 12px; color:#ffffff; font-size:17px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <i class="fas fa-heartbeat" style="font-size:26px; color:#38bdf8;"></i>
                 <span>Anotar mi Presión</span>
               </button>
             </div>

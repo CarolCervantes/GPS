@@ -263,9 +263,14 @@
                     <li><strong>Instalación directa desde el QR:</strong> Al abrir en Chrome Android, pulsa el botón inferior o <em>"Instalar aplicación"</em>.</li>
                     <li><strong>En Android Studio:</strong> El proyecto incluye el módulo nativo con permisos <code>ACCESS_FINE_LOCATION</code> y <code>WebView</code> con geolocalización en tiempo real.</li>
                 </ol>
-                <button type="button" id="btnInstallPWA" onclick="window.instalarAppMovil()" class="btn-action btn-primary">
-                    <i class="fas fa-download"></i> Instalar App DiaMon en este Dispositivo
-                </button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <a href="../assets/DiaMon-GPS.apk" download="DiaMon-GPS.apk" class="btn-action btn-primary">
+                        <i class="fab fa-android"></i> Descargar APK (6 MB)
+                    </a>
+                    <button type="button" id="btnInstallPWA" onclick="window.instalarAppMovil()" class="btn-action btn-dark">
+                        <i class="fas fa-download"></i> Instalar WebApp
+                    </button>
+                </div>
             </div>
 
             <!-- Vista Abuelo -->

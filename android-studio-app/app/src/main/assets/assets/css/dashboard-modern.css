@@ -84,7 +84,7 @@ body {
 .dc-sidebar {
   width: 260px;
   min-width: 260px;
-  background: var(--dc-bg-sidebar);
+  background: linear-gradient(180deg, #061b2e 0%, #08293a 55%, #0a3642 100%);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -175,10 +175,10 @@ body {
 }
 
 .dc-nav-item.active {
-  background: var(--dc-sidebar-active);
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
 }
 
 .dc-nav-item.active i {

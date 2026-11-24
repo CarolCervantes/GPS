@@ -1,6 +1,4 @@
-// Dominio: Entidad Paciente (Damián Díaz Balseiro - Barrio Chapacuá)
-// Arquitectura Hexagonal - Capa de Dominio (Sin dependencias externas)
-
+// Entidad Paciente para guardar los datos principales en la capa de dominio
 (function (root) {
   'use strict';
 
@@ -14,7 +12,7 @@
       this.coordenadasCasa = props.coordenadasCasa || { lat: 10.39991, lng: -75.47886 };
       this.radioSeguroMetros = Number(props.radioSeguroMetros) || 400;
       this.profesionalGuia = props.profesionalGuia || 'Enf. Jefe Elizabeth Vargas Caro';
-      this.cuidadorPrincipal = props.cuidadorPrincipal || 'Valentina Díaz Martínez';
+      this.cuidadorPrincipal = props.cuidadorPrincipal || 'Familiar / Cuidador Principal';
     }
   }
 

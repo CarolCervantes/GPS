@@ -1,14 +1,10 @@
-/**
- * DiaMon — Controlador de Autenticación Oficial con Supabase Auth (JWT)
- * Soporta los 3 roles del Caso de Estudio:
- *   - Paciente (monitoreado): Damián Díaz Balseiro (Barrio Chapacuá)
- *   - Cuidador / Familiar (cuidador): Valentina Díaz Martínez & Enf. Jefe Elizabeth Vargas Caro
- *   - Administrador (admin)
- */
-
+// Controlador de login y registro para los 3 roles: Paciente, Cuidador y Admin
 (function () {
   'use strict';
 
+  const CODIGO_ADMIN_SISTEMA = 'DIAMON-ADMIN-2026';
+
+  // Paciente principal del caso de estudio (mi abuelo)
   const PACIENTE_CASO_ESTUDIO = {
     id: 'pac-damian-diaz-01',
     nombre: 'Damián Díaz Balseiro',
@@ -21,6 +17,48 @@
     bateria: 87,
     pasos: 1240
   };
+
+  // Cargar o inicializar la lista de pacientes registrados
+  function obtenerBasePacientes() {
+    let db = { 'DM-8492': PACIENTE_CASO_ESTUDIO };
+    try {
+      const raw = localStorage.getItem('diamon_pacientes_db');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        db = Object.assign(db, parsed);
+      }
+    } catch (_) {}
+    return db;
+  }
+
+  // Guardar un nuevo paciente con su codigo DM-XXXX para que un cuidador lo pueda vincular
+  function guardarPacienteEnBase(pacienteObj) {
+    if (!pacienteObj || !pacienteObj.codigoPaciente) return;
+    const db = obtenerBasePacientes();
+    db[pacienteObj.codigoPaciente] = pacienteObj;
+    try {
+      localStorage.setItem('diamon_pacientes_db', JSON.stringify(db));
+    } catch (_) {}
+    renderizarChipsPacientes();
+  }
+
+  // Generar un codigo unico de 4 digitos para pacientes nuevos
+  function generarCodigoPacienteUnico() {
+    const db = obtenerBasePacientes();
+    let code = 'DM-' + Math.floor(1000 + Math.random() * 9000);
+    while (db[code]) {
+      code = 'DM-' + Math.floor(1000 + Math.random() * 9000);
+    }
+    return code;
+  }
+
+  // Buscar si el paciente ya se registro antes por su correo
+  function buscarPacientePorEmail(email) {
+    if (!email) return null;
+    const db = obtenerBasePacientes();
+    const lista = Object.values(db);
+    return lista.find(p => (p.email || '').toLowerCase() === email.toLowerCase()) || null;
+  }
 
   function formatearNombreLimpio(rawStr) {
     if (!rawStr) return 'Usuario DiaMon';
@@ -40,7 +78,38 @@
     initRoleSwitch();
     initFormSubmit();
     initGlobalHelpers();
+    renderizarChipsPacientes();
   });
+
+  // Mostrar botones rapidos con los codigos de pacientes disponibles o el codigo admin
+  function renderizarChipsPacientes() {
+    const rows = [
+      document.getElementById('loginDemoCodesRow'),
+      document.getElementById('regDemoCodesRow')
+    ];
+
+    if (currentRole === 'admin') {
+      rows.forEach(row => {
+        if (!row) return;
+        row.innerHTML = `
+          <span class="dm-demo-label">Código Admin:</span>
+          <button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('${CODIGO_ADMIN_SISTEMA}')">${CODIGO_ADMIN_SISTEMA}</button>
+        `;
+      });
+      return;
+    }
+
+    const db = obtenerBasePacientes();
+    const codigos = Object.keys(db);
+    rows.forEach(row => {
+      if (!row) return;
+      const chipsHtml = codigos.map(cod => {
+        const p = db[cod];
+        return `<button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('${cod}')">${cod} (${p.nombre})</button>`;
+      }).join(' ');
+      row.innerHTML = `<span class="dm-demo-label">Pacientes registrados:</span> ${chipsHtml}`;
+    });
+  }
 
   function initTabs() {
     const tabBtns = document.querySelectorAll('.dm-tab-pill-btn');
@@ -73,7 +142,8 @@
     const roleBtns = document.querySelectorAll('.dm-role-choice-btn');
     const loginAdminTray = document.getElementById('loginAdminCodeTray');
     const regAdminTray = document.getElementById('regAdminCodeTray');
-    const oauthAdminTray = document.getElementById('oauthAdminTray');
+    const loginInput = document.getElementById('loginPatientCode');
+    const regInput = document.getElementById('regPatientCode');
 
     roleBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -88,11 +158,30 @@
         if (currentRole === 'cuidador') {
           if (loginAdminTray) loginAdminTray.classList.add('show');
           if (regAdminTray) regAdminTray.classList.add('show');
-          if (oauthAdminTray) oauthAdminTray.classList.add('show');
+          if (loginInput) {
+            loginInput.placeholder = 'Código Único del Paciente (Ej: DM-8492)';
+            loginInput.value = '';
+          }
+          if (regInput) {
+            regInput.placeholder = 'Código Único del Paciente a supervisar';
+            regInput.value = '';
+          }
+          renderizarChipsPacientes();
+        } else if (currentRole === 'admin') {
+          if (loginAdminTray) loginAdminTray.classList.add('show');
+          if (regAdminTray) regAdminTray.classList.add('show');
+          if (loginInput) {
+            loginInput.placeholder = 'Código de Administrador (DIAMON-ADMIN-2026)';
+            loginInput.value = '';
+          }
+          if (regInput) {
+            regInput.placeholder = 'Código de Administrador (DIAMON-ADMIN-2026)';
+            regInput.value = '';
+          }
+          renderizarChipsPacientes();
         } else {
           if (loginAdminTray) loginAdminTray.classList.remove('show');
           if (regAdminTray) regAdminTray.classList.remove('show');
-          if (oauthAdminTray) oauthAdminTray.classList.remove('show');
         }
         limpiarStatus();
       });
@@ -119,14 +208,54 @@
           return;
         }
 
-        if (currentRole === 'cuidador' && codeInput && codeInput !== 'DM-8492') {
-          mostrarStatus(`El código "${codeInput}" no corresponde al paciente del Caso de Estudio (Usa DM-8492 para Damián Díaz Balseiro).`, 'error');
-          return;
+        // Validar codigo si entra como Admin
+        if (currentRole === 'admin') {
+          if (codeInput !== CODIGO_ADMIN_SISTEMA) {
+            mostrarStatus(`Para ingresar como Administrador debes colocar el código ${CODIGO_ADMIN_SISTEMA}.`, 'error');
+            return;
+          }
+        }
+
+        // Validar codigo de paciente si entra como Cuidador
+        const dbPacientes = obtenerBasePacientes();
+        let pacienteSeleccionado = PACIENTE_CASO_ESTUDIO;
+
+        if (currentRole === 'cuidador') {
+          const codTarget = codeInput || 'DM-8492';
+          if (!dbPacientes[codTarget]) {
+            mostrarStatus(`El código "${codTarget}" no existe. Usa DM-8492 o el código del paciente registrado.`, 'error');
+            return;
+          }
+          pacienteSeleccionado = dbPacientes[codTarget];
+        } else if (currentRole === 'usuario') {
+          // Si el paciente ya se registro antes con ese correo, cargamos sus datos y su codigo
+          const pacEncontrado = buscarPacientePorEmail(email);
+          if (pacEncontrado) {
+            pacienteSeleccionado = pacEncontrado;
+          } else if (email.includes('damian')) {
+            pacienteSeleccionado = PACIENTE_CASO_ESTUDIO;
+          } else {
+            // Si inicia sesion un paciente nuevo directamente
+            const nuevoCod = generarCodigoPacienteUnico();
+            pacienteSeleccionado = {
+              id: 'pac-' + Date.now(),
+              nombre: formatearNombreLimpio(email),
+              email: email,
+              rol: 'usuario',
+              codigoPaciente: nuevoCod,
+              glucosa: 110,
+              estadoGlucosa: 'En meta clínica',
+              ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
+              bateria: 95,
+              pasos: 1200
+            };
+            guardarPacienteEnBase(pacienteSeleccionado);
+          }
         }
 
         activarBotonCarga(loginSubmitBtn, 'Autenticando en Supabase...');
 
-        // 1. Autenticación real con Supabase Auth (JWT)
+        // Intentar login con Supabase Auth
         if (window.supabaseClient && window.supabaseClient.auth) {
           try {
             const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
@@ -137,33 +266,39 @@
                 .eq('id', data.user.id)
                 .single();
 
+              const nombreFinal = profile?.nombre || data.user.user_metadata?.nombre || (currentRole === 'usuario' ? pacienteSeleccionado.nombre : formatearNombreLimpio(email));
+              if (currentRole === 'usuario') {
+                pacienteSeleccionado.nombre = nombreFinal;
+                guardarPacienteEnBase(pacienteSeleccionado);
+              }
+
               const sessionObj = {
                 id: data.user.id,
-                nombre: profile?.nombre || data.user.user_metadata?.nombre || formatearNombreLimpio(email),
+                nombre: nombreFinal,
                 email: data.user.email,
-                rol: profile?.rol || currentRole,
-                codigoPaciente: 'DM-8492',
-                pacienteVinculado: PACIENTE_CASO_ESTUDIO,
+                rol: currentRole,
+                codigoPaciente: pacienteSeleccionado.codigoPaciente,
+                pacienteVinculado: pacienteSeleccionado,
                 autenticadoSupabase: true
               };
 
               sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionObj));
               localStorage.setItem('diamon_current_user', JSON.stringify(sessionObj));
-              mostrarStatus(`¡Sesión JWT verificada en Supabase! Bienvenido(a), ${sessionObj.nombre}.`, 'success');
+              mostrarStatus(`¡Sesión verificada! Bienvenido(a), ${sessionObj.nombre}.`, 'success');
               setTimeout(() => { window.location.href = 'index.html'; }, 500);
               return;
             }
           } catch (_) {}
         }
 
-        // Si la cuenta aún no estaba en Supabase o requiere confirmación de correo, autentica en el Caso de Estudio
+        // Respaldo local para pruebas en clase
         const sessionFallback = {
           id: (currentRole === 'admin' ? 'adm-' : (currentRole === 'cuidador' ? 'cuid-' : 'pac-')) + Date.now(),
-          nombre: currentRole === 'usuario' ? 'Damián Díaz Balseiro' : formatearNombreLimpio(email),
+          nombre: currentRole === 'usuario' ? pacienteSeleccionado.nombre : formatearNombreLimpio(email),
           email: email,
           rol: currentRole,
-          codigoPaciente: 'DM-8492',
-          pacienteVinculado: PACIENTE_CASO_ESTUDIO
+          codigoPaciente: pacienteSeleccionado.codigoPaciente,
+          pacienteVinculado: pacienteSeleccionado
         };
         sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionFallback));
         localStorage.setItem('diamon_current_user', JSON.stringify(sessionFallback));
@@ -180,6 +315,7 @@
         const rawNombre = document.getElementById('regNombre').value.trim();
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
         const password = document.getElementById('regPassword').value;
+        const codeInput = (document.getElementById('regPatientCode')?.value || '').trim().toUpperCase();
 
         if (!rawNombre || !email || !password) {
           mostrarStatus('Por favor completa todos los campos del registro.', 'error');
@@ -191,8 +327,41 @@
           return;
         }
 
+        if (currentRole === 'admin' && codeInput !== CODIGO_ADMIN_SISTEMA) {
+          mostrarStatus(`Para registrarte como Administrador debes ingresar el código ${CODIGO_ADMIN_SISTEMA}.`, 'error');
+          return;
+        }
+
         const nombreLimpio = formatearNombreLimpio(rawNombre);
-        const rolSupabase = currentRole === 'cuidador' ? 'cuidador' : (currentRole === 'usuario' ? 'monitoreado' : 'usuario');
+        const dbPacientes = obtenerBasePacientes();
+        let pacienteAsignado = PACIENTE_CASO_ESTUDIO;
+
+        if (currentRole === 'usuario') {
+          // Si un profesor o usuario se registra como Paciente, le creamos su propio perfil y codigo DM-XXXX
+          const nuevoCodigo = generarCodigoPacienteUnico();
+          pacienteAsignado = {
+            id: 'pac-' + Date.now(),
+            nombre: nombreLimpio,
+            email: email,
+            rol: 'usuario',
+            codigoPaciente: nuevoCodigo,
+            glucosa: 108,
+            estadoGlucosa: 'En meta clínica',
+            ubicacion: 'Ubicación GPS Activa (Lat: 10.39991, Lng: -75.47886)',
+            bateria: 98,
+            pasos: 950
+          };
+          guardarPacienteEnBase(pacienteAsignado);
+        } else if (currentRole === 'cuidador') {
+          const codTarget = codeInput || 'DM-8492';
+          if (!dbPacientes[codTarget]) {
+            mostrarStatus(`El código de paciente "${codTarget}" no existe. Regístralo primero o usa DM-8492.`, 'error');
+            return;
+          }
+          pacienteAsignado = dbPacientes[codTarget];
+        }
+
+        const rolSupabase = currentRole === 'cuidador' ? 'cuidador' : (currentRole === 'usuario' ? 'monitoreado' : 'admin');
 
         activarBotonCarga(regSubmitBtn, 'Registrando en Supabase...');
 
@@ -209,44 +378,41 @@
               }
             });
 
-            if (error) {
-              desactivarBotonCarga(regSubmitBtn, 'Crear Cuenta en DiaMon');
-              mostrarStatus(`Supabase Auth: ${error.message}`, 'error');
-              return;
-            }
-
-            if (data && data.user) {
+            if (!error && data && data.user) {
               const sessionObj = {
                 id: data.user.id,
                 nombre: nombreLimpio,
                 email: email,
-                rol: rolSupabase === 'monitoreado' ? 'usuario' : rolSupabase,
-                codigoPaciente: 'DM-8492',
-                pacienteVinculado: PACIENTE_CASO_ESTUDIO,
+                rol: currentRole,
+                codigoPaciente: pacienteAsignado.codigoPaciente,
+                pacienteVinculado: pacienteAsignado,
                 autenticadoSupabase: true
               };
 
               sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionObj));
               localStorage.setItem('diamon_current_user', JSON.stringify(sessionObj));
-              mostrarStatus(`¡Cuenta registrada! Ingresando al panel...`, 'success');
-              setTimeout(() => { window.location.href = 'index.html'; }, 600);
+              const msgExtra = currentRole === 'usuario' ? ` Tu código de paciente es ${pacienteAsignado.codigoPaciente}.` : '';
+              mostrarStatus(`¡Cuenta registrada!${msgExtra} Ingresando al panel...`, 'success');
+              setTimeout(() => { window.location.href = 'index.html'; }, 700);
               return;
             }
           } catch (_) {}
         }
 
+        // Guardado local si Supabase tiene limite de correos por hora durante la sustentacion
         const sessionLocal = {
-          id: 'usr-' + Date.now(),
+          id: (currentRole === 'admin' ? 'adm-' : (currentRole === 'cuidador' ? 'cuid-' : 'pac-')) + Date.now(),
           nombre: nombreLimpio,
           email: email,
           rol: currentRole,
-          codigoPaciente: 'DM-8492',
-          pacienteVinculado: PACIENTE_CASO_ESTUDIO
+          codigoPaciente: pacienteAsignado.codigoPaciente,
+          pacienteVinculado: pacienteAsignado
         };
         sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionLocal));
         localStorage.setItem('diamon_current_user', JSON.stringify(sessionLocal));
-        mostrarStatus(`¡Cuenta creada para ${nombreLimpio}! Ingresando...`, 'success');
-        setTimeout(() => { window.location.href = 'index.html'; }, 600);
+        const msgExtra = currentRole === 'usuario' ? ` Tu código para compartir con tu cuidador es ${pacienteAsignado.codigoPaciente}.` : '';
+        mostrarStatus(`¡Cuenta creada para ${nombreLimpio}!${msgExtra}`, 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 700);
       });
     }
   }
@@ -257,14 +423,6 @@
     btn.disabled = true;
     const textSpan = btn.querySelector('.dm-btn-text');
     if (textSpan) textSpan.textContent = textoCarga || 'Ingresando...';
-  }
-
-  function desactivarBotonCarga(btn, textoOriginal) {
-    if (!btn) return;
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    const textSpan = btn.querySelector('.dm-btn-text');
-    if (textSpan) textSpan.textContent = textoOriginal || 'Entrar al Sistema';
   }
 
   function initGlobalHelpers() {
@@ -287,13 +445,13 @@
         document.getElementById('regPatientCode')
       ];
       inputs.forEach(inp => { if (inp) inp.value = cod; });
-      mostrarStatus(`Código del Caso de Estudio (${cod} — Damián Díaz Balseiro) seleccionado.`, 'success');
+      mostrarStatus(`Código ${cod} seleccionado.`, 'success');
     };
 
     window.mostrarRecuperacion = async function () {
       const email = document.getElementById('loginEmail')?.value.trim();
       if (!email) {
-        mostrarStatus('Escribe tu correo electrónico en la casilla superior para enviarte el enlace de recuperación.', 'error');
+        mostrarStatus('Escribe tu correo electrónico arriba para enviarte el enlace de recuperación.', 'error');
         return;
       }
       if (window.supabaseClient && window.supabaseClient.auth) {

@@ -1,6 +1,4 @@
-// Aplicación: Caso de Uso de Monitoreo de Paciente (Glucosa, Presión y Geocerca GPS)
-// Arquitectura Hexagonal - Capa de Aplicación (Orquesta Dominio + Puertos)
-
+// Caso de uso para validar la ubicacion del paciente y guardarla en el repositorio
 (function (root) {
   'use strict';
 

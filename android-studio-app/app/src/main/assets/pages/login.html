@@ -34,19 +34,19 @@
         <path class="dm-wave-path dm-wave-front" d="M-100 790 C 350 710, 800 870, 1200 760 C 1380 710, 1500 780, 1600 740 L 1600 900 L -100 900 Z" fill="url(#waveGradFront)"/>
         <defs>
             <linearGradient id="waveGradBack" x1="0" y1="500" x2="1440" y2="850" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#0e3a75" stop-opacity="0.45"/>
-                <stop offset="0.5" stop-color="#1d4ed8" stop-opacity="0.25"/>
-                <stop offset="1" stop-color="#020817" stop-opacity="0.9"/>
+                <stop stop-color="#0f766e" stop-opacity="0.45"/>
+                <stop offset="0.5" stop-color="#0284c7" stop-opacity="0.25"/>
+                <stop offset="1" stop-color="#031322" stop-opacity="0.9"/>
             </linearGradient>
             <linearGradient id="waveGradMid" x1="0" y1="550" x2="1440" y2="880" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#1e40af" stop-opacity="0.5"/>
-                <stop offset="0.45" stop-color="#2563eb" stop-opacity="0.3"/>
-                <stop offset="1" stop-color="#030c1e" stop-opacity="0.95"/>
+                <stop stop-color="#0d9488" stop-opacity="0.5"/>
+                <stop offset="0.45" stop-color="#0284c7" stop-opacity="0.32"/>
+                <stop offset="1" stop-color="#041829" stop-opacity="0.95"/>
             </linearGradient>
             <linearGradient id="waveGradFront" x1="0" y1="650" x2="1440" y2="900" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#3b82f6" stop-opacity="0.35"/>
-                <stop offset="0.5" stop-color="#1d4ed8" stop-opacity="0.2"/>
-                <stop offset="1" stop-color="#020617" stop-opacity="0.98"/>
+                <stop stop-color="#14b8a6" stop-opacity="0.35"/>
+                <stop offset="0.5" stop-color="#0284c7" stop-opacity="0.22"/>
+                <stop offset="1" stop-color="#02101d" stop-opacity="0.98"/>
             </linearGradient>
         </defs>
     </svg>
@@ -275,9 +275,9 @@
                                 <path d="M12 28 L 22 28 L 27 18 L 33 38 L 38 24 L 42 30 L 52 30" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pulseWhiteGlow)"/>
                                 <defs>
                                     <linearGradient id="heartBadgeGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#38bdf8"/>
-                                        <stop offset="0.5" stop-color="#2563eb"/>
-                                        <stop offset="1" stop-color="#1d4ed8"/>
+                                        <stop stop-color="#14b8a6"/>
+                                        <stop offset="0.5" stop-color="#0d9488"/>
+                                        <stop offset="1" stop-color="#0284c7"/>
                                     </linearGradient>
                                     <filter id="pulseWhiteGlow" x="8" y="14" width="48" height="30" filterUnits="userSpaceOnUse">
                                         <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#ffffff"/>
@@ -346,16 +346,16 @@
                         </button>
                     </div>
 
-                    <!-- Campo Condicional: Código de Paciente (Solo Administrador) -->
+                    <!-- Campo Condicional: Código de Paciente (Cuidador) o Código Admin (Admin) -->
                     <div class="dm-admin-code-tray" id="loginAdminCodeTray">
                         <div class="dm-pill-field dm-code-highlight">
                             <div class="dm-field-icon">
                                 <i class="fas fa-key"></i>
                             </div>
-                            <input id="loginPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente (Ej: DM-8492)" maxlength="10">
+                            <input id="loginPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente (Ej: DM-8492)" maxlength="24">
                         </div>
-                        <div class="dm-demo-codes-row">
-                            <span class="dm-demo-label">Caso de Estudio:</span>
+                        <div class="dm-demo-codes-row" id="loginDemoCodesRow">
+                            <span class="dm-demo-label">Pacientes registrados:</span>
                             <button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('DM-8492')">DM-8492 (Damián Díaz Balseiro)</button>
                         </div>
                     </div>
@@ -408,13 +408,17 @@
                         </button>
                     </div>
 
-                    <!-- Campo Condicional para Administrador al registrarse -->
+                    <!-- Campo Condicional para Cuidador o Administrador al registrarse -->
                     <div class="dm-admin-code-tray" id="regAdminCodeTray">
                         <div class="dm-pill-field dm-code-highlight">
                             <div class="dm-field-icon">
                                 <i class="fas fa-link"></i>
                             </div>
-                            <input id="regPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente a supervisar" maxlength="10">
+                            <input id="regPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente a supervisar" maxlength="24">
+                        </div>
+                        <div class="dm-demo-codes-row" id="regDemoCodesRow">
+                            <span class="dm-demo-label">Pacientes registrados:</span>
+                            <button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('DM-8492')">DM-8492 (Damián Díaz Balseiro)</button>
                         </div>
                     </div>
 

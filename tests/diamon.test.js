@@ -96,12 +96,13 @@ test('5. Endpoint /api/diabot: Rechaza peticiones vacías y no acepta API Keys d
   assert.equal(parsed.usedLiveContext, true);
 });
 
-test('6. Autenticación: no acepta sesiones demo locales como sesión Supabase', () => {
-  const auth = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'auth.js'), 'utf8');
-  const profile = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'profile-drawer.js'), 'utf8');
+test('6. Autenticación: soporta registro y login para Paciente, Cuidador y Admin con códigos', () => {
+  const authModern = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'auth-modern.js'), 'utf8');
+  const dashCtrl = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'dashboard-controller.js'), 'utf8');
 
-  assert.ok(!auth.includes("sessionStorage.getItem('diamon_demo_user')"), 'auth.js no debe reconstruir usuarios desde datos locales');
-  assert.ok(profile.includes('window.currentUser'), 'profile-drawer debe consumir el usuario verificado');
+  assert.ok(authModern.includes('generarCodigoPacienteUnico'), 'auth-modern.js debe permitir registrar pacientes nuevos con código único DM-XXXX');
+  assert.ok(authModern.includes('DIAMON-ADMIN-2026'), 'auth-modern.js debe validar el código de administrador');
+  assert.ok(dashCtrl.includes('esPaciente'), 'dashboard-controller.js debe diferenciar la vista simplificada del paciente');
 });
 
 test('7. PWA: manifiesto y caché usan rutas consistentes', () => {

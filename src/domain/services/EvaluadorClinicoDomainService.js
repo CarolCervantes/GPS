@@ -1,6 +1,4 @@
-// Dominio: Reglas de negocio de Geocercas y Signos Vitales (Glucosa y Presión Arterial)
-// Arquitectura Hexagonal - Capa de Dominio
-
+// Servicio de dominio para calcular distancia de la geocerca y evaluar glucosa y presion
 (function (root) {
   'use strict';
 

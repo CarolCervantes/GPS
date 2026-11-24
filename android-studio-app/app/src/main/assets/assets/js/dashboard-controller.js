@@ -1,12 +1,4 @@
-/**
- * DiaMon — Dashboard Controller Profesional
- * 1. Navegación por pestañas SPA con redibujado garantizado de mapas (Leaflet invalidateSize)
- * 2. Reloj en vivo y calendario dinámico
- * 3. Gestión reactiva de sesión (Invitado vs Usuario vs Admin)
- * 4. Control de Modales (Autenticación y Políticas Legales)
- * 5. Banner de Consentimiento de Cookies (Habeas Data & GDPR)
- */
-
+// Controlador principal del dashboard (navegacion, reloj y estado de sesion por rol)
 (function () {
   'use strict';
 
@@ -213,13 +205,19 @@
       } catch (_) {}
     }
 
+    const btnMetasMedicoHeader = document.getElementById('btnMetasMedicoHeader');
+    const btnConfigGeocercaBanner = document.getElementById('btnConfigGeocercaBanner');
+    const btnPanelAdminBanner = document.getElementById('btnPanelAdminBanner');
+    const badgeRolBanner = document.getElementById('badgeRolBanner');
+    const casoPacienteNombre = document.getElementById('casoPacienteNombre');
+
     if (!currentUser) {
-      // ESTADO INVITADO EN LA WEB (Con botones funcionales para ir a Iniciar Sesión o Registrarse)
+      // Estado invitado en la web
       if (greetingTitle) {
         greetingTitle.innerHTML = 'Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span> 👋';
       }
       if (greetingSubtitle) {
-        greetingSubtitle.innerHTML = 'Modo Invitado · Inicia sesión o crea tu cuenta para gestionar medicamentos y monitoreo en tiempo real.';
+        greetingSubtitle.innerHTML = 'Modo Invitado · Inicia sesión o crea tu cuenta como Paciente, Cuidador o Admin.';
       }
       if (sidebarName) sidebarName.textContent = 'Modo Invitado';
       if (sidebarRole) sidebarRole.textContent = 'Sin iniciar sesión';
@@ -233,15 +231,17 @@
       if (guestNoticeMeds) guestNoticeMeds.style.display = 'block';
       if (guestNoticeReport) guestNoticeReport.style.display = 'block';
     } else {
-      // USUARIO / CUIDADOR / ADMIN AUTENTICADO
+      // Usuario autenticado (Paciente, Cuidador o Admin)
       const rawNombre = currentUser.nombre || currentUser.email || 'Usuario';
       const { primerNombre, nombreCompleto, iniciales } = formatearNombreHumano(rawNombre);
       const esAdmin = currentUser.rol === 'admin';
       const esCuidador = currentUser.rol === 'cuidador';
+      const esPaciente = !esAdmin && !esCuidador;
       const esSupervisor = esAdmin || esCuidador;
       const paciente = currentUser.pacienteVinculado || null;
+      const codigoPropio = currentUser.codigoPaciente || (paciente && paciente.codigoPaciente) || 'DM-8492';
 
-      // Foto de perfil oficial (Google Avatar / Proveedor OAuth) o Iniciales
+      // Foto o iniciales del usuario
       const fotoUrl = currentUser.foto || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || currentUser.picture || null;
       const sidebarAvatar = document.getElementById('sidebarAvatar');
       const userAvatarBtn = document.getElementById('userAvatarBtn');
@@ -251,19 +251,54 @@
           sidebarAvatar.innerHTML = `<img src="${fotoUrl}" alt="${nombreCompleto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid var(--dc-primary);">`;
         }
         if (userAvatarBtn) {
-          userAvatarBtn.innerHTML = `<img src="${fotoUrl}" alt="${nombreCompleto}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid var(--dc-primary); box-shadow:0 0 10px rgba(37,99,235,0.4);">`;
+          userAvatarBtn.innerHTML = `<img src="${fotoUrl}" alt="${nombreCompleto}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid var(--dc-primary); box-shadow:0 0 10px rgba(13,148,136,0.4);">`;
         }
       } else {
         if (sidebarAvatar) {
           sidebarAvatar.innerHTML = `<span style="font-size:14px; font-weight:700; color:#ffffff;">${iniciales}</span>`;
         }
         if (userAvatarBtn) {
-          userAvatarBtn.innerHTML = `<span style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #1d4ed8, #3b82f6); color:#ffffff; font-size:12px; font-weight:700; border:2px solid var(--dc-primary);">${iniciales}</span>`;
+          userAvatarBtn.innerHTML = `<span style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; font-size:12px; font-weight:700; border:2px solid var(--dc-primary);">${iniciales}</span>`;
         }
       }
 
       if (greetingTitle) {
         greetingTitle.innerHTML = `Hola, <span id="headerUserName">${primerNombre}</span> 👋`;
+      }
+
+      // Ajustar interfaz segun el rol para que Paciente sea mas simplificada y distinta de Cuidador y Admin
+      if (esPaciente) {
+        if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'none';
+        if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'none';
+        if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'none';
+        if (badgeRolBanner) {
+          badgeRolBanner.innerHTML = `<i class="fas fa-user-check"></i> Panel del Paciente Monitoreado · Código: ${codigoPropio}`;
+        }
+        if (casoPacienteNombre) {
+          casoPacienteNombre.textContent = `${nombreCompleto} · Código para tu Cuidador: ${codigoPropio}`;
+        }
+        if (window.casoEstudio && window.casoEstudio.paciente && codigoPropio !== 'DM-8492') {
+          window.casoEstudio.paciente.nombre = nombreCompleto;
+          window.casoEstudio.paciente.codigoPaciente = codigoPropio;
+        }
+      } else if (esCuidador) {
+        if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'inline-flex';
+        if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'inline-flex';
+        if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'none';
+        const pacNombre = (paciente && paciente.nombre) ? paciente.nombre : 'Damián Díaz Balseiro';
+        if (badgeRolBanner) {
+          badgeRolBanner.innerHTML = `<i class="fas fa-user-nurse"></i> Panel del Cuidador / Familiar · Supervisando (${codigoPropio})`;
+        }
+        if (casoPacienteNombre) {
+          casoPacienteNombre.textContent = `Paciente Supervisado: ${pacNombre} (${codigoPropio})`;
+        }
+      } else if (esAdmin) {
+        if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'inline-flex';
+        if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'inline-flex';
+        if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'inline-flex';
+        if (badgeRolBanner) {
+          badgeRolBanner.innerHTML = `<i class="fas fa-user-shield"></i> Panel de Administración General`;
+        }
       }
 
       if (greetingSubtitle) {
@@ -272,8 +307,7 @@
           const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : paciente;
           const etiquetaRol = esAdmin ? 'Modo Administrador · Supervisando a:' : 'Cuidador Vinculado a:';
           greetingSubtitle.innerHTML = `${etiquetaRol} <strong>${pacNombre}</strong> · Código Único: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${pacCod}</strong>`;
-          
-          // Reflejar datos de telemetría específicos del paciente vinculado
+
           if (typeof paciente === 'object') {
             const kpiG = document.getElementById('kpiGlucoseVal');
             const kpiU = document.getElementById('kpiUbicacionVal');
@@ -286,8 +320,8 @@
               kpiP.textContent = paciente.pasos.toLocaleString();
             }
           }
-        } else if (!esSupervisor && currentUser.codigoPaciente) {
-          greetingSubtitle.innerHTML = `Paciente del Caso de Estudio · Código Único: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${currentUser.codigoPaciente}</strong> · Barrio Chapacuá`;
+        } else if (esPaciente) {
+          greetingSubtitle.innerHTML = `Vista Simplificada del Paciente · Tu Código Único para compartir con tu cuidador es: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${codigoPropio}</strong>`;
         } else {
           greetingSubtitle.textContent = 'Monitoreo clínico en tiempo real · Barrio Chapacuá, Cartagena de Indias.';
         }
