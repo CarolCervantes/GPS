@@ -50,7 +50,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  let { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: { user: null } }));
+  let localUser = null;
+
+  if (!user) {
+    try {
+      const rawSession = sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user');
+      if (rawSession) {
+        localUser = JSON.parse(rawSession);
+        user = {
+          id: localUser.id || 'pac-damian-diaz-01',
+          email: localUser.email || 'damian.diaz@diamon.co',
+          user_metadata: { nombre: localUser.nombre || 'Damián Díaz Balseiro' }
+        };
+      }
+    } catch (_) {}
+  }
 
   if (!user) {
     authLinks.forEach(el => el.style.display = '');
@@ -63,16 +78,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  let nombre = user.email;
-  let rol = 'usuario';
-  const { data: profile } = await supabaseClient
-    .from('profiles')
-    .select('nombre, rol')
-    .eq('id', user.id)
-    .single();
-  if (profile) {
-    if (profile.nombre) nombre = profile.nombre;
-    if (profile.rol) rol = profile.rol;
+  let nombre = localUser?.nombre || user.user_metadata?.nombre || user.email;
+  let rol = localUser?.rol || 'usuario';
+  if (!localUser) {
+    try {
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('nombre, rol')
+        .eq('id', user.id)
+        .single();
+      if (profile) {
+        if (profile.nombre) nombre = profile.nombre;
+        if (profile.rol) rol = profile.rol;
+      }
+    } catch (_) {}
   }
 
   if (headerUserName) headerUserName.textContent = nombre;
@@ -118,7 +137,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      await supabaseClient.auth.signOut();
+      sessionStorage.removeItem('diamon_demo_user');
+      localStorage.removeItem('diamon_current_user');
+      try { await supabaseClient.auth.signOut(); } catch (_) {}
       window.location.href = 'index.html';
     });
   }
@@ -171,6 +192,7 @@ function cargarAdminCSS() {
   if (document.querySelector('link[href$="admin.css"]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'assets/css/admin.css';
+  const prefix = window.location.pathname.includes('/pages/') ? '../' : '';
+  link.href = prefix + 'assets/css/admin.css';
   document.head.appendChild(link);
 }

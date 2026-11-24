@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 8
+skinparam shadowing false
+
+skinparam actor {
+  BackgroundColor #f0f9ff
+  BorderColor #0284c7
+  BorderThickness 2
+  FontColor #0f172a
+  FontSize 14
+  FontStyle bold
+}
+
+skinparam rectangle {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #0f172a
+  FontSize 12
+  Thickness 1.5
+}
+
+actor "Paciente : Paciente" as Paciente
+rectangle ":DiaMonApp" as App
+rectangle ":SensorGPS" as GPS
+rectangle ":MotorAlertas" as Alertas
+rectangle "<color:#ffffff><b>:SOSDispatcher</b></color>" as SOS #dc2626
+rectangle ":CentroHospitalario" as Hosp #0369a1
+actor "Familiar : Cuidador" as Familiar
+
+Paciente -- App : 1: presionaBotonSOS()\n7: visualizaRutaYFichaQR()
+App -- GPS : 2: capturarCoordenadasVivo()
+App -- Alertas : 3: activarEmergencia(lat, lng)
+Alertas -- SOS : 4: propagarAlertaCritica()
+SOS -- Familiar : 5: emitirPushNotification24_7()
+SOS -- Hosp : 6: transmitirTelemetriaYFicha()
+@enduml

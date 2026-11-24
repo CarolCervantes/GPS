@@ -1,0 +1,112 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam classAttributeIconSize 0
+skinparam roundcorner 10
+skinparam shadowing false
+
+skinparam class {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  HeaderBackgroundColor #e0f2fe
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #334155
+  FontSize 12
+  Thickness 1.5
+}
+
+abstract class Usuario {
+  - id: String
+  - nombre: String
+  - email: String
+  - rol: String
+  - fotoUrl: String
+  + iniciarSesionOAuth(): Boolean
+  + cerrarSesion(): void
+}
+
+class Paciente {
+  - codigoPaciente: String
+  - tipoDiabetes: String
+  - contactoEmergencia: String
+  - glucosaActual: Int
+  + generarCodigoQR(): String
+  + emitirSOS(tipo: String): void
+}
+
+class Cuidador {
+  - codigoPacienteSupervisado: String
+  - parentesco: String
+  + vincularPaciente(codigo: String): Boolean
+  + recibirNotificacion(alerta: Alerta): void
+}
+
+class Medico {
+  - tarjetaProfesional: String
+  - especialidad: String
+  + revisarHistorial(pacienteId: String): List
+  + ajustarDosis(medicamentoId: String): void
+}
+
+class TelemetriaGPS {
+  - latitud: Double
+  - longitud: Double
+  - precision: Float
+  - timestamp: DateTime
+  - pasosHoy: Int
+  - bateriaNivel: Int
+  + capturarGPS(): Coordenadas
+  + reiniciarPasos24h(): void
+}
+
+class Alerta {
+  - id: String
+  - tipo: String
+  - nivelSeveridad: String
+  - mensaje: String
+  - fechaHora: DateTime
+  - atendida: Boolean
+  + dispararAlerta(): void
+  + reproducirSirena(): void
+  + marcarResuelta(): void
+}
+
+class Medicamento {
+  - id: String
+  - nombre: String
+  - dosis: String
+  - horario: String
+  - fechaVencimiento: Date
+  - tomadoHoy: Boolean
+  + verificarVencimiento(): Boolean
+  + registrarToma(): void
+}
+
+class Geocerca {
+  - id: String
+  - nombre: String
+  - latCentro: Double
+  - lngCentro: Double
+  - radioMetros: Double
+  - activa: Boolean
+  + estaAdentro(lat: Double, lng: Double): Boolean
+}
+
+Usuario <|-- Paciente
+Usuario <|-- Cuidador
+Usuario <|-- Medico
+
+Paciente "1" *-- "1" TelemetriaGPS : genera continuamente
+Paciente "1" o-- "*" Alerta : experimenta
+Paciente "1" o-- "*" Medicamento : tiene recetados
+Paciente "1" -- "*" Geocerca : tiene asignadas
+Cuidador "1" ..> "1" Paciente : supervisa remotamente
+Medico "1" ..> "*" Paciente : atiende clínicamente
+@enduml

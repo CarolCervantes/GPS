@@ -1,0 +1,74 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 10
+skinparam shadowing false
+
+skinparam package {
+  BackgroundColor #f8fafc
+  BorderColor #0284c7
+  BorderThickness 2
+  FontColor #0f172a
+  FontSize 14
+  FontStyle bold
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #334155
+  FontSize 12
+  Thickness 1.5
+}
+
+package "com.diamon.auth
+(Autenticación & Seguridad)" as P_Auth {
+  [GestorSesiones]
+  [ProveedorGoogleOAuth]
+  [ValidadorCodigoDM]
+}
+
+package "com.diamon.telemetria
+(Sensores & GPS en Vivo)" as P_Telem {
+  [ControladorGPSVivo]
+  [Podometro24Horas]
+  [MonitorBateria]
+  [VerificadorGeocercas]
+}
+
+package "com.diamon.clinico
+(Salud & Control Diabetes)" as P_Clinico {
+  [RegistroGlucosa]
+  [ControlMedicamentos]
+  [CalculadorKPIsSalud]
+}
+
+package "com.diamon.emergencia
+(Protocolo SOS 24/7)" as P_Emerg {
+  [SirenaWebAudio]
+  [GeneradorFichaQR]
+  [DespachadorAlertasSOS]
+  [EnrutadorHospitalesCartagena]
+}
+
+package "com.diamon.servicios
+(Nube & Persistencia)" as P_Serv {
+  [ClienteSupabaseRealtime]
+  [AdaptadorVercelEdge]
+  [RepositorioPostgreSQL]
+}
+
+' Distribución visual balanceada en 2 filas
+P_Auth -[hidden]right-> P_Telem
+P_Telem -[hidden]right-> P_Clinico
+P_Auth -[hidden]down-> P_Emerg
+P_Emerg -[hidden]right-> P_Serv
+
+' Dependencias entre paquetes
+P_Auth ..> P_Serv : valida credenciales
+P_Telem ..> P_Serv : sincroniza GPS
+P_Clinico ..> P_Serv : persiste lecturas
+P_Emerg ..> P_Telem : consulta posición
+P_Emerg ..> P_Clinico : lee ficha médica
+P_Emerg ..> P_Serv : difunde alarma
+@enduml

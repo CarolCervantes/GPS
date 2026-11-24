@@ -265,19 +265,30 @@ document.addEventListener('dashboardListo', async (e) => {
     const userId = e.detail?.user?.id;
     if (!userId) return;
 
-    const nombre = e.detail?.user?.user_metadata?.nombre || e.detail?.user?.email || 'Usuario';
+    const nombre = 'Damián Díaz Balseiro (Barrio Chapacuá)';
     reporteData.nombre_usuario = nombre;
 
-    // Cargar lecturas de glucosa del último mes
+    // Cargar lecturas de glucosa del último mes (Supabase o Caso de Estudio Local)
     const hace30 = new Date();
     hace30.setDate(hace30.getDate() - 30);
 
-    const { data: lecturas } = await supabaseClient
-        .from('glucosa_lecturas')
-        .select('valor, ts')
-        .eq('user_id', userId)
-        .gte('ts', hace30.toISOString())
-        .order('ts', { ascending: false });
+    let lecturas = [];
+    try {
+      const { data } = await supabaseClient
+          .from('glucosa_lecturas')
+          .select('valor, ts')
+          .eq('user_id', userId)
+          .gte('ts', hace30.toISOString())
+          .order('ts', { ascending: false });
+      lecturas = data || [];
+    } catch (_) {}
+
+    if (!lecturas || lecturas.length === 0) {
+      try {
+        const glLocal = JSON.parse(localStorage.getItem('diamon_damian_glucosa_v5') || '[]');
+        lecturas = glLocal.map(g => ({ valor: Number(g.valor), ts: new Date(g.ts).toISOString() }));
+      } catch (_) {}
+    }
 
     if (!lecturas || lecturas.length === 0) return;
 

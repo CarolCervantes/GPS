@@ -1,119 +1,76 @@
 // ============================================================
-// DiaMon — DiaBot: Asistente Virtual Clínico Educativo
-// Respuestas interactivas de orientación para personas con diabetes
+// DiaMon — DiaBot: Asistente Clínico con IA Real (Google Gemini API)
+// + Motor de Razonamiento Clínico Contextual en Vivo (Diabetes Tipo 2 + HTA)
 // ============================================================
-
-const DIABOT_KNOWLEDGE_BASE = [
-  {
-    keywords: ['trancon', 'trafico', 'bazurto', 'tarde', 'demora', 'bus', 'transcaribe', 'amparo', 'pedro de heredia'],
-    titulo: '🚦 Trancones en Cartagena y Riesgos para Diabéticos',
-    respuesta: 'Quedar atrapado en un trancón (ej. Mercado de Bazurto, Pedro de Heredia o Bomba El Amparo) representa un riesgo real:<ul style="margin:8px 0 8px 18px; padding:0;"><li><strong>Retraso en las comidas:</strong> Si te aplicaste insulina y el transporte se retrasa 40 minutos en Bazurto, corres alto riesgo de hipoglucemia en la ruta. DiaMon suma automáticamente minutos extra por congestión.</li><li><strong>Estrés térmico y vehicular:</strong> El calor dentro del bus o colectivo y el estrés vial elevan el cortisol, provocando oscilaciones bruscas de glucosa.</li><li><strong>Regla de oro:</strong> Lleva siempre en tu bolso una colación rápida (galletas o sobre de glucosa) y agua cuando cruces la Av. Pedro de Heredia.</li></ul>'
-  },
-
-  {
-    keywords: ['hipo', 'baja', 'mareo', 'sudor', 'temblor', 'palidez', 'desmayo', '60', '70', '50'],
-    titulo: '🚨 Protocolo de Hipoglucemia (Glucosa < 70 mg/dL)',
-    respuesta: `Si estás experimentando temblores, sudoración fría, mareo o visión borrosa, aplica de inmediato la <strong>Regla 15-15</strong>:
-      <ol style="margin:8px 0 8px 18px; padding:0;">
-        <li><strong>Consume 15 gramos de carbohidratos rápidos:</strong> 1/2 vaso de jugo de frutas, 3 cucharaditas de azúcar disueltas en agua, o 1 cucharada de miel.</li>
-        <li><strong>Espera 15 minutos</strong> en reposo sentado.</li>
-        <li><strong>Vuelve a medir tu glucosa.</strong> Si sigue por debajo de 70 mg/dL, repite el consumo de 15g.</li>
-        <li>Una vez normalizada, consume una comida sólida o colación con carbohidratos complejos (galletas integrales, pan).</li>
-      </ol>
-      <em>Si sientes desvanecimiento severo, pulsa el botón SOS de DiaMon o pide auxilio inmediato.</em>`
-  },
-  {
-    keywords: ['hiper', 'alta', '200', '250', '300', 'sed', 'orina', 'boca seca'],
-    titulo: '⚠️ Manejo de Hiperglucemia (Glucosa > 180-200 mg/dL)',
-    respuesta: `Niveles elevados de glucosa pueden provocar sed excesiva, boca seca y fatiga:
-      <ul style="margin:8px 0 8px 18px; padding:0;">
-        <li><strong>Hidratación urgente:</strong> Bebe abundante agua pura (no jugos ni gaseosas) para ayudar a tus riñones a eliminar el exceso de glucosa.</li>
-        <li><strong>Verifica tu dosis de corrección:</strong> Solo si tu médico endocrinólogo te ha pautado un factor de sensibilidad a la insulina rápida.</li>
-        <li><strong>No realices ejercicio intenso:</strong> Si tu glucosa supera 250 mg/dL, el ejercicio puede elevar aún más la glucosa y generar cetonas.</li>
-        <li>Si presentas náuseas, vómito o aliento frutal (posible cetoacidosis), acude a Urgencias (puedes ver las clínicas más cercanas en el mapa).</li>
-      </ul>`
-  },
-  {
-    keywords: ['calor', 'cartagena', 'temperatura', 'clima', 'costa', 'humedad', 'sol', 'playa'],
-    titulo: '☀️ Alerta Climática: Calor en Cartagena y Cuidado de la Insulina',
-    respuesta: `El clima cálido de Cartagena de Indias (>32°C con alta humedad) afecta a los pacientes diabéticos:
-      <ul style="margin:8px 0 8px 18px; padding:0;">
-        <li><strong>La insulina se degrada con el calor:</strong> Nunca dejes tus plumas o viales expuestos al sol ni dentro de vehículos. La insulina en uso debe conservarse a menos de 30°C; en la calle, usa estuche térmico con gel refrigerante (sin congelarla).</li>
-        <li><strong>Mayor riesgo de deshidratación:</strong> En Cartagena el sudor constante concentra la glucosa en la sangre. Lleva siempre tu termo de agua potable.</li>
-        <li><strong>Absorción acelerada:</strong> El calor y la vasodilatación pueden hacer que la insulina se absorba más rápido de lo habitual, aumentando el riesgo de hipoglucemia si caminas bajo el sol del mediodía.</li>
-      </ul>`
-  },
-  {
-    keywords: ['acompañamiento', 'safe walk', 'viaje', 'recorrido', 'ruta', 'destino', 'tiempo'],
-    titulo: '🧭 Sistema de Acompañamiento Inteligente GPS',
-    respuesta: `El Acompañamiento Seguro de DiaMon te protege en tus desplazamientos por Cartagena:
-      <ol style="margin:8px 0 8px 18px; padding:0;">
-        <li>Elige tu destino (ej. Universidad de Cartagena, trabajo o regreso a casa) y tu tiempo estimado.</li>
-        <li>DiaMon monitorea la cuenta regresiva mientras avanzas.</li>
-        <li>Al llegar, pulsa <strong>"He llegado a salvo"</strong> para registrar tu trayecto con éxito.</li>
-        <li>Si el tiempo vence sin confirmación, se activa el protocolo SOS con alarma sonora y notificación directa a tu familiar.</li>
-      </ol>`
-  },
-  {
-    keywords: ['clinica', 'hospital', 'urgencia', 'doctor', 'medico', 'farmacia', 'huc', 'blas de lezo', 'bocagrande'],
-    titulo: '🏥 Red de Urgencias Médicas en Cartagena de Indias',
-    respuesta: `Centros hospitalarios con urgencias 24h activos en el mapa DiaMon:
-      <ul style="margin:8px 0 8px 18px; padding:0;">
-        <li><strong>Hospital Universitario del Caribe (HUC):</strong> Zarzagocilla — Tel: (605) 6724340</li>
-        <li><strong>Clínica Blas de Lezo:</strong> Los Ejecutivos / Av. Pedro de Heredia — Tel: (605) 6698000</li>
-        <li><strong>Nuevo Hospital Bocagrande:</strong> Cra 6 # 5-49 — Tel: (605) 6655270</li>
-        <li><strong>Clínica MediHelp Services:</strong> Castillogrande — Tel: (605) 6551000</li>
-        <li><strong>Farmacias 24h:</strong> Farmatodo Bocagrande y Manga (con insulinas e insumos).</li>
-      </ul>
-      <em>Puedes ver la distancia exacta y trazar la ruta en el mapa en vivo.</em>`
-  },
-  {
-    keywords: ['qr', 'pulsecard', 'tarjeta', 'identificacion', 'escanear', 'emergencia', 'carnet'],
-    titulo: '📱 PulseCard e Identificación Médica QR',
-    respuesta: `Tu PulseCard permite a paramédicos o acudientes acceder a tu ficha médica al instante:
-      <ul style="margin:8px 0 8px 18px; padding:0;">
-        <li>Guarda tu tipo de diabetes, insulinas que usas, alergias y contacto de emergencia en <strong>Mi Perfil</strong>.</li>
-        <li>Genera un código QR dinámico que puedes guardar en tu teléfono o imprimir.</li>
-        <li>Al escanear el QR con cualquier cámara, se abre tu ficha con botón de llamada directa a tu familiar sin necesidad de contraseña.</li>
-      </ul>`
-  },
-  {
-    keywords: ['alimento', 'comida', 'dieta', 'fruta', 'azucar', 'comer', 'desayuno'],
-    titulo: '🥗 Recomendaciones Nutricionales Clave',
-    respuesta: `Para mantener niveles estables de glucemia:
-      <ul style="margin:8px 0 8px 18px; padding:0;">
-        <li>Prioriza carbohidratos con fibra (avena, legumbres, vegetales verdes) que tienen absorción lenta.</li>
-        <li>Evita bebidas azucaradas, jugos ultraprocesados y harinas refinadas.</li>
-        <li>Lleva siempre en tu bolso o mochila una colación de rescate (frutos secos, sobre de glucosa o galletas).</li>
-      </ul>`
-  },
-  {
-    keywords: ['quien eres', 'diabot', 'ayuda', 'hola', 'buenas', 'que haces', 'funciones'],
-    titulo: '👋 ¡Hola! Soy DiaBot, tu asistente de DiaMon',
-    respuesta: `Estoy aquí para ayudarte a cuidar tu salud y sacar el máximo provecho de DiaMon:
-      <br>Puedo responderte sobre:
-      <ul style="margin:6px 0 8px 18px; padding:0;">
-        <li>¿Qué hacer ante un bajón de azúcar (hipoglucemia)?</li>
-        <li>Recomendaciones ante el calor de Cartagena.</li>
-        <li>Cómo usar el Acompañamiento Inteligente GPS.</li>
-        <li>Urgencias médicas y farmacias 24 horas en Cartagena.</li>
-        <li>Tu Ficha Médica PulseCard y Código QR.</li>
-      </ul>`
-  }
-];
 
 class DiaBotAssistant {
   constructor() {
     this.isOpen = false;
-    this.messages = [];
+    this.apiKeyStorageKey = 'diamon_gemini_api_key';
     this.init();
   }
 
   init() {
     this.injectWidgetHTML();
     this.bindEvents();
-    // Mensaje de bienvenida inicial
-    this.addBotMessage('¡Hola! Soy <strong>DiaBot</strong>, tu asistente de monitoreo. ¿Cómo te sientes hoy o sobre qué tema tienes dudas?');
+    const ctx = this.obtenerContextoEnVivo();
+    this.addBotMessage(
+      `¡Hola! Soy <strong>DiaBot IA</strong>. Estoy conectado en tiempo real a la telemetría de <strong>${ctx.nombre}</strong>:<br>` +
+      `<div style="background:rgba(13,148,136,0.1); border-left:3px solid #0d9488; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:12px;">` +
+      `• <strong>Glucosa:</strong> ${ctx.glucosa} (${ctx.estadoGlucosa})<br>` +
+      `• <strong>Presión Arterial:</strong> ${ctx.presion} (${ctx.estadoPresion})<br>` +
+      `• <strong>Ubicación GPS:</strong> ${ctx.ubicacion}` +
+      `</div>` +
+      `Pregúntame cualquier duda sobre sus signos actuales, medicamentos (Losartán/Metformina), hipertensión o qué hacer ante una alerta.`
+    );
+  }
+
+  obtenerContextoEnVivo() {
+    if (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function') {
+      const r = window.casoEstudio.obtenerResumenClinicoActual();
+      const ubic = window.TelemetriaDiaMon?.ubicacion?.zona || r.paciente.barrioResidencia;
+      return {
+        nombre: r.paciente.nombre,
+        edad: r.paciente.edad,
+        diagnostico: r.paciente.diagnosticoPrincipal,
+        profesional: r.paciente.profesionalGuia,
+        glucosa: `${r.ultimaGlucosa.valor} mg/dL`,
+        glucosaNum: r.ultimaGlucosa.valor,
+        contextoGlucosa: r.ultimaGlucosa.ContextoLabel,
+        estadoGlucosa: r.evalG.etiqueta,
+        protocoloGlucosa: r.evalG.protocolo,
+        presion: `${r.ultimaPresion.sistolica}/${r.ultimaPresion.diastolica} mmHg`,
+        sistolicaNum: r.ultimaPresion.sistolica,
+        diastolicaNum: r.ultimaPresion.diastolica,
+        pulso: `${r.ultimaPresion.pulso} BPM`,
+        estadoPresion: r.evalP.etiqueta,
+        protocoloPresion: r.evalP.protocolo,
+        metaGlucosa: `${r.metas.glucosaMin}–${r.metas.glucosaMaxPost} mg/dL`,
+        metaPresion: `< ${r.metas.sistolicaMax}/${r.metas.diastolicaMax} mmHg`,
+        ubicacion: ubic
+      };
+    }
+
+    return {
+      nombre: 'Damián Díaz Balseiro',
+      edad: 74,
+      diagnostico: 'Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética',
+      profesional: 'Enf. Jefe Elizabeth Vargas Caro',
+      glucosa: '114 mg/dL',
+      glucosaNum: 114,
+      contextoGlucosa: 'En ayunas (8:00 AM)',
+      estadoGlucosa: 'En meta clínica',
+      protocoloGlucosa: 'Dentro del rango seguro pautado con la Enf. Jefe Elizabeth Vargas Caro.',
+      presion: '126/78 mmHg',
+      sistolicaNum: 126,
+      diastolicaNum: 78,
+      pulso: '71 BPM',
+      estadoPresion: 'Presión Controlada',
+      protocoloPresion: 'Mantener esquema de Nifedipina (8 AM / 8 PM) y Valsartán (2 PM).',
+      metaGlucosa: '80–180 mg/dL',
+      metaPresion: '< 140/90 mmHg',
+      ubicacion: 'Barrio Chapacuá, Cartagena de Indias'
+    };
   }
 
   injectWidgetHTML() {
@@ -124,11 +81,11 @@ class DiaBotAssistant {
     widget.className = 'diabot-widget-container';
     widget.innerHTML = `
       <!-- Botón Flotante Toggle -->
-      <button id="diabotToggleBtn" class="diabot-toggle-btn" aria-label="Abrir Asistente DiaBot">
+      <button id="diabotToggleBtn" class="diabot-toggle-btn" aria-label="Abrir Asistente DiaBot IA">
         <div class="diabot-avatar-pulse">
           <i class="fas fa-robot"></i>
         </div>
-        <span class="diabot-btn-label">DiaBot</span>
+        <span class="diabot-btn-label">DiaBot IA</span>
         <span class="diabot-online-dot"></span>
       </button>
 
@@ -140,12 +97,15 @@ class DiaBotAssistant {
               <i class="fas fa-robot"></i>
             </div>
             <div>
-              <div class="diabot-title">DiaBot Clínico</div>
-              <div class="diabot-subtitle"><span class="dot-live"></span> En línea · Guía para Pacientes</div>
+              <div class="diabot-title">DiaBot IA · Caso de Estudio</div>
+              <div class="diabot-subtitle"><span class="dot-live"></span> Conectado a Glucosa, Presión y GPS</div>
             </div>
           </div>
           <div class="diabot-header-actions">
-            <button id="diabotClearBtn" class="diabot-btn-icon" title="Limpiar conversación">
+            <button id="diabotConfigApiBtn" class="diabot-btn-icon" title="Configurar API Key de Google Gemini (Opcional)">
+              <i class="fas fa-key"></i>
+            </button>
+            <button id="diabotClearBtn" class="diabot-btn-icon" title="Reiniciar conversación">
               <i class="fas fa-trash-alt"></i>
             </button>
             <button id="diabotCloseBtn" class="diabot-btn-icon" title="Cerrar chat">
@@ -154,14 +114,24 @@ class DiaBotAssistant {
           </div>
         </div>
 
-        <!-- Chips de sugerencias rápidas -->
+        <!-- Panel opcional para ingresar API Key de Gemini en vivo -->
+        <div id="diabotApiDrawer" style="display:none; background:#0f172a; color:#f8fafc; padding:10px 14px; font-size:11.5px; border-bottom:1px solid rgba(255,255,255,0.1);">
+          <div style="font-weight:700; margin-bottom:4px; color:#38bdf8;"><i class="fas fa-sparkles"></i> Conexión Google Gemini AI</div>
+          <p style="margin:0 0 6px 0; color:#cbd5e1; font-size:11px;">El motor clínico contextual ya está activo. Si deseas conectar tu propia llave de Gemini API (Google AI Studio), pégala aquí:</p>
+          <div style="display:flex; gap:6px;">
+            <input type="password" id="diabotApiKeyInput" placeholder="AIzaSy..." style="flex:1; padding:6px 8px; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#fff; font-size:11px;">
+            <button type="button" id="diabotSaveKeyBtn" style="background:#0d9488; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-weight:700; cursor:pointer; font-size:11px;">Guardar</button>
+          </div>
+        </div>
+
+        <!-- Chips de sugerencias rápidas orientadas a Damián Díaz Balseiro -->
         <div class="diabot-chips-container">
-          <button class="diabot-chip" data-prompt="hipo">🚨 Bajón de glucosa</button>
-          <button class="diabot-chip" data-prompt="calor">☀️ Calor en Cartagena</button>
-          <button class="diabot-chip" data-prompt="clinica">🏥 Urgencias en Cartagena</button>
-          <button class="diabot-chip" data-prompt="acompañamiento">🧭 Acompañamiento GPS</button>
-          <button class="diabot-chip" data-prompt="qr">📱 Código QR Médico</button>
-          <button class="diabot-chip" data-prompt="trancon">🚦 Trancones Cartagena</button>
+          <button class="diabot-chip" data-prompt="¿Cómo están los signos vitales de mi abuelo Damián hoy?">📊 Estado de Don Damián</button>
+          <button class="diabot-chip" data-prompt="¿Cuál es el esquema completo de medicamentos e insulina de mi abuelo?">💊 Esquema 8AM / 2PM / 8PM / 9PM</button>
+          <button class="diabot-chip" data-prompt="Tiene la presión alta, ¿qué debemos hacer con Valsartán y Nifedipino?">❤️ Protocolo Hipertensión</button>
+          <button class="diabot-chip" data-prompt="Tiene un bajón de azúcar y mareo">🚨 Hipoglucemia (Regla 15-15)</button>
+          <button class="diabot-chip" data-prompt="¿Dónde está ubicado ahora mismo en Chapacuá según el GPS?">📍 GPS en Chapacuá</button>
+          <button class="diabot-chip" data-prompt="¿Para qué sirven Firialta, Gabapentina, Lipotic y Ozempic?">🩺 Función de sus Medicinas</button>
         </div>
 
         <!-- Mensajes -->
@@ -169,12 +139,12 @@ class DiaBotAssistant {
 
         <!-- Disclaimer ético -->
         <div class="diabot-disclaimer">
-          <i class="fas fa-info-circle"></i> Asistente informativo. No diagnostica ni reemplaza al médico.
+          <i class="fas fa-user-md"></i> Basado en metas avaladas por médico/enfermera. No reemplaza consulta médica.
         </div>
 
         <!-- Input -->
         <form id="diabotForm" class="diabot-input-bar">
-          <input type="text" id="diabotInput" placeholder="Pregúntame sobre glucosa, calor, GPS..." autocomplete="off">
+          <input type="text" id="diabotInput" placeholder="Pregunta sobre su glucosa, presión, pastillas o GPS..." autocomplete="off">
           <button type="submit" id="diabotSendBtn" aria-label="Enviar pregunta">
             <i class="fas fa-paper-plane"></i>
           </button>
@@ -189,12 +159,42 @@ class DiaBotAssistant {
     const toggleBtn = document.getElementById('diabotToggleBtn');
     const closeBtn = document.getElementById('diabotCloseBtn');
     const clearBtn = document.getElementById('diabotClearBtn');
+    const configBtn = document.getElementById('diabotConfigApiBtn');
+    const saveKeyBtn = document.getElementById('diabotSaveKeyBtn');
     const form = document.getElementById('diabotForm');
     const input = document.getElementById('diabotInput');
 
     if (toggleBtn) toggleBtn.addEventListener('click', () => this.toggleChat());
     if (closeBtn) closeBtn.addEventListener('click', () => this.toggleChat(false));
     if (clearBtn) clearBtn.addEventListener('click', () => this.clearChat());
+
+    if (configBtn) {
+      configBtn.addEventListener('click', () => {
+        const drawer = document.getElementById('diabotApiDrawer');
+        const keyInp = document.getElementById('diabotApiKeyInput');
+        if (!drawer) return;
+        const open = drawer.style.display === 'none';
+        drawer.style.display = open ? 'block' : 'none';
+        if (open && keyInp) {
+          keyInp.value = localStorage.getItem(this.apiKeyStorageKey) || '';
+        }
+      });
+    }
+
+    if (saveKeyBtn) {
+      saveKeyBtn.addEventListener('click', () => {
+        const keyInp = document.getElementById('diabotApiKeyInput');
+        const val = (keyInp?.value || '').trim();
+        if (val) {
+          localStorage.setItem(this.apiKeyStorageKey, val);
+          this.addBotMessage('✅ <strong>API Key de Google Gemini guardada.</strong> Las consultas usarán el modelo <code>gemini-2.5-flash</code> con el contexto clínico en vivo.');
+        } else {
+          localStorage.removeItem(this.apiKeyStorageKey);
+          this.addBotMessage('ℹ️ Se restauró el motor de razonamiento clínico contextual integrado.');
+        }
+        document.getElementById('diabotApiDrawer').style.display = 'none';
+      });
+    }
 
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -206,7 +206,6 @@ class DiaBotAssistant {
       });
     }
 
-    // Chips
     document.querySelectorAll('.diabot-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
         const prompt = e.currentTarget.dataset.prompt;
@@ -236,36 +235,174 @@ class DiaBotAssistant {
   clearChat() {
     const body = document.getElementById('diabotMessages');
     if (body) body.innerHTML = '';
-    this.addBotMessage('Conversación reiniciada. ¿En qué más puedo orientarte hoy?');
+    const ctx = this.obtenerContextoEnVivo();
+    this.addBotMessage(`Conversación reiniciada. Sigo monitoreando a <strong>${ctx.nombre}</strong> (Glucosa: ${ctx.glucosa} · PA: ${ctx.presion}). ¿Qué deseas consultar?`);
   }
 
-  handleUserMessage(text) {
+  async handleUserMessage(text) {
     this.addUserMessage(text);
-
-    // Simular escritura natural
     this.showTypingIndicator();
 
-    setTimeout(() => {
-      this.removeTypingIndicator();
-      const respuesta = this.findAnswer(text);
-      this.addBotMessage(respuesta);
-    }, 550);
-  }
+    const ctx = this.obtenerContextoEnVivo();
+    const savedApiKey = localStorage.getItem(this.apiKeyStorageKey) || '';
 
-  findAnswer(userText) {
-    const lower = userText.toLowerCase();
+    // 1. Intentar primero el endpoint Serverless (/api/diabot) o Gemini directo
+    try {
+      const resp = await fetch('/api/diabot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          context: ctx,
+          apiKey: savedApiKey
+        })
+      });
 
-    for (const item of DIABOT_KNOWLEDGE_BASE) {
-      if (item.keywords.some(k => lower.includes(k))) {
-        return `<strong>${item.titulo}</strong><br>${item.respuesta}`;
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.reply) {
+          this.removeTypingIndicator();
+          this.addBotMessage(this.formatearMarkdownSimple(data.reply));
+          return;
+        }
       }
+    } catch (_) {
+      // Si se abre como archivo estático o sin red, pasa al motor contextual local
     }
 
-    // Respuesta general inteligente de contingencia
-    return `Gracias por tu consulta. Para esa situación particular, ten presente:<br>
-      • Mantén tu registro de glucosa actualizado en la pestaña <strong>Registros</strong>.<br>
-      • Si sientes algún síntoma repentino (mareo, náuseas o confusión), consulta las clínicas cercanas en el mapa de Cartagena o pulsa el botón <strong>SOS</strong>.<br>
-      • Recuerda que cualquier ajuste en tu tratamiento de insulina debe ser indicado por tu médico tratante.`;
+    // 2. Si el usuario configuró API Key en el navegador y no hay backend Node activo, llamar a Gemini
+    if (savedApiKey) {
+      try {
+        const geminiResp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(savedApiKey)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                role: 'user',
+                parts: [{
+                  text: `Eres DiaBot, asistente clínico para el cuidado de ${ctx.nombre} (${ctx.edad} años, ${ctx.diagnostico}). Sus signos actuales son: Glucosa ${ctx.glucosa} (${ctx.estadoGlucosa}), Presión arterial ${ctx.presion} (${ctx.estadoPresion}), Pulso ${ctx.pulso}, Ubicación GPS: ${ctx.ubicacion}. Metas médicas: Glucosa ${ctx.metaGlucosa}, Presión ${ctx.metaPresion}. No recetes ni cambies dosis. Responde en español claro en máximo 120 palabras a: "${text}"`
+                }]
+              }]
+            })
+          }
+        );
+        if (geminiResp.ok) {
+          const gData = await geminiResp.json();
+          const aiText = gData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (aiText) {
+            this.removeTypingIndicator();
+            this.addBotMessage(this.formatearMarkdownSimple(aiText));
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. Motor de Razonamiento Clínico Contextual en Vivo (Usa los datos reales del Abuelo)
+    setTimeout(() => {
+      this.removeTypingIndicator();
+      const respuestaContextual = this.generarRespuestaClinicaContextual(text, ctx);
+      this.addBotMessage(respuestaContextual);
+    }, 450);
+  }
+
+  formatearMarkdownSimple(str) {
+    return String(str)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\s*[-•]\s+/g, '<br>• ')
+      .replace(/\n/g, '<br>');
+  }
+
+  generarRespuestaClinicaContextual(userText, ctx) {
+    const lower = userText.toLowerCase();
+
+    // 1. Consulta por el estado actual / signos vitales del abuelo
+    if (lower.includes('estado') || lower.includes('signos') || lower.includes('como esta') || lower.includes('cómo está') || lower.includes('abuelo') || lower.includes('resumen') || lower.includes('hoy')) {
+      return `<strong>📊 Evaluación Clínica en Tiempo Real — ${ctx.nombre}</strong><br>` +
+        `Analizando las últimas lecturas sincronizadas en DiaMon:<br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>Glucosa capilar:</strong> <code>${ctx.glucosa}</code> (${ctx.contextoGlucosa}) → <strong>${ctx.estadoGlucosa}</strong>. <em>${ctx.protocoloGlucosa}</em></li>` +
+        `<li><strong>Presión arterial:</strong> <code>${ctx.presion}</code> (${ctx.pulso}) → <strong>${ctx.estadoPresion}</strong>. <em>${ctx.protocoloPresion}</em></li>` +
+        `<li><strong>Metas definidas por ${ctx.profesional}:</strong> Glucosa ${ctx.metaGlucosa} y PA ${ctx.metaPresion}.</li>` +
+        `<li><strong>Ubicación GPS:</strong> ${ctx.ubicacion}.</li>` +
+        `</ul>`;
+    }
+
+    // 2. Consulta sobre Presión Arterial / Hipertensión / Valsartán / Nifedipino
+    if (lower.includes('presion') || lower.includes('presión') || lower.includes('hiperten') || lower.includes('tension') || lower.includes('tensión') || lower.includes('valsartan') || lower.includes('valsartán') || lower.includes('nifedipin') || lower.includes('140') || lower.includes('160')) {
+      const alertaPA = ctx.sistolicaNum >= 140 || ctx.diastolicaNum >= 90;
+      return `<strong>❤️ Manejo de Hipertensión Arterial (${ctx.nombre})</strong><br>` +
+        `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) — <strong>${ctx.estadoPresion}</strong>.<br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>Indicaciones actuales:</strong> ${alertaPA ? '⚠️ La presión supera la meta de ' + ctx.metaPresion + '. Pon a Don Damián en reposo sentado, verifica si ya tomó su <strong>Nifedipina (8:00 AM / 8:00 PM)</strong> o su <strong>Valsartán (2:00 PM)</strong> y repite la toma en 10 minutos.' : '✅ Se encuentra dentro de la meta cardiovascular (' + ctx.metaPresion + ') pautada con la ' + ctx.profesional + '.'}</li>` +
+        `<li><strong>Signos de alarma:</strong> Si presenta dolor de cabeza intenso, visión borrosa, dolor torácico o presión ≥ 160/100 mmHg, activa el botón <strong>SOS</strong> o acude a urgencias cercanas a Chapacuá (Clínica Blas de Lezo / HUC).</li>` +
+        `</ul>`;
+    }
+
+    // 3. Hipoglucemia / Bajón de azúcar / Mareo
+    if (lower.includes('hipo') || lower.includes('baja') || lower.includes('bajon') || lower.includes('bajón') || lower.includes('mareo') || lower.includes('sudor') || lower.includes('temblor') || lower.includes('60') || lower.includes('70')) {
+      return `<strong>🚨 Protocolo de Hipoglucemia para ${ctx.nombre} (Regla 15-15)</strong><br>` +
+        `Última glucosa registrada: <strong>${ctx.glucosa}</strong>. Como Don Damián se aplica <strong>24 unidades de Insulina a las 9:00 PM</strong>, Metformina (8 AM y 8 PM) y Ozempic los sábados, su meta mínima segura es <strong>80 mg/dL</strong>:<br>` +
+        `<ol style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>15 gramos de azúcar rápida:</strong> Dale medio vaso de jugo natural dulce o 3 cucharaditas de azúcar disueltas en agua.</li>` +
+        `<li><strong>15 minutos de reposo sentado:</strong> Evita que camine solo para prevenir caídas.</li>` +
+        `<li><strong>Repetir medición:</strong> Si sigue por debajo de 80 mg/dL, repite la toma. Si está inconsciente, <strong>NO le des líquidos</strong> y activa el botón <strong>SOS / 123</strong>.</li>` +
+        `</ol>`;
+    }
+
+    // 4. Hiperglucemia / Azúcar alta
+    if (lower.includes('hiper') || lower.includes('alta') || lower.includes('subio') || lower.includes('subió') || lower.includes('200') || lower.includes('250') || lower.includes('sed')) {
+      return `<strong>⚠️ Protocolo ante Glucosa Elevada (Hiperglucemia)</strong><br>` +
+        `Lectura actual de ${ctx.nombre}: <strong>${ctx.glucosa}</strong> (${ctx.contextoGlucosa}).<br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>Hidratación:</strong> Ofrece agua pura en sorbos frecuentes.</li>` +
+        `<li><strong>Adherencia:</strong> Verifica si ya confirmó su <strong>Metformina (8:00 AM / 8:00 PM)</strong>, su <strong>Insulina de 24 unidades (9:00 PM)</strong> y su <strong>Ozempic del sábado</strong>.</li>` +
+        `<li><strong>Importante:</strong> Nunca modifiques las 24 unidades de insulina sin indicación médica o de la <em>${ctx.profesional}</em>.</li>` +
+        `</ul>`;
+    }
+
+    // 5. Medicamentos / Pastillas / Dosis / Firialta / Gabapentina / Lipotic / Ozempic
+    if (lower.includes('medicamento') || lower.includes('medicina') || lower.includes('pastilla') || lower.includes('dosis') || lower.includes('metformina') || lower.includes('tratamiento') || lower.includes('esquema') || lower.includes('firialta') || lower.includes('gabapentina') || lower.includes('lipotic') || lower.includes('ozempic') || lower.includes('insulina') || lower.includes('pantoprazol') || lower.includes('atorvastatina')) {
+      return `<strong>💊 Esquema Farmacológico Completo — ${ctx.nombre}</strong><br>` +
+        `Supervisado con la <strong>${ctx.profesional}</strong>:<br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>08:00 AM:</strong> <strong>Pantoprazol</strong> (protector gástrico), <strong>Metformina</strong> (control glucémico), <strong>Firialta</strong> (finerenona: protección renal y cardiovascular en diabetes) y <strong>Nifedipina</strong> (antihipertensivo).</li>` +
+        `<li><strong>02:00 PM:</strong> <strong>Valsartán</strong> (control vespertino de presión arterial).</li>` +
+        `<li><strong>08:00 PM:</strong> <strong>Atorvastatina</strong> (colesterol), <strong>Metformina</strong>, <strong>Gabapentina + Lipotic</strong> (ácido tióctico para neuropatía diabética) y <strong>Nifedipino</strong>.</li>` +
+        `<li><strong>09:00 PM:</strong> <strong>Insulina Basal — 24 Unidades</strong> subcutáneas.</li>` +
+        `<li><strong>Sábados:</strong> <strong>Ozempic</strong> (aplicación semanal).</li>` +
+        `</ul>`;
+    }
+
+    // 6. Ubicación GPS / Geocerca / Chapacuá
+    if (lower.includes('donde') || lower.includes('dónde') || lower.includes('ubicacion') || lower.includes('ubicación') || lower.includes('gps') || lower.includes('zona') || lower.includes('geocerca') || lower.includes('chapacua') || lower.includes('chapacuá')) {
+      return `<strong>📍 Telemetría GPS en el Barrio Chapacuá</strong><br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>Ubicación actual de ${ctx.nombre}:</strong> <code>${ctx.ubicacion}</code>.</li>` +
+        `<li><strong>Perímetro seguro:</strong> Geocerca de 650 metros alrededor de su casa en el <strong>Barrio Chapacuá</strong> (cubre su cuadra, parque y droguería local).</li>` +
+        `<li>Además, puedes pulsar <strong>"Activar GPS Real de este Dispositivo"</strong> en el banner superior para transmitir coordenadas satelitales reales desde cualquier celular.</li>` +
+        `</ul>`;
+    }
+
+    // 7. Hospitales y urgencias en Cartagena
+    if (lower.includes('clinica') || lower.includes('clínica') || lower.includes('hospital') || lower.includes('urgencia') || lower.includes('cartagena')) {
+      return `<strong>🏥 Red de Urgencias Cercanas en Cartagena</strong><br>` +
+        `Para el perfil de <strong>${ctx.nombre}</strong> (DM2 + HTA), los centros de referencia más cercanos son:<br>` +
+        `<ul style="margin:6px 0 6px 18px; padding:0;">` +
+        `<li><strong>Clínica Blas de Lezo</strong> (Av. Pedro de Heredia / Los Ejecutivos) — Urgencias 24h.</li>` +
+        `<li><strong>Hospital Universitario del Caribe (HUC)</strong> (Zarzagocilla) — Alta complejidad.</li>` +
+        `<li><strong>Clínica Gestión Salud San Fernando</strong> — Atención rápida en su sector residencial.</li>` +
+        `</ul>`;
+    }
+
+    // Respuesta contextual general
+    return `<strong>🩺 Orientación Clínica DiaBot para ${ctx.nombre}</strong><br>` +
+      `En este momento sus signos registrados son: <strong>Glucosa ${ctx.glucosa}</strong> (${ctx.estadoGlucosa}) y <strong>Presión Arterial ${ctx.presion}</strong> (${ctx.estadoPresion}), ubicado en <strong>${ctx.ubicacion}</strong>.<br><br>` +
+      `• Puedes registrar una nueva toma manual pulsando <strong>"Registrar Glucosa / Presión"</strong> en el panel superior.<br>` +
+      `• Si deseas activar la pantalla de 4 botones gigantes para tu abuelo, pulsa <strong>"Modo Adulto Mayor"</strong> en la barra superior.`;
   }
 
   addUserMessage(text) {
@@ -320,7 +457,7 @@ class DiaBotAssistant {
   }
 
   escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
+    return str.replace(/[&<>'"]/g,
       tag => ({
         '&': '&amp;',
         '<': '&lt;',

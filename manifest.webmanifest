@@ -1,0 +1,20 @@
+{
+  "name": "DiaMon — Monitoreo GPS & Salud (Diabetes + HTA)",
+  "short_name": "DiaMon GPS",
+  "description": "Sistema clínico de monitoreo en tiempo real de glucosa, presión arterial y geolocalización GPS para pacientes diabéticos e hipertensos.",
+  "start_url": "index.html",
+  "scope": "../",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#082032",
+  "theme_color": "#0d9488",
+  "lang": "es-CO",
+  "icons": [
+    {
+      "src": "assets/icon-diamon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

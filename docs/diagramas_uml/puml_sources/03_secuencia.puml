@@ -1,0 +1,70 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 8
+skinparam shadowing false
+autonumber
+
+skinparam participant {
+  BackgroundColor #f0f9ff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+  FontStyle bold
+}
+
+skinparam actor {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+  FontStyle bold
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #1e293b
+  FontSize 12
+  Thickness 1.5
+}
+
+actor "Paciente" as P
+participant "DiaMon PWA\n(Navegador)" as App
+participant "Módulo GPS\n(watchPosition)" as GPS
+participant "Motor Alertas 24/7\n(Web Audio & SW)" as Alertas
+participant "Supabase Realtime\n(Nube WebSockets)" as Cloud
+actor "Familiar\nCuidador" as Fam
+participant "Centro Médico\nCartagena (HUC)" as Hosp
+
+P -> App: Pronuncia "¡Auxilio!" o presiona Botón SOS
+activate App
+
+App -> GPS: Solicitar coordenadas GPS exactas
+activate GPS
+GPS --> App: Coordenadas (Lat 10.4042, Lng -75.5562)
+deactivate GPS
+
+App -> Alertas: Disparar Protocolo de Emergencia Activa
+activate Alertas
+
+Alertas -> Alertas: Iniciar sirena acústica local (Web Audio API)
+Alertas -> Alertas: Activar vibración táctil continua
+
+Alertas -> Cloud: Emitir evento SOS vía WebSocket con GPS
+activate Cloud
+
+Cloud -> Fam: Notificación Push 24/7: "Alerta SOS Paciente DM-XE9A"
+Cloud -> Hosp: Transmitir telemetría y Ficha Médica QR
+
+Cloud --> Alertas: Confirmación de entrega (200 OK)
+deactivate Cloud
+
+Alertas --> App: Mostrar Modal SOS con Ruta al Hospital Naval / HUC
+deactivate Alertas
+
+App --> P: Desplegar Ficha QR PulseCard y Mapa de Ruta
+deactivate App
+@enduml

@@ -11,7 +11,7 @@
   // Almacén de estado de telemetría
   const Telemetria = {
     bateria: { nivel: 87, cargando: false, disponible: false },
-    ubicacion: { lat: 10.3910, lng: -75.4794, precision: 15, zona: 'Obteniendo GPS...', fijado: false },
+    ubicacion: { lat: 10.39991, lng: -75.47886, precision: 8, zona: 'Barrio Chapacuá (Casa Don Damián)', fijado: false },
     pasos: 0,
     pasosFecha: '',
     watchId: null,
@@ -93,7 +93,8 @@
     if (lat >= 10.420 && lat <= 10.435 && lng >= -75.540 && lng <= -75.520) return 'Pie de la Popa, Cartagena';
     if (lat >= 10.430 && lat <= 10.450 && lng >= -75.530 && lng <= -75.500) return 'Crespo, Cartagena';
     if (lat >= 10.420 && lat <= 10.440 && lng >= -75.545 && lng <= -75.530) return 'El Cabrero, Cartagena';
-    if (lat >= 10.380 && lat <= 10.405 && lng >= -75.510 && lng <= -75.470) return 'San Fernando, Cartagena';
+    if (lat >= 10.390 && lat <= 10.405 && lng >= -75.492 && lng <= -75.475) return 'Barrio Chapacuá, Cartagena';
+    if (lat >= 10.380 && lat <= 10.405 && lng >= -75.510 && lng <= -75.470) return 'San Fernando / Chapacuá, Cartagena';
     if (lat >= 10.385 && lat <= 10.405 && lng >= -75.515 && lng <= -75.490) return 'Zarzagocilla, Cartagena';
     if (lat >= 10.370 && lat <= 10.400 && lng >= -75.490 && lng <= -75.450) return 'El Pozón, Cartagena';
     if (lat >= 10.380 && lat <= 10.410 && lng >= -75.530 && lng <= -75.500) return 'Los Caracoles, Cartagena';

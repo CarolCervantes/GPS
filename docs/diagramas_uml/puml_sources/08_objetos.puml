@@ -1,0 +1,81 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 10
+skinparam shadowing false
+
+skinparam object {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 2
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #334155
+  FontSize 12
+  Thickness 1.5
+}
+
+object "erickTorres : Paciente" as pac {
+  id = "usr-erick-xe9a"
+  nombre = "Erick de Jesús Torres"
+  email = "erickdejesustorres02@gmail.com"
+  codigoPaciente = "DM-XE9A"
+  tipoDiabetes = "Diabetes Tipo 1"
+  glucosaActual = 92
+}
+
+object "telemetriaViva : TelemetriaGPS" as telem {
+  latitud = 10.4042
+  longitud = -75.5562
+  sector = "Bocagrande, Cartagena"
+  precision = "±12 m (GPS en vivo)"
+  pasosHoy = 120
+  cicloPasos = "Reinicio cada 24 Horas"
+  bateriaNivel = 87
+}
+
+object "alertaActiva : Alerta" as alerta {
+  id = "alt-2026-0842"
+  tipo = "GEOCERCA_SALIDA"
+  nivelSeveridad = "ALTA"
+  mensaje = "Paciente fuera de Geocerca Hogar"
+  fechaHora = "2026-11-19 08:30:00"
+  atendida = false
+}
+
+object "geocercaHogar : Geocerca" as geo {
+  id = "geo-ctn-01"
+  nombre = "Perímetro Seguro Hogar"
+  latCentro = 10.4042
+  lngCentro = -75.5562
+  radioMetros = 300.0
+  activa = true
+}
+
+object "insulinaGlargina : Medicamento" as med {
+  id = "med-ins-01"
+  nombre = "Insulina Glargina"
+  dosis = "20 Unidades"
+  horario = "08:00 AM"
+  fechaVencimiento = "2027-04-15"
+  tomadoHoy = true
+}
+
+object "hospitalNaval : CentroMedico" as hosp {
+  nombre = "Hospital Naval de Cartagena"
+  telefono = "+57 605 6500000"
+  distanciaKm = 1.4
+  tiempoEstimado = "4 minutos"
+}
+
+pac --> telem : genera en vivo
+pac --> alerta : experimenta
+pac --> geo : asignada
+pac --> med : prescrito
+alerta ..> hosp : solicita ruta de auxilio
+@enduml

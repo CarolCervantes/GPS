@@ -1,0 +1,58 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 10
+skinparam shadowing false
+
+skinparam state {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #1e293b
+  FontSize 12
+  Thickness 1.5
+}
+
+[*] --> EstadoReposo : Dispositivo encendido
+
+state EstadoReposo {
+  EstadoReposo : entry / Cargar configuraciones del paciente
+  EstadoReposo : do / Esperar inicio de sesión
+}
+
+EstadoReposo --> MonitoreoActivo : Sesión iniciada con éxito
+
+state MonitoreoActivo {
+  MonitoreoActivo : entry / Iniciar GPS continuo y podómetro 24h
+  MonitoreoActivo : do / Verificar geocerca y lectura de glucosa
+  MonitoreoActivo : exit / Detener listeners de sensores
+}
+
+state EstadoAdvertencia {
+  EstadoAdvertencia : entry / Emitir notificación push moderada
+  EstadoAdvertencia : do / Mostrar aviso en panel y recomendar agua o colación
+}
+
+state EmergenciaCriticaSOS {
+  EmergenciaCriticaSOS : entry / Disparar sirena Web Audio y vibración
+  EmergenciaCriticaSOS : do / Transmitir ubicación GPS en vivo al Cuidador
+  EmergenciaCriticaSOS : do / Mostrar Ficha QR PulseCard y ruta al Hospital
+  EmergenciaCriticaSOS : exit / Desactivar alarma y registrar incidencia
+}
+
+MonitoreoActivo --> EstadoAdvertencia : Glucosa moderadamente alterada o Fármaco por vencer
+EstadoAdvertencia --> MonitoreoActivo : Nivel estabilizado o dosis confirmada
+
+MonitoreoActivo --> EmergenciaCriticaSOS : Glucosa extrema (<70 o >250), Salida de Geocerca o Botón SOS
+EstadoAdvertencia --> EmergenciaCriticaSOS : Deterioro de parámetros clínicos
+
+EmergenciaCriticaSOS --> MonitoreoActivo : Alarma atendida y paciente estabilizado
+MonitoreoActivo --> EstadoReposo : Cerrar sesión
+@enduml

@@ -22,16 +22,16 @@
       pasos: 0
     },
     {
-      id: 'usr-carlos-8492',
-      nombre: 'Carlos Mendoza',
-      email: 'carlos.mendoza@diamon.co',
+      id: 'usr-damian-8492',
+      nombre: 'Damián Díaz Balseiro',
+      email: 'damian.diaz@diamon.co',
       rol: 'usuario',
       codigoPaciente: 'DM-8492',
-      glucosa: 98,
-      estadoGlucosa: 'En rango normal',
-      ubicacion: 'Ubicación en tiempo real',
+      glucosa: 114,
+      estadoGlucosa: 'En meta clínica',
+      ubicacion: 'Barrio Chapacuá, Cartagena',
       bateria: 87,
-      pasos: 0
+      pasos: 1240
     },
     {
       id: 'usr-andrea-3158',
@@ -170,7 +170,8 @@
         btn.setAttribute('aria-checked', 'true');
         currentRole = btn.dataset.role;
 
-        if (currentRole === 'admin') {
+        // El código de vinculación DM-8492 lo ingresa el Cuidador (o también es opcional para Admin)
+        if (currentRole === 'cuidador' || currentRole === 'admin') {
           if (loginAdminTray) loginAdminTray.classList.add('show');
           if (regAdminTray) regAdminTray.classList.add('show');
           if (oauthAdminTray) oauthAdminTray.classList.add('show');
@@ -212,46 +213,68 @@
 
         const pacientes = obtenerPacientes();
 
-        // Modo Administrador / Familiar
-        if (currentRole === 'admin') {
+        // 1. Rol Cuidador / Familiar o Enfermera
+        if (currentRole === 'cuidador') {
           if (!codeInput) {
-            mostrarStatus('Como Administrador / Familiar, debes ingresar el código del paciente a supervisar (Ej: DM-8492).', 'error');
+            mostrarStatus('Como Cuidador / Familiar, ingresa el código único del paciente a supervisar (Ej: DM-8492 de Damián Díaz).', 'error');
             return;
           }
 
           const paciente = pacientes.find(p => p.codigoPaciente.toUpperCase() === codeInput);
           if (!paciente) {
-            mostrarStatus(`El código "${codeInput}" no existe. Solicita el código único a tu familiar o paciente.`, 'error');
+            mostrarStatus(`El código "${codeInput}" no existe. Usa DM-8492 para supervisar a Damián Díaz Balseiro.`, 'error');
             return;
           }
 
-          activarBotonCarga(loginSubmitBtn, 'Ingresando...');
-          mostrarStatus(`Vinculando exitosamente con ${paciente.nombre} (${paciente.codigoPaciente})...`, 'success');
+          activarBotonCarga(loginSubmitBtn, 'Vinculando...');
+          mostrarStatus(`Vinculación activa con ${paciente.nombre} (${paciente.codigoPaciente})...`, 'success');
 
-          const sessionAdmin = {
-            id: 'adm-' + Date.now(),
-            nombre: 'Familiar Supervisor (' + formatearNombreLimpio(email) + ')',
+          const sessionCuidador = {
+            id: 'cuid-' + Date.now(),
+            nombre: formatearNombreLimpio(email),
             email: email,
-            rol: 'admin',
+            rol: 'cuidador',
             pacienteVinculado: paciente
           };
 
-          sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionAdmin));
-          setTimeout(() => { window.location.href = 'index.html'; }, 800);
+          sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionCuidador));
+          localStorage.setItem('diamon_current_user', JSON.stringify(sessionCuidador));
+          setTimeout(() => { window.location.href = 'index.html'; }, 700);
           return;
         }
 
-        // SEGURIDAD ESTRICTA: Verificar si el usuario existe antes de permitir login
-        let pacUsuario = pacientes.find(p => p.email.toLowerCase() === email || p.id.toLowerCase() === email);
-        if (!pacUsuario) {
-          mostrarStatus(`No existe ninguna cuenta registrada con el correo "${email}". Por seguridad, primero debes ir a "Crear cuenta".`, 'error');
+        // 2. Rol Administrador del Sistema
+        if (currentRole === 'admin') {
+          const pacDefault = pacientes.find(p => p.codigoPaciente.toUpperCase() === (codeInput || 'DM-8492')) || pacientes[0];
+          activarBotonCarga(loginSubmitBtn, 'Ingresando Admin...');
+          mostrarStatus('Acceso concedido: Modo Administrador del Sistema DiaMon.', 'success');
+
+          const sessionAdmin = {
+            id: 'adm-' + Date.now(),
+            nombre: formatearNombreLimpio(email) + ' (Admin)',
+            email: email,
+            rol: 'admin',
+            pacienteVinculado: pacDefault
+          };
+
+          sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionAdmin));
+          localStorage.setItem('diamon_current_user', JSON.stringify(sessionAdmin));
+          setTimeout(() => { window.location.href = 'index.html'; }, 700);
           return;
+        }
+
+        // 3. Rol Paciente (Si escribe damian o cualquier correo de paciente, o entra directo como Damián Díaz)
+        let pacUsuario = pacientes.find(p => p.email.toLowerCase() === email || p.id.toLowerCase() === email || p.nombre.toLowerCase().includes(email));
+        if (!pacUsuario) {
+          // Si ingresa como paciente con su correo, cargamos el perfil del Caso de Estudio Damián Díaz Balseiro
+          pacUsuario = pacientes.find(p => p.codigoPaciente === 'DM-8492') || pacientes[0];
         }
 
         activarBotonCarga(loginSubmitBtn, 'Ingresando...');
-        mostrarStatus(`¡Bienvenido, ${pacUsuario.nombre}! Tu Código DiaMon es: ${pacUsuario.codigoPaciente}`, 'success');
+        mostrarStatus(`¡Bienvenido, ${pacUsuario.nombre}! Tu Código Único es: ${pacUsuario.codigoPaciente}`, 'success');
         sessionStorage.setItem('diamon_demo_user', JSON.stringify(pacUsuario));
-        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+        localStorage.setItem('diamon_current_user', JSON.stringify(pacUsuario));
+        setTimeout(() => { window.location.href = 'index.html'; }, 700);
       });
     }
 
@@ -286,28 +309,22 @@
 
         const nombreLimpio = formatearNombreLimpio(rawNombre);
 
-        if (currentRole === 'admin') {
-          if (!codeInput) {
-            mostrarStatus('Por favor ingresa el código del paciente a supervisar.', 'error');
-            return;
-          }
-          const pac = pacientes.find(p => p.codigoPaciente.toUpperCase() === codeInput);
-          if (!pac) {
-            mostrarStatus(`El código "${codeInput}" no fue encontrado en el sistema.`, 'error');
-            return;
-          }
+        if (currentRole === 'cuidador' || currentRole === 'admin') {
+          const targetCode = codeInput || 'DM-8492';
+          const pac = pacientes.find(p => p.codigoPaciente.toUpperCase() === targetCode) || pacientes[0];
 
           activarBotonCarga(regSubmitBtn, 'Creando cuenta...');
-          const sessionAdmin = {
-            id: 'adm-' + Date.now(),
+          const sessionSup = {
+            id: (currentRole === 'admin' ? 'adm-' : 'cuid-') + Date.now(),
             nombre: nombreLimpio,
             email: email,
-            rol: 'admin',
+            rol: currentRole,
             pacienteVinculado: pac
           };
-          sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionAdmin));
-          mostrarStatus(`¡Cuenta creada! Supervisando a ${pac.nombre} (${pac.codigoPaciente}).`, 'success');
-          setTimeout(() => { window.location.href = 'index.html'; }, 900);
+          sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionSup));
+          localStorage.setItem('diamon_current_user', JSON.stringify(sessionSup));
+          mostrarStatus(`¡Cuenta de ${currentRole} creada! Supervisando a ${pac.nombre} (${pac.codigoPaciente}).`, 'success');
+          setTimeout(() => { window.location.href = 'index.html'; }, 800);
           return;
         }
 

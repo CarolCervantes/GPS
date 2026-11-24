@@ -5,18 +5,18 @@
    ============================================================ */
 
 :root {
-  /* Paleta Base Clínica */
-  --dc-bg-app: #f4f7fb;
+  /* Paleta Base Clínica — Caso de Estudio Cardio-Metabólico (Teal & Deep Slate) */
+  --dc-bg-app: #f0f5f7;
   --dc-bg-card: #ffffff;
-  --dc-bg-sidebar: #0b1e36;
-  --dc-sidebar-hover: rgba(255, 255, 255, 0.07);
-  --dc-sidebar-active: #2563eb;
+  --dc-bg-sidebar: #082032;
+  --dc-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --dc-sidebar-active: #0d9488;
 
-  /* Tonalidades Primarias */
-  --dc-primary: #2563eb;
-  --dc-primary-hover: #1d4ed8;
-  --dc-primary-light: #eff6ff;
-  --dc-primary-border: #bfdbfe;
+  /* Tonalidades Primarias (Teal Clínico) */
+  --dc-primary: #0d9488;
+  --dc-primary-hover: #0f766e;
+  --dc-primary-light: #f0fdfa;
+  --dc-primary-border: #99f6e4;
 
   /* Estados Semánticos de Salud */
   --dc-success: #16a34a;
@@ -112,13 +112,13 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb, #0284c7);
+  background: linear-gradient(135deg, #0d9488, #0284c7);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   font-size: 20px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
 }
 
 .dc-brand-text h1 {

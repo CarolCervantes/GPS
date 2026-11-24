@@ -5,36 +5,36 @@
 
 const INVENTARIO_MEDICAMENTOS_DEFECTO = [
   {
-    id: 'insulina-glargina',
-    nombre: 'Insulina Glargina (Pluma en uso)',
+    id: 'insulina-24ui',
+    nombre: 'Insulina Basal (24 UI — 9:00 PM · Pluma en uso)',
     tipo: 'insulina_en_uso',
-    fechaApertura: calcularFechaAtras(12), // Abierta hace 12 días por defecto
+    fechaApertura: calcularFechaAtras(10),
     diasVidaUtil: 28,
     lote: 'L-84920'
   },
   {
-    id: 'insulina-lispro',
-    nombre: 'Insulina Lispro Rápida (Pluma en uso)',
+    id: 'ozempic-semanal',
+    nombre: 'Ozempic Semaglutida (Dosis Sábados · Pluma en uso)',
     tipo: 'insulina_en_uso',
-    fechaApertura: calcularFechaAtras(5), // Abierta hace 5 días
-    diasVidaUtil: 28,
-    lote: 'L-51204'
+    fechaApertura: calcularFechaAtras(6),
+    diasVidaUtil: 42,
+    lote: 'OZ-51204'
   },
   {
-    id: 'tiras-reactivas',
-    nombre: 'Tiras Reactivas Accu-Chek (Caja 50 und)',
-    tipo: 'insumo',
-    fechaVencimiento: '2027-08-30',
+    id: 'firialta-valsartan-nifedipina',
+    nombre: 'Firialta + Valsartán + Nifedipina (Blíster Mensual)',
+    tipo: 'tableta',
+    fechaVencimiento: '2027-09-30',
     diasVidaUtil: null,
-    lote: 'T-9921'
+    lote: 'CV-9921'
   },
   {
-    id: 'metformina-850',
-    nombre: 'Metformina 850 mg (Caja blister)',
+    id: 'metformina-gabapentina-lipotic',
+    nombre: 'Metformina + Gabapentina + Lipotic + Atorvastatina + Pantoprazol',
     tipo: 'tableta',
     fechaVencimiento: '2027-11-15',
     diasVidaUtil: null,
-    lote: 'M-3001'
+    lote: 'DM-3001'
   }
 ];
 
@@ -46,7 +46,7 @@ function calcularFechaAtras(diasAtras) {
 
 class VencimientoMedicamentosManager {
   constructor() {
-    this.storageKey = 'diamon_vencimiento_medicamentos';
+    this.storageKey = 'diamon_vencimiento_damian_v4';
     this.inventario = this.cargarInventario();
     this.init();
   }

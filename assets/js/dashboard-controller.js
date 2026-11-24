@@ -233,10 +233,12 @@
       if (guestNoticeMeds) guestNoticeMeds.style.display = 'block';
       if (guestNoticeReport) guestNoticeReport.style.display = 'block';
     } else {
-      // USUARIO / ADMIN AUTENTICADO
+      // USUARIO / CUIDADOR / ADMIN AUTENTICADO
       const rawNombre = currentUser.nombre || currentUser.email || 'Usuario';
       const { primerNombre, nombreCompleto, iniciales } = formatearNombreHumano(rawNombre);
       const esAdmin = currentUser.rol === 'admin';
+      const esCuidador = currentUser.rol === 'cuidador';
+      const esSupervisor = esAdmin || esCuidador;
       const paciente = currentUser.pacienteVinculado || null;
 
       // Foto de perfil oficial (Google Avatar / Proveedor OAuth) o Iniciales
@@ -265,10 +267,11 @@
       }
 
       if (greetingSubtitle) {
-        if (esAdmin && paciente) {
-          const pacNombre = typeof paciente === 'object' ? paciente.nombre : 'Paciente asignado';
+        if (esSupervisor && paciente) {
+          const pacNombre = typeof paciente === 'object' ? paciente.nombre : 'Damián Díaz Balseiro';
           const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : paciente;
-          greetingSubtitle.innerHTML = `Supervisando a: <strong>${pacNombre}</strong> · Código Único: <strong style="color:var(--dc-primary); background:#eff6ff; padding:2px 8px; border-radius:6px; font-family:monospace;">${pacCod}</strong>`;
+          const etiquetaRol = esAdmin ? 'Modo Administrador · Supervisando a:' : 'Cuidador Vinculado a:';
+          greetingSubtitle.innerHTML = `${etiquetaRol} <strong>${pacNombre}</strong> · Código Único: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${pacCod}</strong>`;
           
           // Reflejar datos de telemetría específicos del paciente vinculado
           if (typeof paciente === 'object') {
@@ -283,18 +286,20 @@
               kpiP.textContent = paciente.pasos.toLocaleString();
             }
           }
-        } else if (!esAdmin && currentUser.codigoPaciente) {
-          greetingSubtitle.innerHTML = `Monitoreo Personal · Tu Código Único es: <strong style="color:var(--dc-primary); background:#eff6ff; padding:2px 8px; border-radius:6px; font-family:monospace;">${currentUser.codigoPaciente}</strong> (Compártelo con tu familiar o médico)`;
+        } else if (!esSupervisor && currentUser.codigoPaciente) {
+          greetingSubtitle.innerHTML = `Paciente del Caso de Estudio · Código Único: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${currentUser.codigoPaciente}</strong> · Barrio Chapacuá`;
         } else {
-          greetingSubtitle.textContent = 'Aquí tienes el resumen de salud y recorrido de hoy en Cartagena.';
+          greetingSubtitle.textContent = 'Monitoreo clínico en tiempo real · Barrio Chapacuá, Cartagena de Indias.';
         }
       }
 
       if (sidebarName) sidebarName.textContent = nombreCompleto;
       if (sidebarRole) {
         if (esAdmin) {
-          const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : (paciente || '');
-          sidebarRole.textContent = `Supervisor de ${pacCod}`;
+          sidebarRole.innerHTML = `Administrador · <a href="admin.html" style="color:#5eead4; text-decoration:underline;">Panel Admin</a>`;
+        } else if (esCuidador) {
+          const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : (paciente || 'DM-8492');
+          sidebarRole.textContent = `Cuidador (${pacCod})`;
         } else {
           sidebarRole.textContent = `Paciente (${currentUser.codigoPaciente || 'DM-8492'})`;
         }
@@ -314,6 +319,7 @@
 
     window.cerrarSesionDiaMon = async function () {
       sessionStorage.removeItem('diamon_demo_user');
+      localStorage.removeItem('diamon_current_user');
       if (window.supabaseClient && window.supabaseClient.auth) {
         try { await window.supabaseClient.auth.signOut(); } catch (_) {}
       }

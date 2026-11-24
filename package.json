@@ -1,0 +1,13 @@
+{
+  "name": "diamon-gps-salud",
+  "version": "1.0.0",
+  "description": "Sistema de monitoreo GPS, glucosa capilar y presión arterial en tiempo real para adulto mayor con Diabetes Tipo 2 e Hipertensión Arterial (Caso de Estudio).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

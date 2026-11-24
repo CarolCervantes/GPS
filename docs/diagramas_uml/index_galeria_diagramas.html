@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiaMon — Colección Oficial de Diagramas UML (Ultra-HD)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      padding: 36px 24px;
+      line-height: 1.5;
+    }
+    .header {
+      text-align: center;
+      max-width: 960px;
+      margin: 0 auto 36px;
+    }
+    .header h1 {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 820px;
+      margin: 0 auto 16px;
+    }
+    .badge-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #e0f2fe;
+      color: var(--primary-dark);
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+      gap: 28px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+    }
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #fafcff;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 6px 11px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      transition: background 0.15s;
+    }
+    .btn-action:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .btn-action.puml {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .btn-action.zoom {
+      background: #0284c7;
+      color: #ffffff;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-action.zoom:hover {
+      background: #0369a1;
+    }
+    .card-desc {
+      padding: 12px 22px 4px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .card-img-wrap {
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      flex: 1;
+      min-height: 320px;
+      cursor: pointer;
+      position: relative;
+    }
+    .card-img-wrap img {
+      max-width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #eef2f6;
+      transition: opacity 0.2s;
+    }
+    .card-img-wrap:hover img {
+      opacity: 0.95;
+    }
+    .zoom-hint {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.75);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* LIGHTBOX MODAL */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .lightbox.active {
+      display: flex;
+    }
+    .lightbox-content {
+      position: relative;
+      max-width: 95vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .lightbox-img {
+      max-width: 95vw;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      padding: 12px;
+    }
+    .lightbox-title {
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 12px;
+      text-align: center;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: -42px;
+      right: 0;
+      background: #ffffff;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+    }
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .lightbox-nav:hover {
+      background: rgba(255,255,255,0.45);
+    }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><i class="fas fa-project-diagram"></i> DiaMon — Diagramas UML del Sistema</h1>
+    <p>Modelado formal del software de Monitoreo Inteligente de Diabetes & Salud GPS en Cartagena. Tipografía en Arial de alta legibilidad, resolución Ultra-HD (300 DPI), corrección de contraste y adaptación para visualización perfecta.</p>
+    <div class="badge-bar"><i class="fas fa-check-circle"></i> 10 Diagramas UML 2.5 Oficiales — Calidad de Exposición & Impresión</div>
+  </div>
+
+  <div class="grid">
+    
+      <div class="card" id="card-01_casos_de_uso">
+        <div class="card-header">
+          <div class="card-title">01. Diagrama de Casos de Uso</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(0)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="01_casos_de_uso.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="01_casos_de_uso.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/01_casos_de_uso.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Interacciones del Paciente Diabético, Familiar/Cuidador, Médico EPS y Servicios de Emergencia SOS con el ecosistema DiaMon.</div>
+        <div class="card-img-wrap" onclick="openLightbox(0)">
+          <img src="01_casos_de_uso.png" alt="01. Diagrama de Casos de Uso" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-02_clases">
+        <div class="card-header">
+          <div class="card-title">02. Diagrama de Clases del Dominio Clínico</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(1)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="02_clases.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="02_clases.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/02_clases.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Estructura orientada a objetos de usuarios, pacientes, telemetría, alertas, medicamentos y geocercas.</div>
+        <div class="card-img-wrap" onclick="openLightbox(1)">
+          <img src="02_clases.png" alt="02. Diagrama de Clases del Dominio Clínico" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-03_secuencia">
+        <div class="card-header">
+          <div class="card-title">03. Diagrama de Secuencia de Emergencia SOS 24/7</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(2)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="03_secuencia.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="03_secuencia.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/03_secuencia.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Flujo síncrono y asíncrono activado por voz o botón SOS con telemetría GPS en vivo y despacho a familiares y hospitales en Cartagena.</div>
+        <div class="card-img-wrap" onclick="openLightbox(2)">
+          <img src="03_secuencia.png" alt="03. Diagrama de Secuencia de Emergencia SOS 24/7" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-04_actividades">
+        <div class="card-header">
+          <div class="card-title">04. Diagrama de Actividades (Flujo de Sistema)</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(3)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="04_actividades.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="04_actividades.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/04_actividades.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Flujo operativo completo desde login, telemetría paralela, podómetro con reinicio 24h, geocercas y protocolo de alerta.</div>
+        <div class="card-img-wrap" onclick="openLightbox(3)">
+          <img src="04_actividades.png" alt="04. Diagrama de Actividades (Flujo de Sistema)" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-05_estados">
+        <div class="card-header">
+          <div class="card-title">05. Diagrama de Estados de Monitoreo</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(4)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="05_estados.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="05_estados.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/05_estados.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Ciclo de vida de los estados del paciente: Reposo, Monitoreo Activo, Advertencia y Emergencia Crítica SOS.</div>
+        <div class="card-img-wrap" onclick="openLightbox(4)">
+          <img src="05_estados.png" alt="05. Diagrama de Estados de Monitoreo" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-06_componentes">
+        <div class="card-header">
+          <div class="card-title">06. Diagrama de Componentes de Arquitectura</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(5)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="06_componentes.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="06_componentes.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/06_componentes.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Estructura modular dividida en Capa de Presentación PWA, Capa de Sensores y Hardware, y Capa de Servicios Nube.</div>
+        <div class="card-img-wrap" onclick="openLightbox(5)">
+          <img src="06_componentes.png" alt="06. Diagrama de Componentes de Arquitectura" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-07_despliegue">
+        <div class="card-header">
+          <div class="card-title">07. Diagrama de Despliegue Físico y Cloud</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(6)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="07_despliegue.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="07_despliegue.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/07_despliegue.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Distribución física en Smartphone del Paciente, Dispositivo del Cuidador, Vercel Edge y Supabase Cloud.</div>
+        <div class="card-img-wrap" onclick="openLightbox(6)">
+          <img src="07_despliegue.png" alt="07. Diagrama de Despliegue Físico y Cloud" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-08_objetos">
+        <div class="card-header">
+          <div class="card-title">08. Diagrama de Objetos en Tiempo Real</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(7)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="08_objetos.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="08_objetos.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/08_objetos.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Instancia representativa en tiempo real con datos clínicos del paciente, telemetría GPS en Cartagena y alerta activa.</div>
+        <div class="card-img-wrap" onclick="openLightbox(7)">
+          <img src="08_objetos.png" alt="08. Diagrama de Objetos en Tiempo Real" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-09_paquetes">
+        <div class="card-header">
+          <div class="card-title">09. Diagrama de Paquetes Modulares</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(8)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="09_paquetes.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="09_paquetes.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/09_paquetes.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Organización de paquetes del sistema por responsabilidades: Auth, Telemetría, Monitoreo Clínico, Emergencia y Servicios.</div>
+        <div class="card-img-wrap" onclick="openLightbox(8)">
+          <img src="09_paquetes.png" alt="09. Diagrama de Paquetes Modulares" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+      <div class="card" id="card-10_comunicacion">
+        <div class="card-header">
+          <div class="card-title">10. Diagrama de Comunicación / Colaboración SOS</div>
+          <div class="card-actions">
+            <button class="btn-action zoom" onclick="openLightbox(9)"><i class="fas fa-expand"></i> Ver Grande</button>
+            <a href="10_comunicacion.png" target="_blank" download class="btn-action"><i class="fas fa-download"></i> PNG HD</a>
+            <a href="10_comunicacion.svg" target="_blank" class="btn-action"><i class="fas fa-vector-square"></i> SVG</a>
+            <a href="puml_sources/10_comunicacion.puml" target="_blank" class="btn-action puml"><i class="fas fa-code"></i> PUML</a>
+          </div>
+        </div>
+        <div class="card-desc">Mensajería numerada de colaboración entre objetos durante la activación de una emergencia médica 24/7.</div>
+        <div class="card-img-wrap" onclick="openLightbox(9)">
+          <img src="10_comunicacion.png" alt="10. Diagrama de Comunicación / Colaboración SOS" loading="lazy">
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Clic para pantalla completa</div>
+        </div>
+      </div>
+    
+  </div>
+
+  <!-- LIGHTBOX PARA VER TODOS LOS DETALLES NÍTIDOS -->
+  <div class="lightbox" id="lightboxModal" onclick="closeLightbox(event)">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <button class="lightbox-close" onclick="closeLightbox(null)"><i class="fas fa-times"></i></button>
+      <img id="lightboxImg" class="lightbox-img" src="" alt="">
+      <div id="lightboxTitle" class="lightbox-title"></div>
+    </div>
+    <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1, event)"><i class="fas fa-chevron-left"></i></button>
+    <button class="lightbox-nav lightbox-next" onclick="navLightbox(1, event)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <script>
+    const diagramasData = [{"id":"01_casos_de_uso","nombre":"01. Diagrama de Casos de Uso"},{"id":"02_clases","nombre":"02. Diagrama de Clases del Dominio Clínico"},{"id":"03_secuencia","nombre":"03. Diagrama de Secuencia de Emergencia SOS 24/7"},{"id":"04_actividades","nombre":"04. Diagrama de Actividades (Flujo de Sistema)"},{"id":"05_estados","nombre":"05. Diagrama de Estados de Monitoreo"},{"id":"06_componentes","nombre":"06. Diagrama de Componentes de Arquitectura"},{"id":"07_despliegue","nombre":"07. Diagrama de Despliegue Físico y Cloud"},{"id":"08_objetos","nombre":"08. Diagrama de Objetos en Tiempo Real"},{"id":"09_paquetes","nombre":"09. Diagrama de Paquetes Modulares"},{"id":"10_comunicacion","nombre":"10. Diagrama de Comunicación / Colaboración SOS"}];
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+      currentIndex = index;
+      const d = diagramasData[index];
+      document.getElementById('lightboxImg').src = d.id + '.png';
+      document.getElementById('lightboxTitle').textContent = d.nombre;
+      document.getElementById('lightboxModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(event) {
+      document.getElementById('lightboxModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    function navLightbox(direction, event) {
+      if (event) event.stopPropagation();
+      currentIndex = (currentIndex + direction + diagramasData.length) % diagramasData.length;
+      openLightbox(currentIndex);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('lightboxModal').classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
+    });
+  </script>
+</body>
+</html>

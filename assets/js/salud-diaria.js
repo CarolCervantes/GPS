@@ -45,9 +45,11 @@ const CONSEJOS_EDUCATIVOS_24H = [
 ];
 
 const MEDICAMENTOS_PREDETERMINADOS = [
-  { id: 'med-1', nombre: 'Insulina Glargina (Basal)', horario: '08:00 AM', dosis: '20 UI', momento: 'Mañana' },
-  { id: 'med-2', nombre: 'Metformina', horario: '01:00 PM', dosis: '850 mg con almuerzo', momento: 'Tarde' },
-  { id: 'med-3', nombre: 'Insulina Rápida / Control', horario: '08:30 PM', dosis: 'Según glucemia pre-cena', momento: 'Noche' }
+  { id: 'med-1', nombre: 'Pantoprazol + Metformina + Firialta + Nifedipina', horario: '08:00 AM', dosis: 'Esquema matutino completo (4 medicamentos)', momento: 'Mañana' },
+  { id: 'med-2', nombre: 'Valsartán (Control Hipertensión Arterial)', horario: '02:00 PM', dosis: '1 toma vespertina', momento: 'Tarde' },
+  { id: 'med-3', nombre: 'Atorvastatina + Metformina + Gabapentina + Lipotic + Nifedipino', horario: '08:00 PM', dosis: 'Esquema nocturno oral (5 medicamentos)', momento: 'Noche' },
+  { id: 'med-4', nombre: 'Insulina Basal — 24 Unidades', horario: '09:00 PM', dosis: '24 UI subcutáneas todas las noches', momento: 'Noche' },
+  { id: 'med-5', nombre: 'Ozempic (Semaglutida Semanal)', horario: 'Sábados', dosis: '1 aplicación subcutánea cada sábado', momento: 'Semanal' }
 ];
 
 class SaludDiariaManager {

@@ -1,0 +1,105 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam roundcorner 12
+skinparam shadowing false
+
+skinparam actor {
+  BackgroundColor #f0f9ff
+  BorderColor #0284c7
+  BorderThickness 2
+  FontColor #0f172a
+  FontSize 14
+  FontStyle bold
+}
+
+skinparam usecase {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam package {
+  BackgroundColor #f8fafc
+  BorderColor #64748b
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 15
+  FontStyle bold
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #334155
+  FontSize 12
+  Thickness 1.5
+}
+
+left to right direction
+
+actor "Paciente Diabético" as Paciente
+actor "Familiar / Cuidador" as Familiar
+actor "Personal Médico / EPS" as Medico
+actor "Servicios de Urgencias SOS" as SOS
+
+rectangle "DiaMon — Sistema Inteligente de Salud & Monitoreo GPS" {
+  package "Autenticación & Vinculación" {
+    usecase "Iniciar Sesión\n(Google OAuth / Manual)" as UC_Auth
+    usecase "Vincular Código Único\n(DM-XXXX)" as UC_Codigo
+    usecase "Gestionar Perfil y\nContactos SOS" as UC_Perfil
+  }
+
+  package "Telemetría Clínica & GPS 24/7" {
+    usecase "Rastrear Ubicación GPS\nen Tiempo Real" as UC_GPS
+    usecase "Supervisar Geocercas\ny Perímetros Seguros" as UC_Geocerca
+    usecase "Registrar Glucosa\ny Nivel de Batería" as UC_Glucosa
+    usecase "Contabilizar Pasos Diarios\n(Reinicio 24 Horas)" as UC_Pasos
+  }
+
+  package "Gestión Terapéutica" {
+    usecase "Confirmar Toma\nde Medicamentos" as UC_Medicamentos
+    usecase "Verificar Vencimiento\nde Fármacos (< 15 días)" as UC_Vencimiento
+  }
+
+  package "Protocolo SOS & Emergencias" {
+    usecase "Activar Alarma SOS\n(Botón / Comando Voz)" as UC_SOS
+    usecase "Escanear Ficha Médica\nQR PulseCard" as UC_FichaQR
+    usecase "Trazar Ruta Guiada al\nCentro Médico Cartagena" as UC_RutaHospital
+  }
+}
+
+' Relaciones Paciente
+Paciente --> UC_Auth
+Paciente --> UC_Codigo
+Paciente --> UC_Perfil
+Paciente --> UC_GPS
+Paciente --> UC_Glucosa
+Paciente --> UC_Pasos
+Paciente --> UC_Medicamentos
+Paciente --> UC_SOS
+
+' Relaciones Familiar
+Familiar --> UC_Auth
+Familiar --> UC_Codigo
+Familiar --> UC_GPS
+Familiar --> UC_Geocerca
+Familiar --> UC_Glucosa
+Familiar --> UC_Vencimiento
+
+' Relaciones Médico
+Medico --> UC_Auth
+Medico --> UC_Glucosa
+Medico --> UC_Vencimiento
+
+' Relaciones SOS
+SOS --> UC_FichaQR
+SOS --> UC_RutaHospital
+
+' Relaciones internas
+UC_SOS ..> UC_Geocerca : <<dispara>>
+UC_SOS ..> UC_FichaQR : <<incluye>>
+UC_SOS ..> UC_RutaHospital : <<incluye>>
+@enduml

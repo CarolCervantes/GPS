@@ -9,67 +9,16 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'diamon_alertas_oficial_v2';
-  const GEOFENCE_HOME = { lat: 10.3887, lng: -75.4789, radioMetros: 1200 }; // Casa / Sector residencial Cartagena
+  const STORAGE_KEY = 'diamon_alertas_damian_v5';
+  const GEOFENCE_HOME = { lat: 10.39991, lng: -75.47886, radioMetros: 400 }; // Casa de Damián Díaz Balseiro — Chapacuá
 
-  // Base inicial de alertas de referencia
+  // Base inicial de alertas de referencia del Caso de Estudio (Damián Díaz Balseiro)
   const ALERTAS_INICIALES = [
     {
       id: 'alt-001',
-      titulo: 'Salida de zona segura',
-      subtitulo: 'Tu familiar salió de la zona segura (Av. Principal).',
-      tiempoTexto: 'Hace 5 min',
-      tipo: 'geocerca',
-      color: 'red',
-      icono: 'fas fa-map-marker-alt',
-      badgeTexto: 'Pendiente',
-      badgeClase: 'badge-pendiente',
-      estado: 'pendiente',
-      rango: '24h',
-      ts: Date.now() - 5 * 60000,
-      coordenadas: { lat: 10.4042, lng: -75.5562 },
-      ubicacion: 'Av. Principal con Cra. 3, Cartagena',
-      descripcion: 'El dispositivo GPS detectó que tu familiar superó el radio seguro configurado para su recorrido habitual. La señal de geolocalización sigue activa y enlazada al mapa.'
-    },
-    {
-      id: 'alt-002',
-      titulo: 'Medicamento próximo',
-      subtitulo: 'Metformina vence en 3 días.',
-      tiempoTexto: 'Hace 1 h',
-      tipo: 'medicamento',
-      color: 'amber',
-      icono: 'fas fa-pills',
-      badgeTexto: 'Aviso',
-      badgeClase: 'badge-aviso',
-      estado: 'aviso',
-      rango: '24h',
-      ts: Date.now() - 60 * 60000,
-      coordenadas: null,
-      ubicacion: 'Botiquín / Domicilio',
-      descripcion: 'Alerta preventiva de insumos médicos: El blíster actual de Metformina está próximo a agotarse o vencer en 3 días. Te sugerimos gestionar la reposición en tu droguería habitual.'
-    },
-    {
-      id: 'alt-003',
-      titulo: 'Ubicación actualizada',
-      subtitulo: 'Se encuentra en Centro Comercial.',
-      tiempoTexto: 'Hace 2 h',
-      tipo: 'ubicacion',
-      color: 'blue',
-      icono: 'fas fa-info',
-      badgeTexto: 'Información',
-      badgeClase: 'badge-informacion',
-      estado: 'informacion',
-      rango: '24h',
-      ts: Date.now() - 120 * 60000,
-      coordenadas: { lat: 10.4125, lng: -75.5398 },
-      ubicacion: 'Centro Comercial Caribe Plaza / Manga, Cartagena',
-      descripcion: 'Lectura satelital periódica completada con éxito. El paciente se encuentra en un entorno techado concurrido, con batería telemétrica en nivel óptimo y glucosa en rango.'
-    },
-    {
-      id: 'alt-004',
-      titulo: 'Medicamento tomado',
-      subtitulo: 'Metformina 500 mg.',
-      tiempoTexto: 'Hace 3 h',
+      titulo: 'Esquema matutino 8:00 AM confirmado',
+      subtitulo: 'Damián Díaz Balseiro confirmó: Pantoprazol, Metformina, Firialta y Nifedipina.',
+      tiempoTexto: 'Hace 25 min',
       tipo: 'medicamento_tomado',
       color: 'green',
       icono: 'fas fa-check',
@@ -77,10 +26,44 @@
       badgeClase: 'badge-confirmada',
       estado: 'confirmada',
       rango: '24h',
-      ts: Date.now() - 180 * 60000,
-      coordenadas: { lat: 10.3910, lng: -75.4794 },
-      ubicacion: 'Residencia Familiar, Cartagena',
-      descripcion: 'Registro de salud confirmado: El paciente reportó la toma oportuna de Metformina 500 mg posterior al desayuno. Glucosa posprandial estimada en 108 mg/dL.'
+      ts: Date.now() - 25 * 60000,
+      coordenadas: { lat: 10.39991, lng: -75.47886 },
+      ubicacion: 'Barrio Chapacuá (10.39991, -75.47886)',
+      descripcion: 'Registro de adherencia: El paciente Damián Díaz Balseiro confirmó su bloque farmacológico de las 8:00 AM según el plan supervisado por la Enf. Jefe Elizabeth Vargas Caro.'
+    },
+    {
+      id: 'alt-002',
+      titulo: 'Próxima toma: Valsartán (2:00 PM) e Insulina 24 UI (9:00 PM)',
+      subtitulo: 'Recordatorio activo para control de Hipertensión y Diabetes.',
+      tiempoTexto: 'Hace 1 h',
+      tipo: 'medicamento',
+      color: 'amber',
+      icono: 'fas fa-pills',
+      badgeTexto: 'Programada',
+      badgeClase: 'badge-aviso',
+      estado: 'aviso',
+      rango: '24h',
+      ts: Date.now() - 60 * 60000,
+      coordenadas: { lat: 10.39991, lng: -75.47886 },
+      ubicacion: 'Casa en Chapacuá, Cartagena',
+      descripcion: 'Cronograma activo: 2:00 PM Valsartán · 8:00 PM Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino · 9:00 PM Insulina Basal 24 Unidades · Sábados: Ozempic.'
+    },
+    {
+      id: 'alt-003',
+      titulo: 'Geocerca Activa — Casa en Chapacuá',
+      subtitulo: 'Damián Díaz Balseiro se encuentra dentro del perímetro seguro (400m).',
+      tiempoTexto: 'Hace 2 h',
+      tipo: 'ubicacion',
+      color: 'blue',
+      icono: 'fas fa-map-marker-alt',
+      badgeTexto: 'En Zona',
+      badgeClase: 'badge-informacion',
+      estado: 'informacion',
+      rango: '24h',
+      ts: Date.now() - 120 * 60000,
+      coordenadas: { lat: 10.39991, lng: -75.47886 },
+      ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
+      descripcion: 'Telemetría GPS verificada en el domicilio de Chapacuá. Glucosa en ayunas (114 mg/dL) y Presión Arterial (126/78 mmHg) dentro de las metas definidas con la Enf. Jefe Elizabeth Vargas Caro.'
     }
   ];
 
@@ -194,8 +177,9 @@
   // 3. SERVICE WORKER Y NOTIFICACIONES PUSH DEL SISTEMA 24/7
   // ============================================================
   function initServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      const swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : '/sw.js';
+      navigator.serviceWorker.register(swPath)
         .then((reg) => {
           swRegistration = reg;
           console.log('[DiaMon 24/7] Service Worker registrado correctamente.');

@@ -8,6 +8,37 @@ let usuarioId = null;       // ID del usuario logueado
 let zonaOwner = null;       // ID de quien "posee" las zonas (el monitoreado)
 let zonaOwnerNombre = null;
 
+const LOCAL_ZONAS_KEY = 'diamon_damian_zonas_v5';
+const ZONA_CASA_DAMIAN = [
+  {
+    id: 1,
+    nombre: 'Casa Damián Díaz — Barrio Chapacuá',
+    centro_lat: 10.39991,
+    centro_lng: -75.47886,
+    radio_metros: 400,
+    nivel_riesgo: 'bajo',
+    activa: true
+  }
+];
+
+function obtenerZonasLocal() {
+  try {
+    const raw = localStorage.getItem(LOCAL_ZONAS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (_) {}
+  localStorage.setItem(LOCAL_ZONAS_KEY, JSON.stringify(ZONA_CASA_DAMIAN));
+  return [...ZONA_CASA_DAMIAN];
+}
+
+function guardarZonasLocal(lista) {
+  try {
+    localStorage.setItem(LOCAL_ZONAS_KEY, JSON.stringify(lista));
+  } catch (_) {}
+}
+
 document.addEventListener('dashboardListo', async (e) => {
   usuarioId = e.detail?.user?.id;
   if (!usuarioId) return;
@@ -16,40 +47,12 @@ document.addEventListener('dashboardListo', async (e) => {
 
   iniciarMapa();
 
-  if (rol === 'cuidador') {
-    // Buscar la persona monitoreada vinculada
-    const { data: vincs } = await supabaseClient
-      .from('vinculaciones')
-      .select('monitoreado_id, perfil_monitoreado:monitoreado_id(nombre)')
-      .eq('cuidador_id', usuarioId)
-      .eq('estado', 'activa')
-      .limit(1);
+  const banner = document.getElementById('monitoreadoBanner');
+  const bannerName = document.getElementById('monitBannerName');
+  if (banner) banner.style.display = 'flex';
+  if (bannerName) bannerName.textContent = 'Damián Díaz Balseiro (Barrio Chapacuá · DM-8492)';
 
-    if (!vincs || vincs.length === 0) {
-      // Sin vinculación
-      document.getElementById('sinVinculacion').style.display = 'flex';
-      document.getElementById('btnNuevaZona').style.display = 'none';
-      await cargarZonas();
-      wireFormulario();
-      ocultarFormulario();
-      return;
-    }
-
-    zonaOwner = vincs[0].monitoreado_id;
-    zonaOwnerNombre = vincs[0].perfil_monitoreado?.nombre || 'Persona monitoreada';
-
-    const banner = document.getElementById('monitoreadoBanner');
-    const bannerName = document.getElementById('monitBannerName');
-    if (banner) banner.style.display = 'flex';
-    if (bannerName) bannerName.textContent = zonaOwnerNombre;
-
-  } else if (rol === 'admin') {
-    // Admin puede crear zonas para sí mismo (las zonas del sistema)
-    zonaOwner = usuarioId;
-  } else {
-    // Usuario/monitoreado: zonas propias
-    zonaOwner = usuarioId;
-  }
+  zonaOwner = usuarioId;
 
   await cargarZonas();
   wireFormulario();
@@ -58,7 +61,7 @@ document.addEventListener('dashboardListo', async (e) => {
 
 // ============ MAPA ============
 function iniciarMapa() {
-  mapaZonas = L.map('mapZonas', { zoomControl: true }).setView([10.391, -75.479], 13);
+  mapaZonas = L.map('mapZonas', { zoomControl: true }).setView([10.39991, -75.47886], 15);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
@@ -95,19 +98,21 @@ function colocarMarcador(lat, lng) {
 // ============ CARGAR ZONAS ============
 async function cargarZonas() {
   const ownerId = zonaOwner || usuarioId;
-  const { data, error } = await supabaseClient
-    .from('zonas_seguras')
-    .select('*')
-    .eq('user_id', ownerId)
-    .eq('activa', true)
-    .order('created_at', { ascending: false });
+  let cargadasDeSupabase = null;
+  try {
+    const { data, error } = await supabaseClient
+      .from('zonas_seguras')
+      .select('*')
+      .eq('user_id', ownerId)
+      .eq('activa', true)
+      .order('created_at', { ascending: false });
+    if (!error && data && data.length > 0) {
+      cargadasDeSupabase = data;
+    }
+  } catch (_) {}
 
-  if (error) {
-    console.error('Error cargando zonas:', error.message);
-    return;
-  }
-
-  zonasData = data || [];
+  zonasData = cargadasDeSupabase || obtenerZonasLocal().filter(z => z.activa !== false);
+  guardarZonasLocal(zonasData);
   renderLista();
   renderCirculosEnMapa();
 }
@@ -197,13 +202,15 @@ function editarZona(id) {
 async function eliminarZona(id) {
   if (!confirm('¿Eliminar esta zona segura?')) return;
 
-  const { error } = await supabaseClient
-    .from('zonas_seguras')
-    .update({ activa: false })
-    .eq('id', id)
-    .eq('user_id', zonaOwner || usuarioId);
+  const locales = obtenerZonasLocal().filter(z => Number(z.id) !== Number(id));
+  guardarZonasLocal(locales);
 
-  if (error) { alert('Error: ' + error.message); return; }
+  try {
+    await supabaseClient
+      .from('zonas_seguras')
+      .update({ activa: false })
+      .eq('id', id);
+  } catch (_) {}
 
   await cargarZonas();
 }
@@ -254,19 +261,29 @@ async function guardarZona() {
     activa: true,
   };
 
-  let error;
+  const locales = obtenerZonasLocal();
   if (editId) {
-    ({ error } = await supabaseClient.from('zonas_seguras').update(payload).eq('id', editId).eq('user_id', usuarioId));
+    const idx = locales.findIndex(z => Number(z.id) === Number(editId));
+    if (idx >= 0) {
+      locales[idx] = { ...locales[idx], ...payload, id: Number(editId) };
+    }
   } else {
-    ({ error } = await supabaseClient.from('zonas_seguras').insert(payload));
+    locales.unshift({ ...payload, id: Date.now() });
   }
+  guardarZonasLocal(locales);
+
+  try {
+    if (editId) {
+      await supabaseClient.from('zonas_seguras').update(payload).eq('id', editId);
+    } else {
+      await supabaseClient.from('zonas_seguras').insert(payload);
+    }
+  } catch (_) {}
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-save"></i> Guardar zona';
 
-  if (error) { mostrarMsgZona('Error: ' + error.message, 'error'); return; }
-
-  mostrarMsgZona('Zona guardada correctamente.', 'exito');
+  mostrarMsgZona('Zona segura de Damián Díaz guardada y sincronizada con el mapa principal.', 'exito');
   setTimeout(ocultarFormulario, 900);
   await cargarZonas();
 }

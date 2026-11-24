@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Ficha Médica de Emergencia (SOS)</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/medical-qr.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #080d16;
+            color: #f1f5f9;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        .emergency-container {
+            max-width: 520px;
+            width: 100%;
+        }
+        .alert-banner {
+            background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+            margin-bottom: 20px;
+            animation: pulseBanner 2s infinite ease-in-out;
+        }
+        @keyframes pulseBanner {
+            0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(220, 38, 38, 0.8); }
+        }
+        .alert-banner h1 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .alert-banner p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.95;
+        }
+        .protocol-box {
+            background: #111c2e;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+        .protocol-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .protocol-steps {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+        .action-call-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .btn-emergency-call {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.15s;
+        }
+        .btn-emergency-call:active {
+            transform: scale(0.97);
+        }
+        .btn-call-family {
+            background: #10b981;
+            color: #064e3b;
+        }
+        .btn-call-crue {
+            background: #ef4444;
+            color: #ffffff;
+        }
+        .btn-emergency-call i {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+        .btn-emergency-call span {
+            font-size: 13px;
+        }
+        .btn-emergency-call small {
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: normal;
+        }
+        .medical-sheet {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+        .sheet-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #38bdf8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .data-row .lbl {
+            color: #94a3b8;
+        }
+        .data-row .val {
+            color: #f8fafc;
+            font-weight: 600;
+            text-align: right;
+        }
+        .return-app-btn {
+            display: block;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .return-app-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body>
+
+<div class="emergency-container">
+
+    <!-- Banner SOS -->
+    <div class="alert-banner">
+        <i class="fas fa-exclamation-triangle" style="font-size: 26px; margin-bottom: 8px;"></i>
+        <h1>Ficha Médica de Emergencia</h1>
+        <p>Portador de Diabetes Mellitus · Requiere asistencia médica</p>
+    </div>
+
+    <!-- Botones de llamada rápida -->
+    <div class="action-call-grid">
+        <a id="btnCallFamily" href="tel:+573001234567" class="btn-emergency-call btn-call-family">
+            <i class="fas fa-phone-alt"></i>
+            <span>Llamar Familiar</span>
+            <small id="callFamilySub">Contacto de Emergencia</small>
+        </a>
+        <a href="tel:123" class="btn-emergency-call btn-call-crue">
+            <i class="fas fa-ambulance"></i>
+            <span>Llamar al 123</span>
+            <small>CRUE Cartagena / Emergencias</small>
+        </a>
+    </div>
+
+    <!-- Protocolo Primeros Auxilios -->
+    <div class="protocol-box">
+        <h3><i class="fas fa-first-aid"></i> Protocolo Inmediato de Rescate:</h3>
+        <ol class="protocol-steps">
+            <li><strong>Si el paciente está consciente pero mareado, pálido o sudoroso (Hipoglucemia):</strong> Administre de inmediato 15g de carbohidratos simples (jugo azucarado, 3 sobres de azúcar disueltos en agua o gaseosa común).</li>
+            <li><strong>Si el paciente está inconsciente o convulsionando:</strong> <u>NUNCA INTRODUZCA LÍQUIDOS NI ALIMENTOS EN SU BOCA</u>. Colóquelo de lado (posición lateral de seguridad) y llame inmediatamente al 123.</li>
+            <li>Consulte la información clínica y notifique a su acudiente.</li>
+        </ol>
+    </div>
+
+    <!-- Ficha de Datos del Paciente -->
+    <div class="medical-sheet">
+        <h4 class="sheet-section-title"><i class="fas fa-user-injured"></i> Datos del Paciente</h4>
+        
+        <div class="data-row">
+            <span class="lbl">Nombre completo:</span>
+            <span class="val" id="dispNombre">Damián Díaz Balseiro</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Diagnóstico:</span>
+            <span class="val" style="color:#f87171;" id="dispCondicion">Diabetes Tipo 2 Insulinorrequiriente + Hipertensión Arterial</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Grupo Sanguíneo:</span>
+            <span class="val" id="dispSangre">O+</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Alergias a Medicamentos:</span>
+            <span class="val" style="color:#fb7185;" id="dispAlergias">Ninguna reportada</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Tratamiento e Insulina:</span>
+            <span class="val" id="dispTratamiento">8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Ciudad / Ubicación:</span>
+            <span class="val">Barrio Chapacuá, Cartagena de Indias</span>
+        </div>
+        <div class="data-row">
+            <span class="lbl">Centro Médico de Referencia:</span>
+            <span class="val" id="dispCentro">Hospital Univ. del Caribe / Blas de Lezo</span>
+        </div>
+    </div>
+
+    <!-- Notas Médicas Adicionales -->
+    <div class="medical-sheet">
+        <h4 class="sheet-section-title"><i class="fas fa-notes-medical"></i> Indicaciones Críticas</h4>
+        <p id="dispNotas" style="font-size:12px; color:#cbd5e1; line-height:1.6; margin:0;">
+            Paciente con riesgo de hipoglucemia severa rápida. Lleva glucómetro y microdosis de rescate en su morral.
+        </p>
+    </div>
+
+    <a href="index.html" class="return-app-btn">
+        <i class="fas fa-arrow-left"></i> Volver a la plataforma DiaMon
+    </a>
+
+</div>
+
+<script>
+    // Decodificar datos desde el Hash de la URL o LocalStorage
+    document.addEventListener('DOMContentLoaded', () => {
+        let profile = null;
+
+        if (window.location.hash && window.location.hash.length > 1) {
+            try {
+                const raw = decodeURIComponent(window.location.hash.substring(1));
+                const parsed = JSON.parse(raw);
+                profile = {
+                    nombre: parsed.n,
+                    condicion: parsed.c,
+                    tratamiento: parsed.t,
+                    grupoSanguineo: parsed.s,
+                    alergias: parsed.a,
+                    contactoNombre: parsed.cn,
+                    contactoTelefono: parsed.ct,
+                    centroReferencia: parsed.h,
+                    notasEmergencia: parsed.m
+                };
+            } catch (e) {
+                console.warn('Error decodificando hash:', e);
+            }
+        }
+
+        if (!profile) {
+            try {
+                const stored = localStorage.getItem('diamon_medical_profile');
+                if (stored) profile = JSON.parse(stored);
+            } catch (e) {}
+        }
+
+        if (profile) {
+            if (profile.nombre) document.getElementById('dispNombre').textContent = profile.nombre;
+            if (profile.condicion) document.getElementById('dispCondicion').textContent = profile.condicion;
+            if (profile.grupoSanguineo) document.getElementById('dispSangre').textContent = profile.grupoSanguineo;
+            if (profile.alergias) document.getElementById('dispAlergias').textContent = profile.alergias;
+            if (profile.tratamiento) document.getElementById('dispTratamiento').textContent = profile.tratamiento;
+            if (profile.centroReferencia) document.getElementById('dispCentro').textContent = profile.centroReferencia;
+            if (profile.notasEmergencia) document.getElementById('dispNotas').textContent = profile.notasEmergencia;
+
+            if (profile.contactoTelefono) {
+                const cleanPhone = profile.contactoTelefono.replace(/\s+/g, '');
+                const btn = document.getElementById('btnCallFamily');
+                btn.href = 'tel:' + cleanPhone;
+                document.getElementById('callFamilySub').textContent = (profile.contactoNombre || 'Familiar') + ' (' + profile.contactoTelefono + ')';
+            }
+        }
+    });
+</script>
+</body>
+</html>
+

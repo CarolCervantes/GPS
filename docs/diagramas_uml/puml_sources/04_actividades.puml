@@ -1,0 +1,80 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundcorner 10
+
+skinparam activity {
+  BackgroundColor #f0f9ff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam diamond {
+  BackgroundColor #ffffff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0369a1
+  FontSize 12
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #1e293b
+  FontSize 12
+  Thickness 1.5
+}
+
+start
+:Usuario abre DiaMon (diamon-salud.vercel.app);
+
+if (¿Existe sesión activa en Storage?) then (No)
+  :Mostrar pantalla de autenticación;
+  if (¿Método de acceso elegido?) then (Google OAuth 2.0)
+    :Autenticar con credencial de Google;
+    :Vincular correo oficial y foto de perfil;
+  else (Código Único / Manual)
+    :Ingresar credenciales o Código DM-XXXX;
+  endif
+  :Guardar token de sesión activa;
+else (Sí)
+  :Restaurar datos del usuario autenticado;
+endif
+
+:Inicializar Tablero Principal DiaMon;
+
+fork
+  :Iniciar Geolocalización en Tiempo Real;
+  :Verificar si está dentro de Geocerca Segura;
+fork again
+  :Monitorear Podómetro (Acelerómetro);
+  if (¿Medianoche 00:00:00 o nuevo día?) then (Sí)
+    :Reiniciar contador de pasos a 0;
+  else (No)
+    :Acumular pasos en la ventana de 24 horas;
+  endif
+fork again
+  :Lectura de Nivel de Glucosa y Batería;
+fork again
+  :Supervisar Estado de Medicamentos;
+end fork
+
+if (¿Glucosa Crítica (<70 o >180 mg/dL) o Botón SOS Presionado?) then (Sí)
+  :Activar Sirena Sonora y Vibración 24/7;
+  :Notificar inmediatamente al Cuidador;
+  :Trazar ruta al Centro Médico más cercano en Cartagena;
+  :Desplegar Ficha Médica QR PulseCard;
+else (No)
+  if (¿Medicamento próximo a vencer (<15 días)?) then (Sí)
+    :Mostrar banner de advertencia preventiva;
+  else (No)
+    :Mantener indicador de Salud en Estado Normal;
+  endif
+endif
+
+:Actualizar Dashboard y Métricas en Pantalla;
+stop
+@enduml

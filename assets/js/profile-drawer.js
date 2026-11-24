@@ -84,7 +84,7 @@
 
       const nombre = formatearNombre(user);
       const email = user.email || 'usuario@diamon.salud';
-      const rolTexto = user.rol === 'admin' ? 'Familiar' : (user.rol === 'cuidador' ? 'Cuidador' : 'Paciente');
+      const rolTexto = user.rol === 'admin' ? 'Administrador' : (user.rol === 'cuidador' ? 'Cuidador / Familiar' : 'Paciente');
       const iniciales = nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'ET';
       const fotoUrl = user.foto || user.avatar_url || (user.user_metadata && user.user_metadata.avatar_url) || null;
 
@@ -433,25 +433,25 @@
           </div>
         </div>
 
-        <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Familiares y Cuidadores Vinculados</h5>
+        <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Equipo de Cuidado Vinculado (Caso de Estudio)</h5>
 
         <div class="dc-family-linked-list">
           <div class="dc-family-linked-item">
-            <div class="dc-family-linked-avatar" style="background:#1d4ed8;">CC</div>
+            <div class="dc-family-linked-avatar" style="background:#0d9488;">DD</div>
             <div class="dc-family-linked-info">
-              <strong>Carol Cervantes</strong>
-              <span>Cuidadora Principal · Notificaciones SOS Activas</span>
+              <strong>Damián Díaz Balseiro (DM-8492)</strong>
+              <span>Paciente del Caso de Estudio · Barrio Chapacuá (10.39991, -75.47886)</span>
             </div>
             <span class="dc-family-status-badge">Activo</span>
           </div>
 
           <div class="dc-family-linked-item">
-            <div class="dc-family-linked-avatar" style="background:#059669;">DS</div>
+            <div class="dc-family-linked-avatar" style="background:#0284c7;">EV</div>
             <div class="dc-family-linked-info">
-              <strong>Dr. Roberto Sanmartín</strong>
-              <span>Médico Diabetólogo · Telemetría Semanal</span>
+              <strong>Enf. Jefe Elizabeth Vargas Caro</strong>
+              <span>Guía Clínica · Control Glucémico (Insulina 24 UI / Ozempic) y HTA</span>
             </div>
-            <span class="dc-family-status-badge">Médico</span>
+            <span class="dc-family-status-badge">Enfermera Jefe</span>
           </div>
         </div>
 

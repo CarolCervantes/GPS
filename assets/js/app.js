@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abc', maxZoom: 19 }).addTo(historyMap);
-  historyMap.setView([10.3910, -75.4794], 13);
+  historyMap.setView([10.39991, -75.47886], 16);
   window.historyMapInstance = historyMap;
 
   // Re-invalidate after fonts / layout settle
@@ -36,20 +36,20 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => historyMap.invalidateSize(), 500);
   setTimeout(() => historyMap.invalidateSize(), 1200);
 
-  // Ruta de demostración inicial de Cartagena si no hay sesión activa
+  // Recorrido histórico real de Damián Díaz Balseiro en el barrio Chapacuá (Casa 10.39991, -75.47886)
   setTimeout(() => {
     if (adminIds.length === 0 && historyMap && !lineaHistorial) {
       const demoPuntos = [
-        { lat: 10.4075, lng: -75.5348 }, // Av. Jiménez / Manga Sur
-        { lat: 10.4110, lng: -75.5370 }, // Cra 21 Manga Central
-        { lat: 10.4140, lng: -75.5395 }, // Calle Real de Manga
-        { lat: 10.4170, lng: -75.5422 }, // Acceso Puente Román
-        { lat: 10.4185, lng: -75.5435 }, // Cruzando Puente Román
-        { lat: 10.4198, lng: -75.5458 }, // Calle de la Sierpe / Getsemaní
-        { lat: 10.4208, lng: -75.5472 }, // Calle Larga / Getsemaní
-        { lat: 10.4222, lng: -75.5488 }, // Camellón de los Mártires
-        { lat: 10.4230, lng: -75.5498 }, // Plaza de la Paz / Torre del Reloj
-        { lat: 10.4235, lng: -75.5502 }  // Sede San Agustín (Univ. de Cartagena)
+        { lat: 10.39991, lng: -75.47886 }, // Casa de Damián Díaz Balseiro — Chapacuá
+        { lat: 10.40020, lng: -75.47855 },
+        { lat: 10.40055, lng: -75.47820 },
+        { lat: 10.40090, lng: -75.47785 }, // Parque de Chapacuá
+        { lat: 10.40125, lng: -75.47750 },
+        { lat: 10.40155, lng: -75.47715 }, // Droguería del sector Chapacuá
+        { lat: 10.40110, lng: -75.47760 },
+        { lat: 10.40065, lng: -75.47810 },
+        { lat: 10.40025, lng: -75.47850 },
+        { lat: 10.39991, lng: -75.47886 }  // Regreso a Casa en Chapacuá
       ];
       dibujarHistorial(demoPuntos, 1);
       const emptyEl = document.getElementById('historyEmpty');
@@ -105,16 +105,9 @@ document.addEventListener('dashboardListo', async (e) => {
     mostrarHistorialVacio('Sin administradores registrados');
   }
 
-  // Guardar glucosa inicial y programar guardados periódicos
-  const valor = await guardarGlucosaAleatoria(userId);
-  if (valor) actualizarPulso(valor);
-  setInterval(async () => {
-    const v = await guardarGlucosaAleatoria(userId);
-    if (v) actualizarPulso(v);
-  }, 5 * 60 * 1000);
-
-  // Cargar lecturas recientes para el panel de tendencias
-  cargarLecturasRecientes(userId);
+  // Cargar lecturas reales del paciente (o del abuelo monitoreado) sin inventar valores aleatorios
+  const targetUserId = (rol === 'cuidador' && adminIds.length > 0) ? adminIds[0] : userId;
+  cargarLecturasRecientes(targetUserId);
 });
 
 // ============ PANEL GLUCOSA — PULSE RING ============
@@ -353,35 +346,9 @@ function mostrarHistorialCargando() {
   if (rutasEl) rutasEl.textContent = 'Cargando...';
 }
 
-// ============ GUARDAR GLUCOSA ALEATORIA ============
-// Genera un valor aleatorio dentro del rango normal (70–180 mg/dL)
-// y lo guarda en glucosa_lecturas y en registros para que aparezca
-// en las páginas de Registros y Reportes.
-async function guardarGlucosaAleatoria(userId) {
-  const valor = Math.floor(Math.random() * (160 - 80 + 1)) + 80; // 80–160 mg/dL
-  const ahora = new Date().toISOString();
+// ============ REGISTRO REAL DE LECTURAS (SIN GENERACIÓN ALEATORIA) ============
+// Las lecturas de glucosa capilar y presión arterial se registran manualmente
+// con el glucómetro/tensiómetro a través de assets/js/caso-estudio.js
 
-  supabaseClient.from('glucosa_lecturas').insert({
-    user_id: userId,
-    valor,
-    ts: ahora,
-    fuente: 'cgm',
-  }).then(({ error }) => {
-    if (error) console.warn('Error guardando glucosa_lecturas:', error.message);
-  });
-
-  supabaseClient.from('registros').insert({
-    user_id: userId,
-    tipo: 'glucosa',
-    valor: `${valor} mg/dL`,
-    etiquetas: ['cgm', valor > 140 ? 'elevada' : 'normal'],
-    notas: 'Lectura automática del monitor continuo',
-    ts: ahora,
-  }).then(({ error }) => {
-    if (error) console.warn('Error guardando registro glucosa:', error.message);
-  });
-
-  return valor;
-}
 
 

@@ -6,6 +6,7 @@
 
 // Base de sectores y barrios de Cartagena para geocodificación inversa inmediata
 const BARRIOS_CARTAGENA = [
+  { nombre: 'Chapacuá (Casa Don Damián Díaz)', centro: [10.39991, -75.47886], radio: 900, referencia: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886) / Cerca a Transversal 54 y Clínica Blas de Lezo' },
   { nombre: 'Zarzagocilla / Campus Universitario', centro: [10.3951, -75.4952], radio: 800, referencia: 'Cerca a la Universidad de Cartagena y Hospital Universitario (HUC)' },
   { nombre: 'San Fernando / Los Caracoles', centro: [10.3887, -75.4789], radio: 900, referencia: 'Sector Residencial Sur / Cerca a Clínica Gestión Salud' },
   { nombre: 'Los Ejecutivos / Cuatro Vientos', centro: [10.4010, -75.5035], radio: 750, referencia: 'Sobre Av. Pedro de Heredia / Cerca a Clínica Blas de Lezo' },
@@ -160,9 +161,9 @@ class VozEmergenciaSOS {
     }
 
     // Obtener coordenadas actuales
-    const coords = (window.centrosMedicosInstance && window.centrosMedicosInstance.patientCoords)
-      ? window.centrosMedicosInstance.patientCoords
-      : [10.3910, -75.4794];
+    const coords = (window.TelemetriaDiaMon && window.TelemetriaDiaMon.ubicacion)
+      ? [window.TelemetriaDiaMon.ubicacion.lat, window.TelemetriaDiaMon.ubicacion.lng]
+      : [10.39991, -75.47886];
 
     const sector = this.identificarBarrioCartagena(coords[0], coords[1]);
     const mapsUrl = `https://www.google.com/maps?q=${coords[0]},${coords[1]}`;
@@ -170,9 +171,9 @@ class VozEmergenciaSOS {
 
     // Contactos
     const profile = window.medicalQRManager ? window.medicalQRManager.profile : null;
-    const c1Nombre = profile?.contactoNombre || 'Carol Cervantes (Madre / Acudiente)';
-    const c1Tel = (profile?.contactoTelefono || '+573001234567').replace(/\s+/g, '');
-    const c2Nombre = profile?.medicoTratante || 'Dr. Mendoza (Contacto Médico / Segundo contacto)';
+    const c1Nombre = profile?.contactoNombre || 'Nieta / Cuidadora Principal (Chapacuá)';
+    const c1Tel = (profile?.contactoTelefono || '+573004567890').replace(/\s+/g, '');
+    const c2Nombre = profile?.medicoTratante || 'Enf. Jefe Elizabeth Vargas Caro';
     const c2Tel = (profile?.medicoTelefono || '+573109876543').replace(/\s+/g, '');
 
     const whatsappMsg = encodeURIComponent(
@@ -260,14 +261,14 @@ class VozEmergenciaSOS {
 
           <!-- INFORMACIÓN MÉDICA CRÍTICA DE RESCATE -->
           <div class="sos-medical-sheet-mini">
-            <div class="sos-med-title"><i class="fas fa-id-card"></i> Condición Médica del Paciente:</div>
+            <div class="sos-med-title"><i class="fas fa-id-card"></i> Condición Médica de Damián Díaz Balseiro:</div>
             <div class="sos-med-chips">
-              <span class="sos-med-chip red">Diabetes Tipo 1 (Insulinodependiente)</span>
+              <span class="sos-med-chip red">Diabetes Tipo 2 (Insulina 24 UI + Ozempic) + Hipertensión</span>
               <span class="sos-med-chip">Sangre: ${profile?.grupoSanguineo || 'O+'}</span>
-              <span class="sos-med-chip">Alergias: ${profile?.alergias || 'Penicilina'}</span>
+              <span class="sos-med-chip">Valsartán + Nifedipina + Metformina + Firialta</span>
             </div>
             <p class="sos-first-aid-hint">
-              <strong>Primeros auxilios:</strong> Si está consciente pero mareado o sudoroso, suminístrele 15g de azúcar rápida (jugo o sobre de azúcar disuelto). Si está inconsciente, no le dé líquidos y colóquelo de lado.
+              <strong>Primeros auxilios:</strong> Si está consciente pero mareado o sudoroso, suminístrele 15g de azúcar rápida (jugo o agua con azúcar) y mida su presión arterial sentado. Si está inconsciente, no le dé líquidos y colóquelo de lado.
             </p>
           </div>
         </div>

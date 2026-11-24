@@ -4,21 +4,21 @@
 // ============================================================
 
 const DEFAULT_MEDICAL_PROFILE = {
-  nombre: 'Erick Torres',
-  condicion: 'Diabetes Tipo 1 (Insulinodependiente)',
-  tipoDiabetes: 'tipo1',
-  tratamiento: 'Insulina Glargina 20 UI nocturna + Lispro preprandial según glucosa',
-  glucosaObjetivo: '70 - 130 mg/dL',
+  nombre: 'Damián Díaz Balseiro',
+  condicion: 'Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética',
+  tipoDiabetes: 'tipo2_hta',
+  tratamiento: '8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sábados: Ozempic',
+  glucosaObjetivo: 'Glucosa: 80 - 180 mg/dL | Presión Arterial: < 140/90 mmHg',
   grupoSanguineo: 'O+',
-  alergias: 'Penicilina, Sulfas',
-  contactoNombre: 'Carol Cervantes (Familiar / Acudiente)',
-  contactoTelefono: '+57 300 123 4567',
-  contactoRelacion: 'Familiar directo',
-  medicoTratante: 'Dr. Mendoza — Endocrinólogo HUC',
+  alergias: 'Ninguna alergia medicamentosa reportada',
+  contactoNombre: 'Valentina Díaz Martínez (Nieta / Cuidadora Principal)',
+  contactoTelefono: '+57 300 456 7890',
+  contactoRelacion: 'Nieta / Cuidadora Principal',
+  medicoTratante: 'Enf. Jefe Elizabeth Vargas Caro',
   medicoTelefono: '+57 310 987 6543',
-  ciudad: 'Cartagena de Indias, Colombia',
+  ciudad: 'Barrio Chapacuá, Cartagena de Indias',
   centroReferencia: 'Hospital Universitario del Caribe / Clínica Blas de Lezo',
-  notasEmergencia: 'Riesgo de hipoglucemia severa súbita. Si estoy desorientado o sudoroso pero consciente, darme jugo con azúcar o dulce. Si estoy inconsciente, NO dar líquidos, poner en posición lateral y llamar a urgencias.'
+  notasEmergencia: 'Paciente de Chapacuá (Cartagena) en tratamiento con Insulina 24 UI a las 9:00 PM, Ozempic los sábados y antihipertensivos (Valsartán 2:00 PM + Nifedipina 8 AM/8 PM). Si presenta sudoración fría o mareo estando consciente, aplicar Regla 15-15 (15g de azúcar rápida) y medir presión arterial sentado.'
 };
 
 class MedicalQRManager {
@@ -53,6 +53,7 @@ class MedicalQRManager {
 
   getEmergencyURL() {
     const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+    const pagePrefix = window.location.pathname.includes('/pages/') ? '' : '/pages';
     const compactData = {
       n: this.profile.nombre,
       c: this.profile.condicion,
@@ -66,7 +67,7 @@ class MedicalQRManager {
     };
     const jsonStr = JSON.stringify(compactData);
     const encoded = encodeURIComponent(jsonStr);
-    return `${baseUrl}/ficha-emergencia.html#${encoded}`;
+    return `${baseUrl}${pagePrefix}/ficha-emergencia.html#${encoded}`;
   }
 
   generateQR(containerId = 'qrcodeCanvas') {

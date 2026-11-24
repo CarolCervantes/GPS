@@ -36,7 +36,7 @@ function verificarLlegadaGeocerca(lat, lng) {
 
 // ============ MAPA INTERACTIVO CON FUNCIONALIDADES GPS ============
 
-const cartagenaCenter = [10.3910, -75.4794];
+const cartagenaCenter = [10.39991, -75.47886]; // Casa de Damián Díaz Balseiro — Barrio Chapacuá
 
 function initializeGPSMap(userId) {
   const mapEl = document.getElementById('map');
@@ -46,7 +46,7 @@ function initializeGPSMap(userId) {
   const map = L.map('map', {
     zoomControl: true,
     attributionControl: false
-  }).setView(cartagenaCenter, 13);
+  }).setView(cartagenaCenter, 16);
   window.mapInstance = map;
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,10 +57,10 @@ function initializeGPSMap(userId) {
   // ========== ICONOS PERSONALIZADOS ==========
   const icons = {
     ambulance: L.divIcon({
-      className: 'custom-icon ambulance-icon',
-      html: '<span>🚑</span>',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36],
+      className: 'custom-icon patient-live-icon',
+      html: '<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;border:3px solid #fff;box-shadow:0 4px 14px rgba(13,148,136,0.55);"><i class="fas fa-user-check"></i></div>',
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
     }),
     clinic: L.divIcon({
       className: 'custom-icon clinic-icon',
@@ -124,15 +124,32 @@ function initializeGPSMap(userId) {
     badge.className = `gps-route-badge ${cfg.clase}`;
   }
 
-  // ========== FUNCIONES AUXILIARES ==========
+  // ========== POPUP CLÍNICO REAL DE DAMIÁN DÍAZ BALSEIRO ==========
   function medicalPopupContent(lat, lng) {
+    const res = (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function')
+      ? window.casoEstudio.obtenerResumenClinicoActual()
+      : null;
+    const nombrePac = res ? res.paciente.nombre : 'Damián Díaz Balseiro';
+    const glucTxt = res ? `${res.ultimaGlucosa.valor} mg/dL (${res.evalG.etiqueta})` : `${form.glucose.value} mg/dL`;
+    const paTxt = res ? `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg (${res.ultimaPresion.pulso} BPM)` : '126/78 mmHg';
+    const checkGeo = (window.casoEstudio && typeof window.casoEstudio.evaluarPosicionEnZonas === 'function')
+      ? window.casoEstudio.evaluarPosicionEnZonas(lat, lng, false)
+      : { dentro: true, zonaNombre: 'Casa Chapacuá', distancia: 0 };
+
     return `
-      <div style="font-size: 0.95rem; line-height: 1.4;">
-        <strong>${form.type.value === 'ambulance' ? 'Ambulancia' : 'Clínica'}</strong><br>
-        <strong>Lat:</strong> ${lat.toFixed(5)}<br>
-        <strong>Lng:</strong> ${lng.toFixed(5)}<br>
-        <strong>Glucosa:</strong> ${form.glucose.value} mg/dL<br>
-        <strong>Estado:</strong> ${form.status.value}
+      <div style="font-size: 0.85rem; line-height: 1.45; min-width: 215px; font-family: 'Inter', sans-serif;">
+        <div style="font-weight: 800; color: #0f172a; font-size: 0.95rem; margin-bottom: 2px;">
+          <i class="fas fa-user-shield" style="color:#0d9488;"></i> ${nombrePac}
+        </div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 6px;">Barrio Chapacuá · Enf. Jefe Elizabeth Vargas Caro</div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; margin-bottom:6px;">
+          <div><strong>Glucosa:</strong> <span style="color:#0d9488; font-weight:700;">${glucTxt}</span></div>
+          <div><strong>Presión:</strong> <span style="color:#7c3aed; font-weight:700;">${paTxt}</span></div>
+          <div><strong>Geocerca:</strong> <span style="color:${checkGeo.dentro ? '#16a34a' : '#dc2626'}; font-weight:700;">${checkGeo.dentro ? 'En ' + checkGeo.zonaNombre : 'Fuera de zona (' + checkGeo.distancia + 'm)'}</span></div>
+        </div>
+        <div style="font-size: 0.72rem; color: #64748b;">
+          <strong>Lat:</strong> ${Number(lat).toFixed(5)} · <strong>Lng:</strong> ${Number(lng).toFixed(5)}
+        </div>
       </div>
     `;
   }
@@ -317,14 +334,35 @@ function initializeGPSMap(userId) {
 
   // Círculo de precisión GPS
   let accuracyCircle = L.circle(cartagenaCenter, {
-    radius: 40,
+    radius: 30,
     color: '#0284c7',
     fillColor: '#0284c7',
-    fillOpacity: 0.15,
+    fillOpacity: 0.12,
     weight: 1.5,
     dashArray: '3, 6'
   }).addTo(map);
   window._accuracyCircle = accuracyCircle;
+
+  // Capa de Zonas Seguras (Geocercas reales en el mapa principal)
+  const geocercasLayerGroup = L.layerGroup().addTo(map);
+  window.dibujarZonasSegurasEnMapaPrincipal = function () {
+    geocercasLayerGroup.clearLayers();
+    const zonas = (window.casoEstudio && typeof window.casoEstudio.obtenerZonasSeguras === 'function')
+      ? window.casoEstudio.obtenerZonasSeguras()
+      : [{ nombre: 'Casa Damián Díaz — Barrio Chapacuá', centro_lat: 10.39991, centro_lng: -75.47886, radio_metros: 400, nivel_riesgo: 'bajo', activa: true }];
+
+    zonas.filter(z => z.activa !== false).forEach(z => {
+      const color = z.nivel_riesgo === 'alto' ? '#dc2626' : (z.nivel_riesgo === 'medio' ? '#d97706' : '#0d9488');
+      L.circle([z.centro_lat, z.centro_lng], {
+        radius: Number(z.radio_metros) || 400,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.12,
+        weight: 2
+      }).bindTooltip(`🛡️ Zona Segura: ${z.nombre} (Radio: ${z.radio_metros}m)`, { sticky: true }).addTo(geocercasLayerGroup);
+    });
+  };
+  window.dibujarZonasSegurasEnMapaPrincipal();
 
   // Inicializar capa de Centros Médicos y Farmacias de Cartagena
   if (window.CentrosMedicosCartagena && !window.centrosMedicosInstance) {
@@ -388,6 +426,9 @@ function initializeGPSMap(userId) {
     if (window.centrosMedicosInstance) {
       window.centrosMedicosInstance.setPatientCoords([position.lat, position.lng]);
     }
+    if (window.casoEstudio && typeof window.casoEstudio.procesarMovimientoMapa === 'function') {
+      window.casoEstudio.procesarMovimientoMapa(position.lat, position.lng);
+    }
     marker.setPopupContent(medicalPopupContent(position.lat, position.lng)).openPopup();
     verificarLlegadaGeocerca(position.lat, position.lng);
     if (accuracyCircle) accuracyCircle.setLatLng(position);
@@ -405,6 +446,10 @@ function initializeGPSMap(userId) {
     form.latitude.value = event.latlng.lat.toFixed(5);
     form.longitude.value = event.latlng.lng.toFixed(5);
     marker.setLatLng(event.latlng);
+    if (accuracyCircle) accuracyCircle.setLatLng(event.latlng);
+    if (window.casoEstudio && typeof window.casoEstudio.procesarMovimientoMapa === 'function') {
+      window.casoEstudio.procesarMovimientoMapa(event.latlng.lat, event.latlng.lng);
+    }
     marker.setPopupContent(medicalPopupContent(event.latlng.lat, event.latlng.lng)).openPopup();
   });
 

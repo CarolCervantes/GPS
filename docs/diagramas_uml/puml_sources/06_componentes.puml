@@ -1,0 +1,86 @@
+@startuml
+skinparam backgroundColor #ffffff
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam roundcorner 10
+
+skinparam package {
+  BackgroundColor #f8fafc
+  BorderColor #64748b
+  BorderThickness 2
+  FontColor #0f172a
+  FontSize 14
+  FontStyle bold
+}
+
+skinparam component {
+  BackgroundColor #f0f9ff
+  BorderColor #0284c7
+  BorderThickness 1.5
+  FontColor #0f172a
+  FontSize 13
+}
+
+skinparam arrow {
+  Color #0284c7
+  FontColor #334155
+  FontSize 12
+  Thickness 1.5
+}
+
+package "Capa 1: Interfaz de Usuario y Lógica Cliente (DiaMon PWA)" as C1 {
+  [Panel de Control & KPIs] as C_Dash
+  [Motor de Alertas 24/7 & Sirena] as C_Alertas
+  [Mapeo Leaflet & Geocercas Cartagena] as C_Map
+  [Gestor Clínico (Glucosa y Fármacos)] as C_Clinico
+  [Ficha Médica QR PulseCard] as C_QR
+  [Asistente Inteligente DiaBot] as C_DiaBot
+
+  C_Dash -[hidden]down-> C_Clinico
+  C_Alertas -[hidden]down-> C_QR
+  C_Map -[hidden]down-> C_DiaBot
+}
+
+package "Capa 2: APIs Nativas de Hardware del Dispositivo" as C2 {
+  [Geolocation API (GPS en Vivo)] as API_GPS
+  [DeviceMotionEvent (Podómetro 24h)] as API_Motion
+  [Battery Status API] as API_Bat
+  [Web Audio API (Generador Acústico)] as API_Audio
+  [Service Worker 24/7 (sw.js)] as API_SW
+
+  API_GPS -[hidden]down-> API_Audio
+  API_Motion -[hidden]down-> API_SW
+}
+
+package "Capa 3: Servicios en la Nube & Backend Serverless" as C3 {
+  [Vercel CDN Edge Network (diamon-salud.vercel.app)] as S_Vercel
+  [Supabase Realtime WebSockets] as S_Realtime
+  [PostgreSQL Cloud Database] as S_Postgres
+  [Google Identity Services (OAuth 2.0)] as S_Google
+  [Servidor de Mapas OpenStreetMap] as S_OSM
+
+  S_Vercel -[hidden]down-> S_Google
+  S_Realtime -[hidden]down-> S_OSM
+}
+
+' Forzar arquitectura en 3 capas verticales
+C1 -[hidden]down-> C2
+C2 -[hidden]down-> C3
+
+' Enlaces entre Capa 1 y Capa 2
+API_GPS --> C_Map : Suministra coordenadas
+API_Motion --> C_Dash : Entrega conteo de pasos
+API_Bat --> C_Dash : Reporta % de carga
+C_Alertas --> API_Audio : Sintetiza tono de alarma
+C_Alertas --> API_SW : Despacha notificaciones push
+
+' Enlaces entre Capa 1 y Capa 3
+C_Dash --> S_Vercel : Servido bajo protocolo HTTPS
+C_Dash --> S_Google : Valida identidad de usuario
+C_Map --> S_OSM : Descarga teselas cartográficas
+C_Alertas --> S_Realtime : Difunde emergencias instantáneas
+C_Clinico --> S_Postgres : Persiste tomas y mediciones
+C_Alertas ..> C_QR : Activa visualización de emergencia
+@enduml
