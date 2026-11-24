@@ -7,9 +7,10 @@ import android.database.Cursor;
 import java.util.ArrayList;
 import java.util.List;
 
-import co.diamon.salud.gps.entidades.RegistroClinico;
+import co.diamon.salud.gps.domain.entities.RegistroClinico;
+import co.diamon.salud.gps.domain.ports.RegistroClinicoRepositoryPort;
 
-public class DaoRegistroClinico {
+public class DaoRegistroClinico implements RegistroClinicoRepositoryPort {
 
     private ConexionBasedatos bd;
 

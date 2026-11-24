@@ -1,8 +1,8 @@
-package co.diamon.salud.gps.entidades;
+package co.diamon.salud.gps.domain.entities;
 
+// Arquitectura Hexagonal - Capa de Dominio: Entidad RegistroClinico
 public class RegistroClinico {
 
-    // Propiedades correspondientes a las columnas de la tabla RegistrosClinicos
     private String id;
     private String paciente;
     private String glucosa;
@@ -10,11 +10,9 @@ public class RegistroClinico {
     private String medicamento;
     private String ubicacion;
 
-    // Constructor vacio
     public RegistroClinico() {
     }
 
-    // Constructor con todos los campos
     public RegistroClinico(String id, String paciente, String glucosa, String presion, String medicamento, String ubicacion) {
         this.id = id;
         this.paciente = paciente;

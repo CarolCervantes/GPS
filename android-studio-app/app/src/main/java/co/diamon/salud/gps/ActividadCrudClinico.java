@@ -9,8 +9,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import co.diamon.salud.gps.application.usecases.GestionarRegistroClinicoUseCase;
 import co.diamon.salud.gps.dao.DaoRegistroClinico;
-import co.diamon.salud.gps.entidades.RegistroClinico;
+import co.diamon.salud.gps.domain.entities.RegistroClinico;
+import co.diamon.salud.gps.infrastructure.adapters.supabase.SupabaseRestAdapter;
 
 public class ActividadCrudClinico extends Activity {
 
@@ -21,8 +23,8 @@ public class ActividadCrudClinico extends Activity {
     private EditText campoMedicamento;
     private EditText campoUbicacion;
 
-    // comunicacion con la base de datos SQLite local
-    private DaoRegistroClinico dao;
+    // Caso de uso Hexagonal (conecta SQLite local + Supabase en la nube)
+    private GestionarRegistroClinicoUseCase casoDeUso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +39,17 @@ public class ActividadCrudClinico extends Activity {
         campoUbicacion = (EditText) findViewById(R.id.campoUbicacion);
 
         try {
-            dao = new DaoRegistroClinico(this, "diamon_clinico_v1", 1);
-            int proximo = dao.proximoId();
+            DaoRegistroClinico sqliteAdapter = new DaoRegistroClinico(this, "diamon_clinico_v1", 1);
+            SupabaseRestAdapter supabaseAdapter = new SupabaseRestAdapter();
+            casoDeUso = new GestionarRegistroClinicoUseCase(sqliteAdapter, supabaseAdapter);
+            int proximo = casoDeUso.obtenerProximoId();
             campoId.setText("" + proximo);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    // guardar un nuevo registro clinico en SQLite
+    // guardar un nuevo registro clinico en SQLite y sincronizar con Supabase
     public void agregarRegistro(View campo) {
         String paciente = campoPaciente.getText().toString().trim();
         String glucosa = campoGlucosa.getText().toString().trim();
@@ -62,8 +66,8 @@ public class ActividadCrudClinico extends Activity {
         RegistroClinico r = new RegistroClinico(id, paciente, glucosa, presion, medicamento, ubicacion);
 
         try {
-            dao.agregarRegistro(r);
-            Toast.makeText(getApplicationContext(), "Registro clinico guardado en SQLite", Toast.LENGTH_LONG).show();
+            casoDeUso.guardar(r);
+            Toast.makeText(getApplicationContext(), "Guardado en SQLite y sincronizado con Supabase", Toast.LENGTH_LONG).show();
             limpiarCampos(campo);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -78,7 +82,7 @@ public class ActividadCrudClinico extends Activity {
         campoMedicamento.setText("");
         campoUbicacion.setText("Casa Chapacuá (Lat: 10.39991, Lng: -75.47886)");
         try {
-            int proximo = dao.proximoId();
+            int proximo = casoDeUso.obtenerProximoId();
             campoId.setText("" + proximo);
         } catch (Exception e) {
         }
@@ -115,11 +119,11 @@ public class ActividadCrudClinico extends Activity {
         dialogoId.create().show();
     }
 
-    // consultar un registro clinico en SQLite
+    // consultar un registro clinico
     public void buscarRegistro(View campo) {
         String id = campoId.getText().toString().trim();
         try {
-            RegistroClinico r = dao.consultarUnRegistro(id);
+            RegistroClinico r = casoDeUso.buscarPorId(id);
             campoPaciente.setText(r.getPaciente());
             campoGlucosa.setText(r.getGlucosa());
             campoPresion.setText(r.getPresion());
@@ -148,8 +152,8 @@ public class ActividadCrudClinico extends Activity {
 
         try {
             RegistroClinico r = new RegistroClinico(id, paciente, glucosa, presion, medicamento, ubicacion);
-            dao.editarRegistro(r);
-            Toast.makeText(getApplicationContext(), "Registro clinico modificado con exito", Toast.LENGTH_LONG).show();
+            casoDeUso.modificar(r);
+            Toast.makeText(getApplicationContext(), "Modificado y sincronizado con Supabase", Toast.LENGTH_LONG).show();
             limpiarCampos(campo);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "ERROR al modificar: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -169,7 +173,7 @@ public class ActividadCrudClinico extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
-                    dao.borrarRegistro(id);
+                    casoDeUso.eliminar(id);
                     Toast.makeText(getApplicationContext(), "Registro eliminado correctamente", Toast.LENGTH_LONG).show();
                     limpiarCampos(campo);
                 } catch (Exception e) {

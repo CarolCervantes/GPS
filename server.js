@@ -53,7 +53,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (reqPath === '/' || reqPath === '') {
-    reqPath = '/pages/login.html';
+    reqPath = '/pages/index.html';
   }
 
   let filePath = path.join(ROOT, reqPath);

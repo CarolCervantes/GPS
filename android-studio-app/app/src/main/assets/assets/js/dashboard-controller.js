@@ -214,8 +214,24 @@
     }
 
     if (!currentUser) {
-      window.location.replace('login.html');
-      return;
+      // ESTADO INVITADO EN LA WEB (Con botones funcionales para ir a Iniciar Sesión o Registrarse)
+      if (greetingTitle) {
+        greetingTitle.innerHTML = 'Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span> 👋';
+      }
+      if (greetingSubtitle) {
+        greetingSubtitle.innerHTML = 'Modo Invitado · Inicia sesión o crea tu cuenta para gestionar medicamentos y monitoreo en tiempo real.';
+      }
+      if (sidebarName) sidebarName.textContent = 'Modo Invitado';
+      if (sidebarRole) sidebarRole.textContent = 'Sin iniciar sesión';
+      if (sidebarAuthAction) {
+        sidebarAuthAction.innerHTML = `
+          <button class="dc-btn-login-quick" onclick="window.location.href='login.html'" aria-label="Iniciar sesión en DiaMon">
+            <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+          </button>
+        `;
+      }
+      if (guestNoticeMeds) guestNoticeMeds.style.display = 'block';
+      if (guestNoticeReport) guestNoticeReport.style.display = 'block';
     } else {
       // USUARIO / CUIDADOR / ADMIN AUTENTICADO
       const rawNombre = currentUser.nombre || currentUser.email || 'Usuario';
