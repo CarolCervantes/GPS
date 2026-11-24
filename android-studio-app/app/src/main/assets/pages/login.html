@@ -346,20 +346,6 @@
                         </button>
                     </div>
 
-                    <!-- Campo Condicional: Código de Paciente (Cuidador) o Código Admin (Admin) -->
-                    <div class="dm-admin-code-tray" id="loginAdminCodeTray">
-                        <div class="dm-pill-field dm-code-highlight">
-                            <div class="dm-field-icon">
-                                <i class="fas fa-key"></i>
-                            </div>
-                            <input id="loginPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente (Ej: DM-8492)" maxlength="24">
-                        </div>
-                        <div class="dm-demo-codes-row" id="loginDemoCodesRow">
-                            <span class="dm-demo-label">Pacientes registrados:</span>
-                            <button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('DM-8492')">DM-8492 (Damián Díaz Balseiro)</button>
-                        </div>
-                    </div>
-
                     <!-- Fila Auxiliar: Recordarme & Olvidaste tu contraseña -->
                     <div class="dm-form-sub-row">
                         <label class="dm-remember-checkbox">
@@ -408,17 +394,13 @@
                         </button>
                     </div>
 
-                    <!-- Campo Condicional para Cuidador o Administrador al registrarse -->
+                    <!-- Campo Condicional solo al Crear Cuenta para Cuidador o Administrador -->
                     <div class="dm-admin-code-tray" id="regAdminCodeTray">
                         <div class="dm-pill-field dm-code-highlight">
                             <div class="dm-field-icon">
                                 <i class="fas fa-link"></i>
                             </div>
-                            <input id="regPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código Único del Paciente a supervisar" maxlength="24">
-                        </div>
-                        <div class="dm-demo-codes-row" id="regDemoCodesRow">
-                            <span class="dm-demo-label">Pacientes registrados:</span>
-                            <button type="button" class="dm-code-chip" onclick="window.cargarCodigoDemo('DM-8492')">DM-8492 (Damián Díaz Balseiro)</button>
+                            <input id="regPatientCode" type="text" class="dm-capsule-input dm-code-uppercase" placeholder="Código único del paciente a supervisar" maxlength="24" autocomplete="off">
                         </div>
                     </div>
 

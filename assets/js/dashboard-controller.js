@@ -207,6 +207,7 @@
 
     const btnMetasMedicoHeader = document.getElementById('btnMetasMedicoHeader');
     const btnConfigGeocercaBanner = document.getElementById('btnConfigGeocercaBanner');
+    const btnMisMonitoreadosBanner = document.getElementById('btnMisMonitoreadosBanner');
     const btnPanelAdminBanner = document.getElementById('btnPanelAdminBanner');
     const badgeRolBanner = document.getElementById('badgeRolBanner');
     const casoPacienteNombre = document.getElementById('casoPacienteNombre');
@@ -270,6 +271,7 @@
       if (esPaciente) {
         if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'none';
         if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'none';
+        if (btnMisMonitoreadosBanner) btnMisMonitoreadosBanner.style.display = 'none';
         if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'none';
         if (badgeRolBanner) {
           badgeRolBanner.innerHTML = `<i class="fas fa-user-check"></i> Panel del Paciente Monitoreado · Código: ${codigoPropio}`;
@@ -284,17 +286,20 @@
       } else if (esCuidador) {
         if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'inline-flex';
         if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'inline-flex';
+        if (btnMisMonitoreadosBanner) btnMisMonitoreadosBanner.style.display = 'inline-flex';
         if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'none';
         const pacNombre = (paciente && paciente.nombre) ? paciente.nombre : 'Damián Díaz Balseiro';
+        const totalVinc = Array.isArray(currentUser.pacientesVinculados) ? currentUser.pacientesVinculados.length : 1;
         if (badgeRolBanner) {
-          badgeRolBanner.innerHTML = `<i class="fas fa-user-nurse"></i> Panel del Cuidador / Familiar · Supervisando (${codigoPropio})`;
+          badgeRolBanner.innerHTML = `<i class="fas fa-user-nurse"></i> Panel del Cuidador · ${totalVinc} Monitoreado(s)`;
         }
         if (casoPacienteNombre) {
-          casoPacienteNombre.textContent = `Paciente Supervisado: ${pacNombre} (${codigoPropio})`;
+          casoPacienteNombre.textContent = `Supervisando a: ${pacNombre} (${codigoPropio})`;
         }
       } else if (esAdmin) {
         if (btnMetasMedicoHeader) btnMetasMedicoHeader.style.display = 'inline-flex';
         if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'inline-flex';
+        if (btnMisMonitoreadosBanner) btnMisMonitoreadosBanner.style.display = 'inline-flex';
         if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'inline-flex';
         if (badgeRolBanner) {
           badgeRolBanner.innerHTML = `<i class="fas fa-user-shield"></i> Panel de Administración General`;

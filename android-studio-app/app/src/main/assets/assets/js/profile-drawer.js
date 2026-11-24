@@ -136,12 +136,12 @@
 
           <button class="dc-profile-menu-item" onclick="window.mostrarVistaFamiliares()">
             <div class="dc-profile-menu-left">
-              <div class="dc-profile-menu-icon" style="background:#0f172a;">
+              <div class="dc-profile-menu-icon" style="background:linear-gradient(135deg, #0d9488, #0284c7);">
                 <i class="fas fa-users"></i>
               </div>
               <div class="dc-profile-menu-text">
-                <span class="dc-profile-menu-title">Mis familiares</span>
-                <span class="dc-profile-menu-desc">Gestiona los perfiles vinculados</span>
+                <span class="dc-profile-menu-title">${(user.rol === 'cuidador' || user.rol === 'admin') ? 'Mis monitoreados (Vincular otro)' : 'Mis familiares / Mi Código'}</span>
+                <span class="dc-profile-menu-desc">${(user.rol === 'cuidador' || user.rol === 'admin') ? 'Agrega otro paciente con su código o cambia el activo' : 'Consulta tu código único para tu cuidador'}</span>
               </div>
             </div>
             <i class="fas fa-chevron-right dc-profile-menu-chevron"></i>
@@ -405,25 +405,89 @@
     mostrarToastPerfil('✓ Información personal guardada correctamente');
   };
 
-  // ============================================================
-  // SUB-VISTA: MIS FAMILIARES (CÓDIGO ÚNICO + VINCULACIÓN)
-  // ============================================================
+  // Sub-vista para ver codigo del paciente o agregar mas pacientes monitoreados (si es Cuidador)
   window.mostrarVistaFamiliares = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
 
-    if (headerTitle) headerTitle.textContent = 'Mis Familiares';
-
     const user = obtenerUsuarioActual() || {};
+    const esSupervisor = user.rol === 'cuidador' || user.rol === 'admin';
     const codigo = user.codigoPaciente || 'DM-8492';
+
+    if (esSupervisor) {
+      if (headerTitle) headerTitle.textContent = 'Mis Pacientes Monitoreados';
+
+      const pacienteDefault = {
+        id: 'pac-damian-diaz-01',
+        nombre: 'Damián Díaz Balseiro',
+        codigoPaciente: 'DM-8492',
+        ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
+        glucosa: 114
+      };
+
+      let listaVinculados = Array.isArray(user.pacientesVinculados) && user.pacientesVinculados.length > 0
+        ? user.pacientesVinculados
+        : [user.pacienteVinculado || pacienteDefault];
+
+      const codActivo = (user.pacienteVinculado && user.pacienteVinculado.codigoPaciente) || codigo;
+
+      const itemsHtml = listaVinculados.map(pac => {
+        const esActivo = pac.codigoPaciente === codActivo;
+        const inic = (pac.nombre || 'DM').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        return `
+          <div class="dc-family-linked-item" style="border:${esActivo ? '2px solid #0d9488' : '1px solid #e2e8f0'}; background:${esActivo ? '#f0fdfa' : '#ffffff'};">
+            <div class="dc-family-linked-avatar" style="background:linear-gradient(135deg, #0d9488, #0284c7);">${inic}</div>
+            <div class="dc-family-linked-info">
+              <strong>${pac.nombre} (${pac.codigoPaciente})</strong>
+              <span>${pac.ubicacion || 'Monitoreo GPS activo'}</span>
+            </div>
+            ${esActivo
+              ? `<span class="dc-family-status-badge" style="background:#ccfbf1; color:#0f766e;">Supervisando</span>`
+              : `<button type="button" onclick="window.seleccionarMonitoreadoActivo('${pac.codigoPaciente}')" style="background:#0284c7; color:#fff; border:none; border-radius:8px; padding:6px 10px; font-size:11.5px; font-weight:700; cursor:pointer;">Ver panel</button>`
+            }
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="dc-profile-subview">
+          <div class="dc-family-card" style="text-align:left;">
+            <h4 class="dc-family-title" style="margin-bottom:4px;"><i class="fas fa-user-plus" style="color:#0d9488;"></i> Agregar otro Monitoreado</h4>
+            <p class="dc-family-subtitle" style="margin-bottom:12px;">Ingresa el código único del paciente para sumarlo a tu lista de supervisión.</p>
+            <form onsubmit="window.vincularNuevoMonitoreado(event)" style="display:flex; gap:8px;">
+              <input type="text" id="inputNuevoCodigoMonitoreado" placeholder="Código del paciente" maxlength="16" required autocomplete="off" style="flex:1; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-family:monospace; font-size:14px; font-weight:700; text-transform:uppercase;">
+              <button type="submit" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">
+                Vincular
+              </button>
+            </form>
+            <div id="msgVincularMonitoreado" style="display:none; margin-top:8px; font-size:12px; font-weight:600;"></div>
+          </div>
+
+          <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Pacientes bajo tu cuidado (${listaVinculados.length})</h5>
+
+          <div class="dc-family-linked-list">
+            ${itemsHtml}
+          </div>
+
+          <div class="dc-profile-subview-actions" style="margin-top:16px;">
+            <button type="button" class="dc-btn-subview-secondary" style="width:100%;" onclick="window.renderizarVistaPrincipalPerfil()">
+              <i class="fas fa-arrow-left"></i> Volver al Perfil
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    if (headerTitle) headerTitle.textContent = 'Mi Código y Familiares';
 
     container.innerHTML = `
       <div class="dc-profile-subview">
         <div class="dc-family-card">
           <div class="dc-family-icon"><i class="fas fa-qrcode"></i></div>
           <h4 class="dc-family-title">Tu Código Único de Paciente</h4>
-          <p class="dc-family-subtitle">Comparte este código con tus familiares o médico para que puedan supervisar tu glucosa y ubicación GPS en tiempo real.</p>
+          <p class="dc-family-subtitle">Comparte este código con tu familiar o cuidador para que pueda vincularte desde su cuenta.</p>
 
           <div class="dc-family-code-capsule">
             <span class="dc-family-code-text" id="dmUserCodeVal">${codigo}</span>
@@ -433,23 +497,23 @@
           </div>
         </div>
 
-        <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Equipo de Cuidado Vinculado (Caso de Estudio)</h5>
+        <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Equipo Clínico de Referencia</h5>
 
         <div class="dc-family-linked-list">
           <div class="dc-family-linked-item">
-            <div class="dc-family-linked-avatar" style="background:#0d9488;">DD</div>
+            <div class="dc-family-linked-avatar" style="background:#0d9488;">FC</div>
             <div class="dc-family-linked-info">
-              <strong>Damián Díaz Balseiro (DM-8492)</strong>
-              <span>Paciente del Caso de Estudio · Barrio Chapacuá (10.39991, -75.47886)</span>
+              <strong>Familiar / Cuidador Principal</strong>
+              <span>Recibe alertas de glucosa, presión arterial y geocerca GPS</span>
             </div>
-            <span class="dc-family-status-badge">Activo</span>
+            <span class="dc-family-status-badge">Vinculado</span>
           </div>
 
           <div class="dc-family-linked-item">
             <div class="dc-family-linked-avatar" style="background:#0284c7;">EV</div>
             <div class="dc-family-linked-info">
               <strong>Enf. Jefe Elizabeth Vargas Caro</strong>
-              <span>Guía Clínica · Control Glucémico (Insulina 24 UI / Ozempic) y HTA</span>
+              <span>Guía Clínica · Control Glucémico y Cardiovascular</span>
             </div>
             <span class="dc-family-status-badge">Enfermera Jefe</span>
           </div>
@@ -462,6 +526,94 @@
         </div>
       </div>
     `;
+  };
+
+  window.vincularNuevoMonitoreado = function (e) {
+    e.preventDefault();
+    const input = document.getElementById('inputNuevoCodigoMonitoreado');
+    const msgEl = document.getElementById('msgVincularMonitoreado');
+    const cod = (input?.value || '').trim().toUpperCase();
+    if (!cod) return;
+
+    let dbPacientes = {
+      'DM-8492': {
+        id: 'pac-damian-diaz-01',
+        nombre: 'Damián Díaz Balseiro',
+        codigoPaciente: 'DM-8492',
+        glucosa: 114,
+        ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
+        pasos: 1240
+      }
+    };
+    try {
+      const raw = localStorage.getItem('diamon_pacientes_db');
+      if (raw) dbPacientes = Object.assign(dbPacientes, JSON.parse(raw));
+    } catch (_) {}
+
+    const pacienteEncontrado = dbPacientes[cod];
+    if (!pacienteEncontrado) {
+      if (msgEl) {
+        msgEl.style.display = 'block';
+        msgEl.style.color = '#dc2626';
+        msgEl.textContent = `No existe ningún paciente registrado con el código "${cod}".`;
+      }
+      return;
+    }
+
+    const user = obtenerUsuarioActual() || {};
+    let lista = Array.isArray(user.pacientesVinculados) && user.pacientesVinculados.length > 0
+      ? user.pacientesVinculados
+      : (user.pacienteVinculado ? [user.pacienteVinculado] : []);
+
+    if (!lista.some(p => p.codigoPaciente === cod)) {
+      lista.push(pacienteEncontrado);
+    }
+
+    user.pacientesVinculados = lista;
+    user.pacienteVinculado = pacienteEncontrado;
+    user.codigoPaciente = pacienteEncontrado.codigoPaciente;
+
+    // Actualizar tambien en la base de cuentas para que se recuerde al volver a iniciar sesion
+    try {
+      if (user.email) {
+        const cuentas = JSON.parse(localStorage.getItem('diamon_cuentas_db') || '{}');
+        if (cuentas[user.email.toLowerCase()]) {
+          cuentas[user.email.toLowerCase()].pacientesVinculados = lista;
+          cuentas[user.email.toLowerCase()].pacienteVinculado = pacienteEncontrado;
+          cuentas[user.email.toLowerCase()].codigoPaciente = pacienteEncontrado.codigoPaciente;
+          localStorage.setItem('diamon_cuentas_db', JSON.stringify(cuentas));
+        }
+      }
+    } catch (_) {}
+
+    guardarUsuarioActual(user);
+    mostrarToastPerfil(`✓ Paciente ${pacienteEncontrado.nombre} vinculado correctamente`);
+    window.mostrarVistaFamiliares();
+  };
+
+  window.seleccionarMonitoreadoActivo = function (cod) {
+    const user = obtenerUsuarioActual();
+    if (!user || !Array.isArray(user.pacientesVinculados)) return;
+    const encontrado = user.pacientesVinculados.find(p => p.codigoPaciente === cod);
+    if (!encontrado) return;
+
+    user.pacienteVinculado = encontrado;
+    user.codigoPaciente = encontrado.codigoPaciente;
+
+    try {
+      if (user.email) {
+        const cuentas = JSON.parse(localStorage.getItem('diamon_cuentas_db') || '{}');
+        if (cuentas[user.email.toLowerCase()]) {
+          cuentas[user.email.toLowerCase()].pacienteVinculado = encontrado;
+          cuentas[user.email.toLowerCase()].codigoPaciente = encontrado.codigoPaciente;
+          localStorage.setItem('diamon_cuentas_db', JSON.stringify(cuentas));
+        }
+      }
+    } catch (_) {}
+
+    guardarUsuarioActual(user);
+    mostrarToastPerfil(`Supervisando ahora a: ${encontrado.nombre}`);
+    window.mostrarVistaFamiliares();
   };
 
   window.copiarCodigoPaciente = function (codigo) {
