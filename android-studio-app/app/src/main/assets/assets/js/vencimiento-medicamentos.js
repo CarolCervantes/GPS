@@ -1,9 +1,12 @@
-﻿// // DiaMon - Control de Vencimiento de Medicamentos e Insulinas
+// ============================================================
+// DiaMon — Control de Vencimiento de Medicamentos e Insulinas
 // Regla clínica de 28 días para insulinas en uso a temperatura ambiente
-// const INVENTARIO_MEDICAMENTOS_DEFECTO = [
+// ============================================================
+
+const INVENTARIO_MEDICAMENTOS_DEFECTO = [
   {
     id: 'insulina-24ui',
-    nombre: 'Insulina Basal (24 UI - 9:00 PM · Pluma en uso)',
+    nombre: 'Insulina Basal (24 UI — 9:00 PM · Pluma en uso)',
     tipo: 'insulina_en_uso',
     fechaApertura: calcularFechaAtras(10),
     diasVidaUtil: 28,
@@ -168,4 +171,3 @@ class VencimientoMedicamentosManager {
 document.addEventListener('DOMContentLoaded', () => {
   new VencimientoMedicamentosManager();
 });
-

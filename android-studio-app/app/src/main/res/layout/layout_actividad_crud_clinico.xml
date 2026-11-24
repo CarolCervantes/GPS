@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="36dp"
+    android:background="#F0F5F7">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/etiTituloCrud"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CRUD Signos Vitales — DiaMon"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:textColor="#082032"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/etiSubCrud"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiTituloCrud"
+            android:text="Paciente: Damián Díaz Balseiro · Chapacuá\nEnf. Jefe Elizabeth Vargas Caro"
+            android:textSize="13sp"
+            android:textColor="#0D9488"
+            android:gravity="center"
+            android:layout_marginBottom="14dp" />
+
+        <TextView
+            android:id="@+id/etiId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiSubCrud"
+            android:text="ID Registro:"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiSubCrud"
+            android:layout_toRightOf="@id/etiId"
+            android:layout_marginLeft="10dp"
+            android:inputType="number"
+            android:enabled="false" />
+
+        <TextView
+            android:id="@+id/etiPaciente"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoId"
+            android:layout_marginTop="8dp"
+            android:text="Paciente (Caso de Estudio):"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoPaciente"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiPaciente"
+            android:text="Damián Díaz Balseiro"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/etiGlucosa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoPaciente"
+            android:layout_marginTop="8dp"
+            android:text="Glucosa Capilar (mg/dL):"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoGlucosa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiGlucosa"
+            android:hint="Ej: 114 mg/dL (En ayunas)"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/etiPresion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoGlucosa"
+            android:layout_marginTop="8dp"
+            android:text="Presión Arterial (mmHg):"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoPresion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiPresion"
+            android:hint="Ej: 126/78 mmHg (71 BPM)"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/etiMedicamento"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoPresion"
+            android:layout_marginTop="8dp"
+            android:text="Medicamento / Insulina Aplicada:"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoMedicamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiMedicamento"
+            android:hint="8AM Pantoprazol, Metformina, Firialta, Nifedipina | 2PM Valsartán | 9PM Insulina 24 UI"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/etiUbicacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoMedicamento"
+            android:layout_marginTop="8dp"
+            android:text="Ubicación GPS (Geocerca Chapacuá):"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/campoUbicacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/etiUbicacion"
+            android:text="Casa Chapacuá (Lat: 10.39991, Lng: -75.47886)"
+            android:inputType="text" />
+
+        <LinearLayout
+            android:id="@+id/filaBotones1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/campoUbicacion"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/botonGuardar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar"
+                android:onClick="agregarRegistro"
+                android:backgroundTint="#0D9488"/>
+
+            <Button
+                android:id="@+id/botonBuscar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="Buscar"
+                android:onClick="mostrarCuadroDialogoId"
+                android:backgroundTint="#0D9488"/>
+
+            <Button
+                android:id="@+id/botonLimpiar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="Limpiar"
+                android:onClick="limpiarCampos"
+                android:backgroundTint="#0D9488"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/filaBotones2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/filaBotones1"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/botonModificar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modificar"
+                android:onClick="modificarRegistro"
+                android:backgroundTint="#0284C7"/>
+
+            <Button
+                android:id="@+id/botonEliminar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14dp"
+                android:text="Eliminar"
+                android:onClick="eliminarRegistro"
+                android:backgroundTint="#DC2626"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/botonIrMapaWeb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/filaBotones2"
+            android:layout_marginTop="14dp"
+            android:text="Abrir Mapa GPS &amp; Dashboard Completo"
+            android:onClick="abrirDashboardMapa"
+            android:backgroundTint="#082032"
+            android:textColor="#FFFFFF"/>
+
+    </RelativeLayout>
+</ScrollView>

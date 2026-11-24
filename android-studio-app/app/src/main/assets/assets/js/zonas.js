@@ -1,4 +1,4 @@
-﻿// ZONAS SEGURAS ============
+// ============ ZONAS SEGURAS ============
 let mapaZonas = null;
 let marcadorActual = null;
 let circuloActual = null;
@@ -12,7 +12,7 @@ const LOCAL_ZONAS_KEY = 'diamon_damian_zonas_v5';
 const ZONA_CASA_DAMIAN = [
   {
     id: 1,
-    nombre: 'Casa Damián Díaz - Barrio Chapacuá',
+    nombre: 'Casa Damián Díaz — Barrio Chapacuá',
     centro_lat: 10.39991,
     centro_lng: -75.47886,
     radio_metros: 400,
@@ -59,7 +59,7 @@ document.addEventListener('dashboardListo', async (e) => {
   ocultarFormulario();
 });
 
-// MAPA ============
+// ============ MAPA ============
 function iniciarMapa() {
   mapaZonas = L.map('mapZonas', { zoomControl: true }).setView([10.39991, -75.47886], 15);
 
@@ -95,7 +95,7 @@ function colocarMarcador(lat, lng) {
   document.getElementById('mapaHint').style.display = 'none';
 }
 
-// CARGAR ZONAS ============
+// ============ CARGAR ZONAS ============
 async function cargarZonas() {
   const ownerId = zonaOwner || usuarioId;
   let cargadasDeSupabase = null;
@@ -178,7 +178,7 @@ function renderCirculosEnMapa() {
   }
 }
 
-// ACCIONES ============
+// ============ ACCIONES ============
 function centrarZona(lat, lng) {
   mapaZonas.setView([lat, lng], 15);
 }
@@ -215,7 +215,7 @@ async function eliminarZona(id) {
   await cargarZonas();
 }
 
-// FORMULARIO ============
+// ============ FORMULARIO ============
 function wireFormulario() {
   document.getElementById('btnNuevaZona')?.addEventListener('click', () => {
     limpiarFormulario();
@@ -323,4 +323,3 @@ function escZona(str) {
   d.textContent = str ?? '';
   return d.innerHTML;
 }
-

@@ -1,5 +1,5 @@
-﻿/**
- * DiaMon - Modulo de alertas y notificaciones
+/**
+ * DiaMon — Sistema Autónomo de Alertas e Incidencias Clínicas 24/7
  * 1. Monitoreo continuo 24/7 de Geocercas GPS (Salida de zona segura en Cartagena)
  * 2. Notificaciones push nativas del sistema operativo en segundo plano (Service Worker)
  * 3. Alarma sonora clínica de emergencia (Web Audio API)
@@ -10,7 +10,7 @@
   'use strict';
 
   const STORAGE_KEY = 'diamon_alertas_damian_v5';
-  const GEOFENCE_HOME = { lat: 10.39991, lng: -75.47886, radioMetros: 400 }; // Casa de Damián Díaz Balseiro - Chapacuá
+  const GEOFENCE_HOME = { lat: 10.39991, lng: -75.47886, radioMetros: 400 }; // Casa de Damián Díaz Balseiro — Chapacuá
 
   // Base inicial de alertas de referencia del Caso de Estudio (Damián Díaz Balseiro)
   const ALERTAS_INICIALES = [
@@ -50,7 +50,7 @@
     },
     {
       id: 'alt-003',
-      titulo: 'Geocerca Activa - Casa en Chapacuá',
+      titulo: 'Geocerca Activa — Casa en Chapacuá',
       subtitulo: 'Damián Díaz Balseiro se encuentra dentro del perímetro seguro (400m).',
       tiempoTexto: 'Hace 2 h',
       tipo: 'ubicacion',
@@ -71,8 +71,10 @@
   let swRegistration = null;
   let ultimaAlertaGeocercaTs = 0;
 
-  // // 1. GESTIÓN Y PERSISTENCIA DE ALERTAS
-  // function obtenerAlertas() {
+  // ============================================================
+  // 1. GESTIÓN Y PERSISTENCIA DE ALERTAS
+  // ============================================================
+  function obtenerAlertas() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
@@ -101,8 +103,10 @@
     });
   }
 
-  // // 2. SINTETIZADOR DE AUDIO CLÍNICO 24/7 (WEB AUDIO API)
-  // function reproducirAlarmaAudio(tipo = 'aviso') {
+  // ============================================================
+  // 2. SINTETIZADOR DE AUDIO CLÍNICO 24/7 (WEB AUDIO API)
+  // ============================================================
+  function reproducirAlarmaAudio(tipo = 'aviso') {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -169,8 +173,10 @@
     }
   };
 
-  // // 3. SERVICE WORKER Y NOTIFICACIONES PUSH DEL SISTEMA 24/7
-  // function initServiceWorker() {
+  // ============================================================
+  // 3. SERVICE WORKER Y NOTIFICACIONES PUSH DEL SISTEMA 24/7
+  // ============================================================
+  function initServiceWorker() {
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
       const swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : '/sw.js';
       navigator.serviceWorker.register(swPath)
@@ -259,8 +265,10 @@
     }
   }
 
-  // // 4. MOTOR AUTÓNOMO DE MONITOREO 24/7
-  // function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
+  // ============================================================
+  // 4. MOTOR AUTÓNOMO DE MONITOREO 24/7
+  // ============================================================
+  function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
     const R = 6371000;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -367,8 +375,10 @@
     }, 20000);
   }
 
-  // // 5. RENDERIZADO VISUAL
-  // window.renderizarAlertasDiaMon = function () {
+  // ============================================================
+  // 5. RENDERIZADO VISUAL
+  // ============================================================
+  window.renderizarAlertasDiaMon = function () {
     const containers = [
       document.getElementById('alertsList'),
       document.getElementById('alertsListSecurity')
@@ -570,4 +580,3 @@
     iniciarLoopMonitoreo24h();
   });
 })();
-

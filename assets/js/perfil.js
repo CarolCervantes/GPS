@@ -1,4 +1,4 @@
-﻿// PERFIL DE USUARIO ============
+// ============ PERFIL DE USUARIO ============
 
 document.addEventListener('dashboardListo', async (e) => {
   const user = e.detail?.user;
@@ -11,7 +11,7 @@ document.addEventListener('dashboardListo', async (e) => {
   await initVinculacionCuidador(user.id);
 });
 
-// CARGAR DATOS ============
+// ============ CARGAR DATOS ============
 
 async function cargarPerfil(user) {
   const { data: profile } = await supabaseClient
@@ -24,7 +24,7 @@ async function cargarPerfil(user) {
   const rol    = profile?.rol || 'usuario';
   const fecha  = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
-    : '-';
+    : '—';
   const idCorto = user.id.slice(0, 8) + '…';
 
   // Avatar con inicial
@@ -95,7 +95,7 @@ function aplicarRolUI(rol) {
   if (desc)  { desc.textContent = config.descripcion; }
 }
 
-// GUARDAR NOMBRE ============
+// ============ GUARDAR NOMBRE ============
 
 function wireGuardarNombre(userId) {
   const btn = document.getElementById('btnGuardarNombre');
@@ -146,7 +146,7 @@ function wireGuardarNombre(userId) {
   });
 }
 
-// CAMBIAR CONTRASEÑA ============
+// ============ CAMBIAR CONTRASEÑA ============
 
 function wireCambiarClave() {
   const btn = document.getElementById('btnCambiarClave');
@@ -179,7 +179,7 @@ function wireCambiarClave() {
   });
 }
 
-// CERRAR SESIÓN ============
+// ============ CERRAR SESIÓN ============
 
 function wireCerrarSesion() {
   const btn = document.getElementById('btnCerrarSesion');
@@ -191,11 +191,11 @@ function wireCerrarSesion() {
   });
 }
 
-// UTILS ============
+// ============ UTILS ============
 
 function set(id, val) {
   const el = document.getElementById(id);
-  if (el) el.textContent = val ?? '-';
+  if (el) el.textContent = val ?? '—';
 }
 
 function mostrarMensaje(id, texto, tipo) {
@@ -206,7 +206,7 @@ function mostrarMensaje(id, texto, tipo) {
   setTimeout(() => { el.textContent = ''; el.className = 'perfil-mensaje'; }, 4000);
 }
 
-// VINCULACIÓN CUIDADOR <-> MONITOREADO ============
+// ============ VINCULACIÓN CUIDADOR <-> MONITOREADO ============
 
 async function initVinculacionCuidador(userId) {
   const seccion = document.getElementById('seccionVinculacion');
@@ -366,10 +366,9 @@ async function crearVinculacion(cuidadorId, monitoreadoId, nombre) {
   mostrarVinculacionActiva({ monitoreado_id: monitoreadoId, profiles: { nombre, id: monitoreadoId } }, cuidadorId);
 }
 
-// escHtml ----------
+// ---------- escHtml ----------
 function escHtml(str) {
   const d = document.createElement('div');
   d.textContent = str ?? '';
   return d.innerHTML;
 }
-

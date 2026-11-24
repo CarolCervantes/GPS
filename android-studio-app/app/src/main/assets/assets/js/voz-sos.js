@@ -1,7 +1,10 @@
-﻿// // DiaMon - Activación de Emergencia por Voz ("SOS por Voz")
+// ============================================================
+// DiaMon — Activación de Emergencia por Voz ("SOS por Voz")
 // Muestra la ubicación actual en GRANDE con Barrio, Referencia y Llamada directa
 // Optimizado 100% para celulares y pantallas táctiles
-// // Base de sectores y barrios de Cartagena para geocodificación inversa inmediata
+// ============================================================
+
+// Base de sectores y barrios de Cartagena para geocodificación inversa inmediata
 const BARRIOS_CARTAGENA = [
   { nombre: 'Chapacuá (Casa Don Damián Díaz)', centro: [10.39991, -75.47886], radio: 900, referencia: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886) / Cerca a Transversal 54 y Clínica Blas de Lezo' },
   { nombre: 'Zarzagocilla / Campus Universitario', centro: [10.3951, -75.4952], radio: 800, referencia: 'Cerca a la Universidad de Cartagena y Hospital Universitario (HUC)' },
@@ -335,4 +338,3 @@ class VozEmergenciaSOS {
 document.addEventListener('DOMContentLoaded', () => {
   new VozEmergenciaSOS();
 });
-

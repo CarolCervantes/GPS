@@ -1,8 +1,11 @@
-﻿// // DiaMon - Sistema de Acompañamiento Inteligente GPS ("Safe Walk")
+// ============================================================
+// DiaMon — Sistema de Acompañamiento Inteligente GPS ("Safe Walk")
 // Con cálculo de tráfico en Cartagena, notificación familiar y diario de síntomas
-// const DESTINOS_PREDETERMINADOS_CTG = [
-  { id: 'udc-zarzagocilla', nombre: 'Universidad de Cartagena - Zarzagocilla', baseMinutos: 20, coords: [10.3951, -75.4952] },
-  { id: 'udc-san-agustin', nombre: 'Universidad de Cartagena - San Agustín (Centro)', baseMinutos: 35, coords: [10.4235, -75.5502] },
+// ============================================================
+
+const DESTINOS_PREDETERMINADOS_CTG = [
+  { id: 'udc-zarzagocilla', nombre: 'Universidad de Cartagena — Zarzagocilla', baseMinutos: 20, coords: [10.3951, -75.4952] },
+  { id: 'udc-san-agustin', nombre: 'Universidad de Cartagena — San Agustín (Centro)', baseMinutos: 35, coords: [10.4235, -75.5502] },
   { id: 'casa', nombre: 'Casa / Hogar (San Fernando)', baseMinutos: 15, coords: [10.3887, -75.4789] },
   { id: 'mall-plaza', nombre: 'Mall Plaza El Castillo (Chambacú)', baseMinutos: 30, coords: [10.4245, -75.5390] },
   { id: 'bocagrande', nombre: 'Plaza Bocagrande', baseMinutos: 40, coords: [10.4080, -75.5510] }
@@ -492,4 +495,3 @@ class SafeWalkCompanion {
 document.addEventListener('DOMContentLoaded', () => {
   new SafeWalkCompanion();
 });
-

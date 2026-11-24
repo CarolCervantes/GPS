@@ -1,4 +1,13 @@
-﻿*, *::before, *::after {
+/* ============================================================
+   DiaMon — Escenario 3D Cinematográfico & Autenticación Fiel
+   Fiel a la referencia oficial:
+   - Glucómetro 3D en perspectiva acostada (Izquierda) + Gota con cruz (+)
+   - Panel de Telemetría ECG 3D en perspectiva acostada (Derecha)
+   - Tarjeta Central Frosted Glassmorphism translúcida con aura volumétrica
+   - Fondo de seda azul marino y partículas luminosas
+   ============================================================ */
+
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -22,7 +31,9 @@ body {
   justify-content: center;
 }
 
-
+/* ============================================================
+   1. FONDO DE SEDA AZUL 3D & AURORAS VOLUMÉTRICAS
+   ============================================================ */
 .dm-stage-bg {
   position: fixed;
   inset: 0;
@@ -132,7 +143,9 @@ body {
   opacity: 0.75;
 }
 
-
+/* ============================================================
+   2. CONTROLES SUPERIORES (v1.0 & GRID)
+   ============================================================ */
 .dm-topbar-hud {
   position: fixed;
   top: 24px;
@@ -183,7 +196,9 @@ body {
   box-shadow: 0 8px 20px rgba(56, 189, 248, 0.25);
 }
 
-
+/* ============================================================
+   3. ESCENARIO 3D ISOMÉTRICO (COMPOSICIÓN DE TRES ELEMENTOS)
+   ============================================================ */
 .dm-viewport-scene {
   position: relative;
   z-index: 10;
@@ -216,7 +231,9 @@ body {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-
+/* ============================================================
+   4. ELEMENTO 3D IZQUIERDO: GLUCÓMETRO ACOSTADO ("MEDIO ACOSTADO")
+   ============================================================ */
 .dm-element-left {
   left: 20px;
   top: 50%;
@@ -303,7 +320,9 @@ body {
   letter-spacing: 1.5px;
 }
 
-
+/* ============================================================
+   5. ELEMENTO 3D DERECHO: PANEL TELEMETRÍA ECG ("MEDIO ACOSTADO")
+   ============================================================ */
 .dm-element-right {
   right: 15px;
   top: 50%;
@@ -501,7 +520,9 @@ body {
   font-weight: 700;
 }
 
-
+/* ============================================================
+   6. CENTRO: TARJETA FROSTED GLASS (ALTA FIDELIDAD)
+   ============================================================ */
 .dm-center-card-layer {
   position: relative;
   z-index: 20;
@@ -534,7 +555,9 @@ body {
     inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
-
+/* ============================================================
+   CABECERA DE MARCA: LOGO CORAZÓN + PULSO
+   ============================================================ */
 .dm-brand-header {
   text-align: center;
   margin-bottom: 22px;
@@ -607,7 +630,9 @@ body {
   letter-spacing: 0.4px;
 }
 
-
+/* ============================================================
+   PESTAÑAS PÍLDORA: INICIAR SESIÓN / CREAR CUENTA
+   ============================================================ */
 .dm-pills-tabs-nav {
   display: flex;
   background: rgba(6, 17, 39, 0.75);
@@ -649,7 +674,9 @@ body {
   font-size: 12px;
 }
 
-
+/* ============================================================
+   SELECTOR DE PERFIL: USUARIO VS ADMINISTRADOR
+   ============================================================ */
 .dm-role-selector-bar {
   display: flex;
   gap: 8px;
@@ -686,7 +713,9 @@ body {
   color: #cbd5e1;
 }
 
-
+/* ============================================================
+   CAMPOS DE ENTRADA: CÁPSULAS PÍLDORA (CAPSULE INPUTS)
+   ============================================================ */
 .dm-auth-form {
   display: flex;
   flex-direction: column;
@@ -825,7 +854,9 @@ body {
   color: #ffffff;
 }
 
-
+/* ============================================================
+   FILA AUXILIAR: RECORDARME & RECUPERAR CONTRASEÑA
+   ============================================================ */
 .dm-form-sub-row {
   display: flex;
   align-items: center;
@@ -893,7 +924,9 @@ body {
   text-decoration: underline;
 }
 
-
+/* ============================================================
+   BOTÓN PRINCIPAL: CÁPSULA RADIANTE DE LUZ
+   ============================================================ */
 .dm-action-pill-button {
   position: relative;
   overflow: hidden;
@@ -970,7 +1003,9 @@ body {
   display: none;
 }
 
-
+/* ============================================================
+   SEPARADOR: "O CONTINÚA CON"
+   ============================================================ */
 .dm-divider-strip {
   display: flex;
   align-items: center;
@@ -991,7 +1026,9 @@ body {
   letter-spacing: 0.3px;
 }
 
-
+/* ============================================================
+   BOTONES DE LOGIN SOCIAL (GOOGLE, MICROSOFT, APPLE, FACEBOOK)
+   ============================================================ */
 .dm-social-row {
   display: flex;
   align-items: center;
@@ -1029,7 +1066,9 @@ body {
   transform: translateY(0) scale(1);
 }
 
-
+/* ============================================================
+   MENSAJES DE ESTADO / ALERTAS
+   ============================================================ */
 .dm-status-msg {
   display: none;
   margin-top: 14px;
@@ -1059,7 +1098,9 @@ body {
   color: #fca5a5;
 }
 
-
+/* ============================================================
+   PIE DE TARJETA: ENLACE AL DASHBOARD
+   ============================================================ */
 .dm-card-footer {
   margin-top: 18px;
   text-align: center;
@@ -1081,7 +1122,9 @@ body {
   transform: translateX(-2px);
 }
 
-
+/* ============================================================
+   7. RESPONSIVIDAD & DISPOSITIVOS MÓVILES
+   ============================================================ */
 @media (max-width: 1200px) {
   .dm-element-left {
     left: -40px;
@@ -1120,7 +1163,9 @@ body {
   }
 }
 
-
+/* ============================================================
+   MODAL DE AUTENTICACIÓN GOOGLE & REDES (DISEÑO FROSTED GLASS)
+   ============================================================ */
 .dm-oauth-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1237,4 +1282,3 @@ body {
 .dm-oauth-switch-link:hover {
   color: #7dd3fc;
 }
-

@@ -1,9 +1,12 @@
-﻿// // DiaMon - Módulo de Tráfico y Congestión Automática en Cartagena
+// ============================================================
+// DiaMon — Módulo de Tráfico y Congestión Automática en Cartagena
 // Detección automática por telemetría GPS, velocidad y geocercas
-// const CORREDORES_TRAFICO_CARTAGENA = [
+// ============================================================
+
+const CORREDORES_TRAFICO_CARTAGENA = [
   {
     id: 'bazurto',
-    nombre: 'Av. Pedro de Heredia - Mercado de Bazurto',
+    nombre: 'Av. Pedro de Heredia — Mercado de Bazurto',
     nivel: 'pesado',
     color: '#ef4444',
     retrasoMinutos: 15,
@@ -19,7 +22,7 @@
   },
   {
     id: 'bomba-el-amparo',
-    nombre: 'Bomba El Amparo - Ronda Real - Castellana',
+    nombre: 'Bomba El Amparo — Ronda Real — Castellana',
     nivel: 'pesado',
     color: '#ef4444',
     retrasoMinutos: 14,
@@ -34,7 +37,7 @@
   },
   {
     id: 'cuatro-vientos',
-    nombre: 'Cuatro Vientos - Los Ejecutivos',
+    nombre: 'Cuatro Vientos — Los Ejecutivos',
     nivel: 'moderado',
     color: '#f59e0b',
     retrasoMinutos: 8,
@@ -79,7 +82,7 @@
   },
   {
     id: 'via-al-mar',
-    nombre: 'Av. Santander - Crespo y Marbella',
+    nombre: 'Av. Santander — Crespo y Marbella',
     nivel: 'fluido',
     color: '#10b981',
     retrasoMinutos: 0,
@@ -128,7 +131,7 @@ class TraficoCartagenaManager {
           <div class="traffic-banner-title" id="trafficBannerTitle">Detección Automática de Tráfico</div>
           <div class="traffic-banner-sub" id="trafficBannerSub">Analizando telemetría GPS…</div>
         </div>
-        <span class="traffic-speed-badge" id="trafficSpeedBadge">- km/h</span>
+        <span class="traffic-speed-badge" id="trafficSpeedBadge">— km/h</span>
       </div>
     `;
     const mapContainer = document.querySelector('.map-live-container') || document.body;
@@ -187,8 +190,10 @@ class TraficoCartagenaManager {
     });
   }
 
-  // // DETECCIÓN AUTOMÁTICA EN TIEMPO REAL POR TELEMETRÍA GPS
-  // procesarTelemetriaGPS(lat, lng, velocidadReportada = null) {
+  // ============================================================
+  // DETECCIÓN AUTOMÁTICA EN TIEMPO REAL POR TELEMETRÍA GPS
+  // ============================================================
+  procesarTelemetriaGPS(lat, lng, velocidadReportada = null) {
     if (!lat || !lng) return;
 
     const ahora = Date.now();
@@ -241,7 +246,7 @@ class TraficoCartagenaManager {
       }
 
       if (titleEl) {
-        titleEl.innerHTML = `<i class="fas fa-traffic-light"></i> Trancón detectado en ${trancónDetectado.nombre.split('-')[1] || trancónDetectado.nombre}`;
+        titleEl.innerHTML = `<i class="fas fa-traffic-light"></i> Trancón detectado en ${trancónDetectado.nombre.split('—')[1] || trancónDetectado.nombre}`;
       }
 
       if (subEl) {
@@ -334,4 +339,3 @@ class TraficoCartagenaManager {
 
 window.TraficoCartagenaManager = TraficoCartagenaManager;
 window.CORREDORES_TRAFICO_CARTAGENA = CORREDORES_TRAFICO_CARTAGENA;
-

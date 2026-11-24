@@ -1,9 +1,12 @@
-﻿// // Confirmación Automática de Llegada por Geocerca
-// let _ultimaLlegadaId = null;
+
+// ============================================================
+// Confirmación Automática de Llegada por Geocerca
+// ============================================================
+let _ultimaLlegadaId = null;
 function verificarLlegadaGeocerca(lat, lng) {
   const destinos = window.DESTINOS_PREDETERMINADOS_CTG || [
-    { id: 'udc-zarzagocilla', nombre: 'Universidad de Cartagena - Zarzagocilla', coords: [10.3951, -75.4952] },
-    { id: 'udc-san-agustin', nombre: 'Universidad de Cartagena - San Agustín (Centro)', coords: [10.4235, -75.5502] },
+    { id: 'udc-zarzagocilla', nombre: 'Universidad de Cartagena — Zarzagocilla', coords: [10.3951, -75.4952] },
+    { id: 'udc-san-agustin', nombre: 'Universidad de Cartagena — San Agustín (Centro)', coords: [10.4235, -75.5502] },
     { id: 'casa', nombre: 'Casa / Hogar (San Fernando)', coords: [10.3887, -75.4789] }
   ];
 
@@ -31,15 +34,15 @@ function verificarLlegadaGeocerca(lat, lng) {
   }
 }
 
-// MAPA INTERACTIVO CON FUNCIONALIDADES GPS ============
+// ============ MAPA INTERACTIVO CON FUNCIONALIDADES GPS ============
 
-const cartagenaCenter = [10.39991, -75.47886]; // Casa de Damián Díaz Balseiro - Barrio Chapacuá
+const cartagenaCenter = [10.39991, -75.47886]; // Casa de Damián Díaz Balseiro — Barrio Chapacuá
 
 function initializeGPSMap(userId) {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
 
-  // INICIALIZACIÓN DEL MAPA ==========
+  // ========== INICIALIZACIÓN DEL MAPA ==========
   const map = L.map('map', {
     zoomControl: true,
     attributionControl: false
@@ -51,7 +54,7 @@ function initializeGPSMap(userId) {
     maxZoom: 19,
   }).addTo(map);
 
-  // ICONOS PERSONALIZADOS ==========
+  // ========== ICONOS PERSONALIZADOS ==========
   const icons = {
     ambulance: L.divIcon({
       className: 'custom-icon patient-live-icon',
@@ -67,7 +70,7 @@ function initializeGPSMap(userId) {
     }),
   };
 
-  // ELEMENTOS DEL FORMULARIO ==========
+  // ========== ELEMENTOS DEL FORMULARIO ==========
   const form = {
     latitude: document.getElementById('mapLatitude'),
     longitude: document.getElementById('mapLongitude'),
@@ -76,14 +79,14 @@ function initializeGPSMap(userId) {
     type: document.getElementById('mapType'),
   };
 
-  // ELEMENTOS DE INFORMACIÓN ==========
+  // ========== ELEMENTOS DE INFORMACIÓN ==========
   const info = {
     glucose: document.getElementById('mapInfoGlucose'),
     status: document.getElementById('mapInfoStatus'),
     type: document.getElementById('mapInfoType'),
   };
 
-  // BOTONES Y CONTROLES ==========
+  // ========== BOTONES Y CONTROLES ==========
   const updateBtn = document.getElementById('mapUpdateBtn');
   const simulateBtn = document.getElementById('mapSimulateBtn');
   const stopBtn = document.getElementById('mapStopBtn');
@@ -93,19 +96,19 @@ function initializeGPSMap(userId) {
   const addRoutePointBtn = document.getElementById('mapAddRoutePointBtn');
   const clearRouteBtn = document.getElementById('mapClearRouteBtn');
 
-  // VARIABLES DE ESTADO ==========
+  // ========== VARIABLES DE ESTADO ==========
   let routeModeActive = false;
   let routeMarkers = [];
   let routeAnimationActive = false;
   let route = [];
 
-  // ESTADO SUPABASE ==========
+  // ========== ESTADO SUPABASE ==========
   let rutaActivaId = null;
   let realtimeChannel = null;
   let cachedAdminIds = [];
   let gpsPoints = [];
 
-  // BADGE DE ESTADO DE RUTA ==========
+  // ========== BADGE DE ESTADO DE RUTA ==========
   function mostrarEstadoRuta(estado) {
     const badge = document.getElementById('gpsRouteBadge');
     const nombreEl = document.getElementById('gpsRouteName');
@@ -121,7 +124,7 @@ function initializeGPSMap(userId) {
     badge.className = `gps-route-badge ${cfg.clase}`;
   }
 
-  // POPUP CLÍNICO REAL DE DAMIÁN DÍAZ BALSEIRO ==========
+  // ========== POPUP CLÍNICO REAL DE DAMIÁN DÍAZ BALSEIRO ==========
   function medicalPopupContent(lat, lng) {
     const res = (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function')
       ? window.casoEstudio.obtenerResumenClinicoActual()
@@ -321,7 +324,7 @@ function initializeGPSMap(userId) {
     if (stopBtn) stopBtn.disabled = true;
   }
 
-  // INICIALIZACIÓN DEL MARCADOR Y CAPAS CARTAGENA ==========
+  // ========== INICIALIZACIÓN DEL MARCADOR Y CAPAS CARTAGENA ==========
   window.liveMapInstance = map;
   const marker = L.marker(cartagenaCenter, {
     icon: icons[form.type.value],
@@ -346,7 +349,7 @@ function initializeGPSMap(userId) {
     geocercasLayerGroup.clearLayers();
     const zonas = (window.casoEstudio && typeof window.casoEstudio.obtenerZonasSeguras === 'function')
       ? window.casoEstudio.obtenerZonasSeguras()
-      : [{ nombre: 'Casa Damián Díaz - Barrio Chapacuá', centro_lat: 10.39991, centro_lng: -75.47886, radio_metros: 400, nivel_riesgo: 'bajo', activa: true }];
+      : [{ nombre: 'Casa Damián Díaz — Barrio Chapacuá', centro_lat: 10.39991, centro_lng: -75.47886, radio_metros: 400, nivel_riesgo: 'bajo', activa: true }];
 
     zonas.filter(z => z.activa !== false).forEach(z => {
       const color = z.nivel_riesgo === 'alto' ? '#dc2626' : (z.nivel_riesgo === 'medio' ? '#d97706' : '#0d9488');
@@ -381,7 +384,7 @@ function initializeGPSMap(userId) {
 
   marker.bindPopup(medicalPopupContent(cartagenaCenter[0], cartagenaCenter[1])).openPopup();
 
-  // INTEGRACIÓN CON TELEMETRÍA GPS EN TIEMPO REAL ==========
+  // ========== INTEGRACIÓN CON TELEMETRÍA GPS EN TIEMPO REAL ==========
   window.actualizarMarcadorUbicacionReal = function (lat, lng, accuracy = 20) {
     if (!map || !marker) return;
     const newPos = L.latLng(lat, lng);
@@ -415,7 +418,7 @@ function initializeGPSMap(userId) {
     );
   }
 
-  // EVENT LISTENERS ==========
+  // ========== EVENT LISTENERS ==========
   marker.on('dragend', () => {
     const position = marker.getLatLng();
     form.latitude.value = position.lat.toFixed(5);
@@ -477,7 +480,7 @@ function initializeGPSMap(userId) {
   setTimeout(() => map.invalidateSize(), 400);
   setTimeout(() => map.invalidateSize(), 1000);
 
-  // CARGA DE RUTA DESDE SUPABASE ==========
+  // ========== CARGA DE RUTA DESDE SUPABASE ==========
 
   async function cargarPuntosExistentes(rutaId) {
     const { data, error } = await supabaseClient
@@ -500,7 +503,7 @@ function initializeGPSMap(userId) {
     gpsPoints = data.map(r => [r.lat, r.lng]);
     routeLine.setLatLngs(gpsPoints);
 
-    // No mover el marcador aquí - el canal broadcast controla la posición en vivo.
+    // No mover el marcador aquí — el canal broadcast controla la posición en vivo.
     // Solo ajustar la vista para mostrar el recorrido completo.
     if (gpsPoints.length >= 2) {
       map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
@@ -616,7 +619,7 @@ function initializeGPSMap(userId) {
 
   cargarRutaActiva();
 
-  // BROADCAST DEL ADMIN - recibe estado completo en tiempo real ==========
+  // ========== BROADCAST DEL ADMIN — recibe estado completo en tiempo real ==========
   // Canal dual:
   //   'estado'      → posición + glucosa + estado + tipo (se emite en cada waypoint)
   //   'inicio-ruta' → el admin inició una nueva transmisión (activa suscripción automática)
@@ -702,7 +705,6 @@ document.addEventListener('dashboardListo', (e) => {
     arrancarMapa(userId);
   }
 });
-
 
 
 

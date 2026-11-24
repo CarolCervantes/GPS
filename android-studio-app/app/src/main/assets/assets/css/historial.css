@@ -1,4 +1,8 @@
-﻿.page-content {
+/* ============================================================
+   Historial de Rutas — extensión de styles.css
+   ============================================================ */
+
+.page-content {
     max-width: 1280px;
     margin: 0 auto;
     padding: var(--space-6);
@@ -428,4 +432,3 @@
     margin-left: 3px;
     font-weight: 400;
 }
-

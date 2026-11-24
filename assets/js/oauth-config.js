@@ -1,5 +1,5 @@
-﻿/**
- * DiaMon - Configuración Central de Proveedores OAuth 2.0 / OpenID Connect
+/**
+ * DiaMon — Configuración Central de Proveedores OAuth 2.0 / OpenID Connect
  * Permite autenticación oficial con Google, Facebook y Apple.
  */
 (function() {
@@ -57,4 +57,3 @@
   };
 
 })();
-

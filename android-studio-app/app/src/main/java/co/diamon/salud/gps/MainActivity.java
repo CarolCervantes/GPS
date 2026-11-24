@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -17,18 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-/**
- * DiaMon GPS — Actividad Principal Nativa para Android Studio
- * Carga la plataforma clínica DiaMon con soporte nativo de:
- *   1. Hardware GPS de alta precisión (ACCESS_FINE_LOCATION)
- *   2. Enlaces de emergencia (tel:123, tel:+57..., WhatsApp SOS)
- *   3. Persistencia DOM Storage para sincronización con Supabase Realtime
- */
+// Actividad principal de DiaMon GPS
+// Inicia en la pantalla de Login / Registro (sin modo invitado bloqueado)
+// y permite abrir la actividad nativa CRUD SQLite (ActividadCrudClinico)
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_CODE = 1001;
-    // Carga la interfaz idéntica a la Web empaquetada localmente en Android Studio (o desde Vercel)
-    private static final String DIAMON_APP_URL = "file:///android_asset/pages/index.html";
+    private static final String DIAMON_LOGIN_URL = "file:///android_asset/pages/login.html";
 
     private WebView webView;
 
@@ -36,10 +32,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        webView = new WebView(this);
-        setContentView(webView);
-
+        webView = findViewById(R.id.webViewDiaMon);
         solicitarPermisosUbicacion();
 
         WebSettings settings = webView.getSettings();
@@ -49,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         settings.setGeolocationEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
@@ -67,10 +64,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                     return true;
                 }
-                if ("file".equalsIgnoreCase(scheme) || ("https".equalsIgnoreCase(scheme) && (host.endsWith("vercel.app") || host.endsWith("supabase.co")))) {
-                    return false;
-                }
-                return true;
+                return false;
             }
         });
 
@@ -81,7 +75,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl(DIAMON_APP_URL);
+        // Al abrir la app por primera vez carga Login / Registro
+        webView.loadUrl(DIAMON_LOGIN_URL);
+    }
+
+    // abre la actividad nativa de CRUD SQLite (Guardar, Buscar, Limpiar, Modificar, Eliminar)
+    public void mostrarCrudClinico(View component) {
+        Intent intento = new Intent(this, ActividadCrudClinico.class);
+        startActivity(intento);
+    }
+
+    // lleva directamente a la pantalla de Login y Registro
+    public void irALogin(View component) {
+        if (webView != null) {
+            webView.loadUrl(DIAMON_LOGIN_URL);
+        }
     }
 
     private void solicitarPermisosUbicacion() {

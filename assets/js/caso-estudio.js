@@ -1,5 +1,5 @@
-﻿/**
- * DiaMon - Logica del caso de estudio (Damian Diaz Balseiro) (Diabetes Mellitus + Hipertensión Arterial)
+/**
+ * DiaMon — Motor Clínico del Caso de Estudio (Diabetes Mellitus + Hipertensión Arterial)
  * Paciente Índice: Sr. Damián Díaz Balseiro (Chapacuá, Cartagena de Indias)
  * Guía Clínica: Enf. Jefe Elizabeth Vargas Caro
  * 
@@ -33,8 +33,10 @@
   const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('diamon_telemetria_sync') : null;
   let supabaseLiveChannel = null;
 
-  // // 1. DATOS REALES DEL CASO DE ESTUDIO: DAMIÁN DÍAZ BALSEIRO
-  // const PACIENTE_CASO_DEFAULT = {
+  // ============================================================
+  // 1. DATOS REALES DEL CASO DE ESTUDIO: DAMIÁN DÍAZ BALSEIRO
+  // ============================================================
+  const PACIENTE_CASO_DEFAULT = {
     id: 'pac-damian-diaz-01',
     codigoPaciente: 'DM-8492',
     nombre: 'Damián Díaz Balseiro',
@@ -59,7 +61,7 @@
   const ZONAS_SEGURAS_DEFAULT = [
     {
       id: 1,
-      nombre: 'Casa Damián Díaz - Barrio Chapacuá',
+      nombre: 'Casa Damián Díaz — Barrio Chapacuá',
       centro_lat: 10.39991,
       centro_lng: -75.47886,
       radio_metros: 400,
@@ -119,7 +121,7 @@
     },
     {
       id: 'med-9pm-insulina',
-      nombre: 'Insulina Basal - 24 Unidades',
+      nombre: 'Insulina Basal — 24 Unidades',
       indicacion: 'Control glucémico basal nocturno (vía subcutánea)',
       horario: '09:00 PM',
       dosis: '24 UI subcutáneas a las 9:00 PM',
@@ -137,7 +139,7 @@
       momento: 'Semanal (Sábados)',
       icono: 'fa-calendar-check',
       color: 'purple',
-      itemsDetalle: ['Ozempic - Dosis de los Sábados']
+      itemsDetalle: ['Ozempic — Dosis de los Sábados']
     }
   ];
 
@@ -173,7 +175,7 @@
     parque: {
       nombre: 'Recorrido en Chapacuá: Casa (10.39991, -75.47886) → Parque → Droguería',
       puntos: [
-        { lat: 10.39991, lng: -75.47886, etiqueta: 'Casa Damián Díaz - Barrio Chapacuá' },
+        { lat: 10.39991, lng: -75.47886, etiqueta: 'Casa Damián Díaz — Barrio Chapacuá' },
         { lat: 10.40045, lng: -75.47830, etiqueta: 'Calle Residencial Chapacuá (85m de casa)' },
         { lat: 10.40110, lng: -75.47775, etiqueta: 'Parque / Cancha de Chapacuá (180m de casa)' },
         { lat: 10.40160, lng: -75.47710, etiqueta: 'Droguería & Tienda Chapacuá (270m)' }
@@ -184,13 +186,15 @@
       puntos: [
         { lat: 10.39991, lng: -75.47886, etiqueta: 'Casa en Chapacuá (Inicio)' },
         { lat: 10.40190, lng: -75.48090, etiqueta: 'Salida de Chapacuá (315m)' },
-        { lat: 10.40410, lng: -75.48380, etiqueta: 'Av. La Cordialidad / Transversal 54 (715m - Fuera de zona)' }
+        { lat: 10.40410, lng: -75.48380, etiqueta: 'Av. La Cordialidad / Transversal 54 (715m — Fuera de zona)' }
       ]
     }
   };
 
-  // // 2. GESTOR CENTRAL DEL CASO DE ESTUDIO + EMISOR GPS REAL
-  // class CasoEstudioManager {
+  // ============================================================
+  // 2. GESTOR CENTRAL DEL CASO DE ESTUDIO + EMISOR GPS REAL
+  // ============================================================
+  class CasoEstudioManager {
     constructor() {
       this.paciente = this.cargarJSON(STORAGE_KEYS.PACIENTE, PACIENTE_CASO_DEFAULT);
       this.metas = this.cargarJSON(STORAGE_KEYS.METAS, METAS_CASO_DEFAULT);
@@ -245,7 +249,7 @@
       if (dispararAlertaSiSale && window.emitirAlerta24Horas && (Date.now() - this._ultimaAlertaGeocercaMapTs) > 8000) {
         this._ultimaAlertaGeocercaMapTs = Date.now();
         window.emitirAlerta24Horas({
-          titulo: 'Salida de Zona Segura - ' + zonaCercana.nombre,
+          titulo: 'Salida de Zona Segura — ' + zonaCercana.nombre,
           subtitulo: `${this.paciente.nombre} está a ${menorDist} metros del centro de ${zonaCercana.nombre} (Radio permitido: ${zonaCercana.radio_metros}m).`,
           tipo: 'geocerca',
           color: 'red',
@@ -393,10 +397,12 @@
       }
     }
 
-    // // 3. EMISOR GPS SATELITAL REAL (DESDE CUALQUIER CELULAR / PC)
+    // ============================================================
+    // 3. EMISOR GPS SATELITAL REAL (DESDE CUALQUIER CELULAR / PC)
     // No necesitas el celular físico del abuelo: cualquier celular
     // donde abras la app puede actuar como el transmisor GPS en vivo
-    // toggleTransmisionGPSReal() {
+    // ============================================================
+    toggleTransmisionGPSReal() {
       const btn = document.getElementById('btnTransmitirGPSReal');
 
       if (this.transmitiendoGPSReal) {
@@ -488,8 +494,10 @@
       }
     }
 
-    // // 4. EVALUACIÓN CLÍNICA CON METAS PERSONALIZADAS
-    // evaluarGlucosa(valor, contexto = 'ayunas') {
+    // ============================================================
+    // 4. EVALUACIÓN CLÍNICA CON METAS PERSONALIZADAS
+    // ============================================================
+    evaluarGlucosa(valor, contexto = 'ayunas') {
       const m = this.metas;
       const v = Number(valor);
       if (v < 70) {
@@ -524,8 +532,10 @@
       return { nivel: 'normal', etiqueta: 'Presión Controlada', clase: 'success', requiereAlerta: false, protocolo: 'Respuesta adecuada al esquema de Nifedipina + Valsartán + Firialta.' };
     }
 
-    // // 5. REGISTRO REAL DE GLUCOSA Y PRESIÓN ARTERIAL
-    // async registrarGlucosaManual({ valor, contexto = 'ayunas', notas = '' }) {
+    // ============================================================
+    // 5. REGISTRO REAL DE GLUCOSA Y PRESIÓN ARTERIAL
+    // ============================================================
+    async registrarGlucosaManual({ valor, contexto = 'ayunas', notas = '' }) {
       const v = parseInt(valor, 10);
       if (isNaN(v) || v < 25 || v > 600) {
         throw new Error('Ingresa un valor de glucosa válido entre 25 y 600 mg/dL.');
@@ -645,8 +655,10 @@
       this.emitirPorCanales('METAS_ACTUALIZADAS');
     }
 
-    // // 6. ESCENARIOS DE TELEMETRÍA EN CHAPACUÁ (REALES + DEMO JURADO)
-    // simularEscenarioSustentacion(escenario) {
+    // ============================================================
+    // 6. ESCENARIOS DE TELEMETRÍA EN CHAPACUÁ (REALES + DEMO JURADO)
+    // ============================================================
+    simularEscenarioSustentacion(escenario) {
       if (this.simulacionTimer) {
         clearInterval(this.simulacionTimer);
         this.simulacionTimer = null;
@@ -721,7 +733,7 @@
 
           if (dist > this.paciente.radioSeguroMetros && idx === cfg.puntos.length && window.emitirAlerta24Horas) {
             window.emitirAlerta24Horas({
-              titulo: 'Salida de Geocerca - Barrio Chapacuá',
+              titulo: 'Salida de Geocerca — Barrio Chapacuá',
               subtitulo: `${this.paciente.nombre} superó el perímetro de Chapacuá (${(dist / 1000).toFixed(2)} km · ${pt.etiqueta}).`,
               tipo: 'geocerca',
               color: 'red',
@@ -750,8 +762,10 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // // 7. ACTUALIZACIÓN DE INTERFAZ Y MODALES
-    // obtenerResumenClinicoActual() {
+    // ============================================================
+    // 7. ACTUALIZACIÓN DE INTERFAZ Y MODALES
+    // ============================================================
+    obtenerResumenClinicoActual() {
       const ultimaGlucosa = this.glucosas[0] || { valor: 114, contexto: 'ayunas', ContextoLabel: 'En ayunas (8:00 AM)', ts: Date.now() };
       const ultimaPresion = this.presiones[0] || { sistolica: 126, diastolica: 78, pulso: 71, ts: Date.now() };
       const evalG = this.evaluarGlucosa(ultimaGlucosa.valor, ultimaGlucosa.contexto);
@@ -1093,8 +1107,10 @@
       }
     }
 
-    // // 8. VISTA SIMPLIFICADA PARA DAMIÁN DÍAZ BALSEIRO (MODO ABUELO)
-    // toggleModoAdultoMayor(forzar) {
+    // ============================================================
+    // 8. VISTA SIMPLIFICADA PARA DAMIÁN DÍAZ BALSEIRO (MODO ABUELO)
+    // ============================================================
+    toggleModoAdultoMayor(forzar) {
       this.modoAdultoMayor = forzar !== undefined ? forzar : !this.modoAdultoMayor;
       let overlay = document.getElementById('vistaAdultoMayorOverlay');
 
@@ -1215,4 +1231,3 @@
     }
   });
 })();
-

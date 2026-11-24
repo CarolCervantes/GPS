@@ -1,4 +1,4 @@
-﻿// APP.JS - Dashboard principal ============
+// ============ APP.JS — Dashboard principal ============
 // Gestiona el historyMap (conectado a Supabase) y el guardado periódico de glucosa.
 
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -14,7 +14,7 @@ let marcadorFin = null;
 let tabActiva = 'hoy';
 let adminIds = [];
 
-// INICIALIZAR HISTORY MAP ============
+// ============ INICIALIZAR HISTORY MAP ============
 document.addEventListener('DOMContentLoaded', () => {
   const historyMapEl = document.getElementById('historyMap');
   if (!historyMapEl) return;
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (adminIds.length === 0 && historyMap && !lineaHistorial) {
       const demoPuntos = [
-        { lat: 10.39991, lng: -75.47886 }, // Casa de Damián Díaz Balseiro - Chapacuá
+        { lat: 10.39991, lng: -75.47886 }, // Casa de Damián Díaz Balseiro — Chapacuá
         { lat: 10.40020, lng: -75.47855 },
         { lat: 10.40055, lng: -75.47820 },
         { lat: 10.40090, lng: -75.47785 }, // Parque de Chapacuá
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// CARGA DE DATOS TRAS AUTH ============
+// ============ CARGA DE DATOS TRAS AUTH ============
 document.addEventListener('dashboardListo', async (e) => {
   const userId = e.detail?.user?.id;
   if (!userId) return;
@@ -110,7 +110,7 @@ document.addEventListener('dashboardListo', async (e) => {
   cargarLecturasRecientes(targetUserId);
 });
 
-// PANEL GLUCOSA - PULSE RING ============
+// ============ PANEL GLUCOSA — PULSE RING ============
 function actualizarPulso(valor) {
   const pulseEl  = document.getElementById('glucosePulse');
   const valueEl  = document.getElementById('glucoseValue');
@@ -195,7 +195,7 @@ async function cargarLecturasRecientes(userId) {
   setRange('rangeLow', pBaja);
 }
 
-// CARGAR HISTORIAL DESDE SUPABASE ============
+// ============ CARGAR HISTORIAL DESDE SUPABASE ============
 async function cargarHistorial(periodo) {
   if (!historyMap || adminIds.length === 0) return;
 
@@ -330,8 +330,8 @@ function mostrarHistorialVacio(mensaje) {
   const rutasEl  = document.getElementById('historyRutas');
   const emptyEl  = document.getElementById('historyEmpty');
   const msgEl    = document.getElementById('historyEmptyMsg');
-  if (puntosEl) puntosEl.textContent = '-';
-  if (rutasEl)  rutasEl.textContent  = '-';
+  if (puntosEl) puntosEl.textContent = '—';
+  if (rutasEl)  rutasEl.textContent  = '—';
   if (emptyEl)  emptyEl.style.display = 'flex';
   if (msgEl)    msgEl.textContent    = mensaje;
 }
@@ -346,10 +346,9 @@ function mostrarHistorialCargando() {
   if (rutasEl) rutasEl.textContent = 'Cargando...';
 }
 
-// REGISTRO REAL DE LECTURAS (SIN GENERACIÓN ALEATORIA) ============
+// ============ REGISTRO REAL DE LECTURAS (SIN GENERACIÓN ALEATORIA) ============
 // Las lecturas de glucosa capilar y presión arterial se registran manualmente
 // con el glucómetro/tensiómetro a través de assets/js/caso-estudio.js
-
 
 
 

@@ -1,6 +1,9 @@
-﻿// // DiaMon - PulseCard: Identificación Médica y Código QR de Emergencia
+// ============================================================
+// DiaMon — PulseCard: Identificación Médica y Código QR de Emergencia
 // Genera y gestiona la ficha de emergencia accesible por QR
-// const DEFAULT_MEDICAL_PROFILE = {
+// ============================================================
+
+const DEFAULT_MEDICAL_PROFILE = {
   nombre: 'Damián Díaz Balseiro',
   condicion: 'Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética',
   tipoDiabetes: 'tipo2_hta',
@@ -160,7 +163,7 @@ class MedicalQRManager {
           <div class="diamon-modal-header">
             <div class="modal-title">
               <i class="fas fa-qrcode" style="color:var(--brand);"></i>
-              <h3>Identificación Médica - PulseCard</h3>
+              <h3>Identificación Médica — PulseCard</h3>
             </div>
             <button class="modal-close-btn" onclick="document.getElementById('qrModal').classList.remove('active')">
               <i class="fas fa-times"></i>
@@ -201,4 +204,3 @@ class MedicalQRManager {
 }
 
 window.medicalQRManager = new MedicalQRManager();
-

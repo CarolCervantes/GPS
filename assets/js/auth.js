@@ -1,4 +1,4 @@
-﻿// Gestiona la sesión de Supabase en todas las páginas:
+// Gestiona la sesión de Supabase en todas las páginas:
 // - Rellena el dropdown del navbar con datos del usuario
 // - Muestra/oculta los enlaces de iniciar sesión/registrarse
 // - Si el rol es 'admin': inyecta el strip superior y el nav-link "Admin"
@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userMenu = userAvatarBtn ? userAvatarBtn.closest('.user-menu') : null;
   const restrictedMessage = document.getElementById('restrictedMessage');
   const pageContent = document.getElementById('pageContent');
+
+  // Verificación síncrona: si hay token en localStorage, ocultar #restrictedMessage
+  // de inmediato para evitar el flash mientras auth async resuelve.
+  try {
+    const haySession = Object.keys(localStorage).some(
+      k => k.startsWith('sb-') && k.endsWith('-auth-token')
+    );
+    if (haySession && restrictedMessage) {
+      restrictedMessage.style.display = 'none';
+    }
+  } catch (_) {}
 
   function setDropdownOpen(open) {
     if (!dropdownMenu) return;
@@ -41,6 +52,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: { user: null } }));
   let localUser = null;
+
+  if (!user) {
+    try {
+      const rawSession = sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user');
+      if (rawSession) {
+        localUser = JSON.parse(rawSession);
+        user = {
+          id: localUser.id || 'pac-damian-diaz-01',
+          email: localUser.email || 'damian.diaz@diamon.co',
+          user_metadata: { nombre: localUser.nombre || 'Damián Díaz Balseiro' }
+        };
+      }
+    } catch (_) {}
+  }
 
   if (!user) {
     authLinks.forEach(el => el.style.display = '');
@@ -120,9 +145,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// Inyección de UI cuando el rol es admin ----------
+// ---------- Inyección de UI cuando el rol es admin ----------
 function inyectarAdminUI() {
-  // 1) Strip superior - "MODO ADMINISTRADOR"
+  // 1) Strip superior — "MODO ADMINISTRADOR"
   const shell = document.querySelector('.shell');
   if (shell && !document.querySelector('.admin-strip')) {
     const strip = document.createElement('div');
@@ -135,7 +160,7 @@ function inyectarAdminUI() {
     shell.insertBefore(strip, shell.firstChild);
   }
 
-  // 2) Nav link "Admin" - solo si no existe ya
+  // 2) Nav link "Admin" — solo si no existe ya
   const menu = document.querySelector('.navbar-menu');
   if (menu && !menu.querySelector('.nav-admin')) {
     const link = document.createElement('a');
@@ -149,7 +174,7 @@ function inyectarAdminUI() {
     menu.appendChild(link);
   }
 
-  // 3) Nav link "Mapa GPS" - solo si no existe ya
+  // 3) Nav link "Mapa GPS" — solo si no existe ya
   if (menu && !menu.querySelector('.nav-mapa')) {
     const mapaLink = document.createElement('a');
     mapaLink.href = 'mapa-admin.html';
@@ -171,4 +196,3 @@ function cargarAdminCSS() {
   link.href = prefix + 'assets/css/admin.css';
   document.head.appendChild(link);
 }
-

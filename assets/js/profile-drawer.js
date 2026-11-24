@@ -1,5 +1,5 @@
-﻿/**
- * DiaMon - Drawer y Modal de Perfil Flotante (100% Sin Prompts Nativos)
+/**
+ * DiaMon — Drawer y Modal de Perfil Flotante (100% Sin Prompts Nativos)
  * Incluye carga de fotos desde Galería/Cámara móvil, edición integrada y gestión de familiares.
  */
 (function () {
@@ -7,7 +7,16 @@
 
   // Obtener usuario actual
   function obtenerUsuarioActual() {
-    if (window.currentUser) return window.currentUser;
+    try {
+      const demo = sessionStorage.getItem('diamon_demo_user');
+      if (demo) return JSON.parse(demo);
+    } catch (e) {}
+
+    try {
+      const stored = localStorage.getItem('diamon_current_user');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+
     return null;
   }
 
@@ -58,8 +67,10 @@
     }, 300);
   };
 
-  // // VISTA PRINCIPAL: MI PERFIL (REGISTRADO VS INVITADO)
-  // window.renderizarVistaPrincipalPerfil = function () {
+  // ============================================================
+  // VISTA PRINCIPAL: MI PERFIL (REGISTRADO VS INVITADO)
+  // ============================================================
+  window.renderizarVistaPrincipalPerfil = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
@@ -281,8 +292,10 @@
     }
   };
 
-  // // SELECCIÓN DE FOTO DESDE GALERÍA / ARCHIVOS (SIN PROMPTS)
-  // window.abrirSelectorGaleria = function () {
+  // ============================================================
+  // SELECCIÓN DE FOTO DESDE GALERÍA / ARCHIVOS (SIN PROMPTS)
+  // ============================================================
+  window.abrirSelectorGaleria = function () {
     const input = document.getElementById('dmProfilePhotoFileInput');
     if (input) {
       input.click();
@@ -315,8 +328,10 @@
     reader.readAsDataURL(file);
   };
 
-  // // SUB-VISTA: EDITAR PERFIL (IN-DRAWER SIN PROMPTS)
-  // window.mostrarVistaEditarPerfil = function () {
+  // ============================================================
+  // SUB-VISTA: EDITAR PERFIL (IN-DRAWER SIN PROMPTS)
+  // ============================================================
+  window.mostrarVistaEditarPerfil = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
@@ -390,8 +405,10 @@
     mostrarToastPerfil('✓ Información personal guardada correctamente');
   };
 
-  // // SUB-VISTA: MIS FAMILIARES (CÓDIGO ÚNICO + VINCULACIÓN)
-  // window.mostrarVistaFamiliares = function () {
+  // ============================================================
+  // SUB-VISTA: MIS FAMILIARES (CÓDIGO ÚNICO + VINCULACIÓN)
+  // ============================================================
+  window.mostrarVistaFamiliares = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
@@ -460,8 +477,10 @@
     });
   };
 
-  // // SUB-VISTA: INFORMACIÓN DE LA APP (SIN ALERTS)
-  // window.mostrarVistaInfoApp = function () {
+  // ============================================================
+  // SUB-VISTA: INFORMACIÓN DE LA APP (SIN ALERTS)
+  // ============================================================
+  window.mostrarVistaInfoApp = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
@@ -506,8 +525,10 @@
     `;
   };
 
-  // // SUB-VISTA: CONFIRMACIÓN CERRAR SESIÓN (SIN CONFIRM)
-  // window.mostrarConfirmacionCerrarSesion = function () {
+  // ============================================================
+  // SUB-VISTA: CONFIRMACIÓN CERRAR SESIÓN (SIN CONFIRM)
+  // ============================================================
+  window.mostrarConfirmacionCerrarSesion = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
     if (!container) return;
@@ -547,8 +568,10 @@
     }, 600);
   };
 
-  // // NAVEGACIÓN DIRECTA
-  // window.irANotificaciones = function () {
+  // ============================================================
+  // NAVEGACIÓN DIRECTA
+  // ============================================================
+  window.irANotificaciones = function () {
     window.cerrarModalPerfil();
     if (typeof window.switchView === 'function') {
       window.switchView('alertas');
@@ -590,4 +613,3 @@
   });
 
 })();
-

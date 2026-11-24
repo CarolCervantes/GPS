@@ -1,4 +1,9 @@
-﻿/* Botón de micrófono en Navbar */
+/* ============================================================
+   DiaMon — Pantalla de Emergencia SOS y Voz (Diseño Celular)
+   Colores sobrios, tipografía grande y botones táctiles amplios
+   ============================================================ */
+
+/* Botón de micrófono en Navbar */
 .btn-mic-sos {
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -338,4 +343,3 @@
   margin: 0;
   line-height: 1.45;
 }
-

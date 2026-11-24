@@ -1,6 +1,9 @@
-﻿// // DiaMon - Modo de Accesibilidad Clínica
+// ============================================================
+// DiaMon — Modo de Accesibilidad Clínica
 // Diseñado para personas con baja visión, retinopatía diabética o temblor motor
-// class AccesibilidadManager {
+// ============================================================
+
+class AccesibilidadManager {
   constructor() {
     this.storageKey = 'diamon_accesibilidad_config';
     this.config = this.cargarConfig();
@@ -183,4 +186,3 @@
 document.addEventListener('DOMContentLoaded', () => {
   new AccesibilidadManager();
 });
-

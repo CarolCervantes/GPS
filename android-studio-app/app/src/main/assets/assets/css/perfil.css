@@ -1,4 +1,8 @@
-﻿.perfil-grid {
+/* ============================================================
+   DiaMon — Perfil de usuario
+   ============================================================ */
+
+.perfil-grid {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: var(--space-6);
@@ -436,4 +440,3 @@
 .vinc-resultado {
     margin-top: var(--space-3);
 }
-

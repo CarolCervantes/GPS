@@ -1,9 +1,12 @@
-﻿// // DiaMon - Módulo Clínico Diario
+// ============================================================
+// DiaMon — Módulo Clínico Diario
 // 1. Estado Diario del Paciente (Check-in de bienestar)
 // 2. Control y Cumplimiento de Medicamentos
 // 3. Consejo Educativo Diario (Rotación automática cada 24 horas)
 // 4. Estado de Conexión y Telemetría GPS
-// const CONSEJOS_EDUCATIVOS_24H = [
+// ============================================================
+
+const CONSEJOS_EDUCATIVOS_24H = [
   {
     tema: 'Cuidado de pies y calzado',
     titulo: 'Inspección diaria de pies en climas cálidos',
@@ -45,7 +48,7 @@ const MEDICAMENTOS_PREDETERMINADOS = [
   { id: 'med-1', nombre: 'Pantoprazol + Metformina + Firialta + Nifedipina', horario: '08:00 AM', dosis: 'Esquema matutino completo (4 medicamentos)', momento: 'Mañana' },
   { id: 'med-2', nombre: 'Valsartán (Control Hipertensión Arterial)', horario: '02:00 PM', dosis: '1 toma vespertina', momento: 'Tarde' },
   { id: 'med-3', nombre: 'Atorvastatina + Metformina + Gabapentina + Lipotic + Nifedipino', horario: '08:00 PM', dosis: 'Esquema nocturno oral (5 medicamentos)', momento: 'Noche' },
-  { id: 'med-4', nombre: 'Insulina Basal - 24 Unidades', horario: '09:00 PM', dosis: '24 UI subcutáneas todas las noches', momento: 'Noche' },
+  { id: 'med-4', nombre: 'Insulina Basal — 24 Unidades', horario: '09:00 PM', dosis: '24 UI subcutáneas todas las noches', momento: 'Noche' },
   { id: 'med-5', nombre: 'Ozempic (Semaglutida Semanal)', horario: 'Sábados', dosis: '1 aplicación subcutánea cada sábado', momento: 'Semanal' }
 ];
 
@@ -70,8 +73,10 @@ class SaludDiariaManager {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  // // 1. CONSEJO EDUCATIVO DE ROTACIÓN CADA 24 HORAS
-  // renderConsejo24H() {
+  // ============================================================
+  // 1. CONSEJO EDUCATIVO DE ROTACIÓN CADA 24 HORAS
+  // ============================================================
+  renderConsejo24H() {
     const container = document.getElementById('consejoDiarioWidget');
     if (!container) return;
 
@@ -99,8 +104,10 @@ class SaludDiariaManager {
     `;
   }
 
-  // // 2. ESTADO DIARIO DEL PACIENTE (CHECK-IN DE BIENESTAR)
-  // initCheckinEstado() {
+  // ============================================================
+  // 2. ESTADO DIARIO DEL PACIENTE (CHECK-IN DE BIENESTAR)
+  // ============================================================
+  initCheckinEstado() {
     const container = document.getElementById('estadoDiarioWidget');
     if (!container) return;
 
@@ -227,8 +234,10 @@ class SaludDiariaManager {
     }
   }
 
-  // // 3. CUMPLIMIENTO DIARIO DE MEDICAMENTOS (CHECKLIST)
-  // initMedicamentos() {
+  // ============================================================
+  // 3. CUMPLIMIENTO DIARIO DE MEDICAMENTOS (CHECKLIST)
+  // ============================================================
+  initMedicamentos() {
     const container = document.getElementById('medicamentosWidget');
     if (!container) return;
 
@@ -322,8 +331,10 @@ class SaludDiariaManager {
     });
   }
 
-  // // 4. ESTADO DE CONEXIÓN Y TELEMETRÍA GPS
-  // initMonitorGPS() {
+  // ============================================================
+  // 4. ESTADO DE CONEXIÓN Y TELEMETRÍA GPS
+  // ============================================================
+  initMonitorGPS() {
     const statusPill = document.querySelector('.status-row .right');
     if (!statusPill) return;
 
@@ -360,4 +371,3 @@ class SaludDiariaManager {
 document.addEventListener('DOMContentLoaded', () => {
   new SaludDiariaManager();
 });
-

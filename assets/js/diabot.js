@@ -1,6 +1,9 @@
-﻿// // DiaMon - DiaBot: Asistente Clínico con IA Real (Google Gemini API)
+// ============================================================
+// DiaMon — DiaBot: Asistente Clínico con IA Real (Google Gemini API)
 // + Motor de Razonamiento Clínico Contextual en Vivo (Diabetes Tipo 2 + HTA)
-// class DiaBotAssistant {
+// ============================================================
+
+class DiaBotAssistant {
   constructor() {
     this.isOpen = false;
     this.apiKeyStorageKey = 'diamon_gemini_api_key';
@@ -273,7 +276,7 @@
 
     // 1. Consulta por el estado actual / signos vitales del abuelo
     if (lower.includes('estado') || lower.includes('signos') || lower.includes('como esta') || lower.includes('cómo está') || lower.includes('abuelo') || lower.includes('resumen') || lower.includes('hoy')) {
-      return `<strong>📊 Evaluación Clínica en Tiempo Real - ${ctx.nombre}</strong><br>` +
+      return `<strong>📊 Evaluación Clínica en Tiempo Real — ${ctx.nombre}</strong><br>` +
         `Analizando las últimas lecturas sincronizadas en DiaMon:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>Glucosa capilar:</strong> <code>${ctx.glucosa}</code> (${ctx.contextoGlucosa}) → <strong>${ctx.estadoGlucosa}</strong>. <em>${ctx.protocoloGlucosa}</em></li>` +
@@ -287,7 +290,7 @@
     if (lower.includes('presion') || lower.includes('presión') || lower.includes('hiperten') || lower.includes('tension') || lower.includes('tensión') || lower.includes('valsartan') || lower.includes('valsartán') || lower.includes('nifedipin') || lower.includes('140') || lower.includes('160')) {
       const alertaPA = ctx.sistolicaNum >= 140 || ctx.diastolicaNum >= 90;
       return `<strong>❤️ Manejo de Hipertensión Arterial (${ctx.nombre})</strong><br>` +
-        `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) - <strong>${ctx.estadoPresion}</strong>.<br>` +
+        `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) — <strong>${ctx.estadoPresion}</strong>.<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>Indicaciones actuales:</strong> ${alertaPA ? '⚠️ La presión supera la meta de ' + ctx.metaPresion + '. Pon a Don Damián en reposo sentado, verifica si ya tomó su <strong>Nifedipina (8:00 AM / 8:00 PM)</strong> o su <strong>Valsartán (2:00 PM)</strong> y repite la toma en 10 minutos.' : '✅ Se encuentra dentro de la meta cardiovascular (' + ctx.metaPresion + ') pautada con la ' + ctx.profesional + '.'}</li>` +
         `<li><strong>Signos de alarma:</strong> Si presenta dolor de cabeza intenso, visión borrosa, dolor torácico o presión ≥ 160/100 mmHg, activa el botón <strong>SOS</strong> o acude a urgencias cercanas a Chapacuá (Clínica Blas de Lezo / HUC).</li>` +
@@ -318,13 +321,13 @@
 
     // 5. Medicamentos / Pastillas / Dosis / Firialta / Gabapentina / Lipotic / Ozempic
     if (lower.includes('medicamento') || lower.includes('medicina') || lower.includes('pastilla') || lower.includes('dosis') || lower.includes('metformina') || lower.includes('tratamiento') || lower.includes('esquema') || lower.includes('firialta') || lower.includes('gabapentina') || lower.includes('lipotic') || lower.includes('ozempic') || lower.includes('insulina') || lower.includes('pantoprazol') || lower.includes('atorvastatina')) {
-      return `<strong>💊 Esquema Farmacológico Completo - ${ctx.nombre}</strong><br>` +
+      return `<strong>💊 Esquema Farmacológico Completo — ${ctx.nombre}</strong><br>` +
         `Supervisado con la <strong>${ctx.profesional}</strong>:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>08:00 AM:</strong> <strong>Pantoprazol</strong> (protector gástrico), <strong>Metformina</strong> (control glucémico), <strong>Firialta</strong> (finerenona: protección renal y cardiovascular en diabetes) y <strong>Nifedipina</strong> (antihipertensivo).</li>` +
         `<li><strong>02:00 PM:</strong> <strong>Valsartán</strong> (control vespertino de presión arterial).</li>` +
         `<li><strong>08:00 PM:</strong> <strong>Atorvastatina</strong> (colesterol), <strong>Metformina</strong>, <strong>Gabapentina + Lipotic</strong> (ácido tióctico para neuropatía diabética) y <strong>Nifedipino</strong>.</li>` +
-        `<li><strong>09:00 PM:</strong> <strong>Insulina Basal - 24 Unidades</strong> subcutáneas.</li>` +
+        `<li><strong>09:00 PM:</strong> <strong>Insulina Basal — 24 Unidades</strong> subcutáneas.</li>` +
         `<li><strong>Sábados:</strong> <strong>Ozempic</strong> (aplicación semanal).</li>` +
         `</ul>`;
     }
@@ -344,9 +347,9 @@
       return `<strong>🏥 Red de Urgencias Cercanas en Cartagena</strong><br>` +
         `Para el perfil de <strong>${ctx.nombre}</strong> (DM2 + HTA), los centros de referencia más cercanos son:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
-        `<li><strong>Clínica Blas de Lezo</strong> (Av. Pedro de Heredia / Los Ejecutivos) - Urgencias 24h.</li>` +
-        `<li><strong>Hospital Universitario del Caribe (HUC)</strong> (Zarzagocilla) - Alta complejidad.</li>` +
-        `<li><strong>Clínica Gestión Salud San Fernando</strong> - Atención rápida en su sector residencial.</li>` +
+        `<li><strong>Clínica Blas de Lezo</strong> (Av. Pedro de Heredia / Los Ejecutivos) — Urgencias 24h.</li>` +
+        `<li><strong>Hospital Universitario del Caribe (HUC)</strong> (Zarzagocilla) — Alta complejidad.</li>` +
+        `<li><strong>Clínica Gestión Salud San Fernando</strong> — Atención rápida en su sector residencial.</li>` +
         `</ul>`;
     }
 
@@ -424,4 +427,3 @@
 document.addEventListener('DOMContentLoaded', () => {
   window.diabotInstance = new DiaBotAssistant();
 });
-

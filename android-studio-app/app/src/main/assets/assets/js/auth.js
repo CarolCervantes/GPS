@@ -1,4 +1,4 @@
-﻿// Gestiona la sesión de Supabase en todas las páginas:
+// Gestiona la sesión de Supabase en todas las páginas:
 // - Rellena el dropdown del navbar con datos del usuario
 // - Muestra/oculta los enlaces de iniciar sesión/registrarse
 // - Si el rol es 'admin': inyecta el strip superior y el nav-link "Admin"
@@ -145,9 +145,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// Inyección de UI cuando el rol es admin ----------
+// ---------- Inyección de UI cuando el rol es admin ----------
 function inyectarAdminUI() {
-  // 1) Strip superior - "MODO ADMINISTRADOR"
+  // 1) Strip superior — "MODO ADMINISTRADOR"
   const shell = document.querySelector('.shell');
   if (shell && !document.querySelector('.admin-strip')) {
     const strip = document.createElement('div');
@@ -160,7 +160,7 @@ function inyectarAdminUI() {
     shell.insertBefore(strip, shell.firstChild);
   }
 
-  // 2) Nav link "Admin" - solo si no existe ya
+  // 2) Nav link "Admin" — solo si no existe ya
   const menu = document.querySelector('.navbar-menu');
   if (menu && !menu.querySelector('.nav-admin')) {
     const link = document.createElement('a');
@@ -174,7 +174,7 @@ function inyectarAdminUI() {
     menu.appendChild(link);
   }
 
-  // 3) Nav link "Mapa GPS" - solo si no existe ya
+  // 3) Nav link "Mapa GPS" — solo si no existe ya
   if (menu && !menu.querySelector('.nav-mapa')) {
     const mapaLink = document.createElement('a');
     mapaLink.href = 'mapa-admin.html';
@@ -196,4 +196,3 @@ function cargarAdminCSS() {
   link.href = prefix + 'assets/css/admin.css';
   document.head.appendChild(link);
 }
-

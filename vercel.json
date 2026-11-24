@@ -2,7 +2,7 @@
   "version": 2,
   "name": "diamon-salud",
   "rewrites": [
-    { "source": "/", "destination": "/pages/index.html" },
+    { "source": "/", "destination": "/pages/login.html" },
     { "source": "/login.html", "destination": "/pages/login.html" },
     { "source": "/index.html", "destination": "/pages/index.html" },
     { "source": "/descargar-app.html", "destination": "/pages/descargar-app.html" },

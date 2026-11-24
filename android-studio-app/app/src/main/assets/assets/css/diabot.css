@@ -1,4 +1,8 @@
-﻿.diabot-widget-container {
+/* ============================================================
+   DiaMon — DiaBot: Virtual Assistant Styles
+   ============================================================ */
+
+.diabot-widget-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -313,4 +317,3 @@
 .diabot-input-bar button:hover {
   opacity: 0.9;
 }
-

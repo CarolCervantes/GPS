@@ -1,4 +1,8 @@
-﻿.zonas-layout {
+/* ============================================================
+   DiaMon — Zonas seguras
+   ============================================================ */
+
+.zonas-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: var(--space-5);
@@ -331,4 +335,3 @@
     margin: 0;
     line-height: 1.6;
 }
-

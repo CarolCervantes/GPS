@@ -1,4 +1,8 @@
-﻿.pulsecard-container {
+/* ============================================================
+   DiaMon — PulseCard & Emergency QR Styles
+   ============================================================ */
+
+.pulsecard-container {
   background: linear-gradient(145deg, #131d2e 0%, #0d1522 100%);
   border: 1px solid rgba(2, 132, 199, 0.25);
   border-radius: 12px;
@@ -275,4 +279,3 @@
   color: white;
   font-weight: 600;
 }
-
