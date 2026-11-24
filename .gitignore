@@ -8,12 +8,16 @@ yarn.lock
 .env.local
 .env.*.local
 
-# IDE
+# IDE & Android Studio
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.gradle/
+**/.gradle/
+**/build/
+local.properties
 
 # OS
 .DS_Store
@@ -33,6 +37,5 @@ build/
 .cache/
 .parcel-cache/
 .vercel
-
 .agents/
 *.backup.*

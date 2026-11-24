@@ -1,9 +1,6 @@
-// ============================================================
-// DiaMon — DiaBot: Asistente Clínico con IA Real (Google Gemini API)
+﻿// // DiaMon - DiaBot: Asistente Clínico con IA Real (Google Gemini API)
 // + Motor de Razonamiento Clínico Contextual en Vivo (Diabetes Tipo 2 + HTA)
-// ============================================================
-
-class DiaBotAssistant {
+// class DiaBotAssistant {
   constructor() {
     this.isOpen = false;
     this.apiKeyStorageKey = 'diamon_gemini_api_key';
@@ -102,25 +99,12 @@ class DiaBotAssistant {
             </div>
           </div>
           <div class="diabot-header-actions">
-            <button id="diabotConfigApiBtn" class="diabot-btn-icon" title="Configurar API Key de Google Gemini (Opcional)">
-              <i class="fas fa-key"></i>
-            </button>
             <button id="diabotClearBtn" class="diabot-btn-icon" title="Reiniciar conversación">
               <i class="fas fa-trash-alt"></i>
             </button>
             <button id="diabotCloseBtn" class="diabot-btn-icon" title="Cerrar chat">
               <i class="fas fa-times"></i>
             </button>
-          </div>
-        </div>
-
-        <!-- Panel opcional para ingresar API Key de Gemini en vivo -->
-        <div id="diabotApiDrawer" style="display:none; background:#0f172a; color:#f8fafc; padding:10px 14px; font-size:11.5px; border-bottom:1px solid rgba(255,255,255,0.1);">
-          <div style="font-weight:700; margin-bottom:4px; color:#38bdf8;"><i class="fas fa-sparkles"></i> Conexión Google Gemini AI</div>
-          <p style="margin:0 0 6px 0; color:#cbd5e1; font-size:11px;">El motor clínico contextual ya está activo. Si deseas conectar tu propia llave de Gemini API (Google AI Studio), pégala aquí:</p>
-          <div style="display:flex; gap:6px;">
-            <input type="password" id="diabotApiKeyInput" placeholder="AIzaSy..." style="flex:1; padding:6px 8px; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#fff; font-size:11px;">
-            <button type="button" id="diabotSaveKeyBtn" style="background:#0d9488; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-weight:700; cursor:pointer; font-size:11px;">Guardar</button>
           </div>
         </div>
 
@@ -244,17 +228,15 @@ class DiaBotAssistant {
     this.showTypingIndicator();
 
     const ctx = this.obtenerContextoEnVivo();
-    const savedApiKey = localStorage.getItem(this.apiKeyStorageKey) || '';
 
-    // 1. Intentar primero el endpoint Serverless (/api/diabot) o Gemini directo
+    // 1. Consultar endpoint Serverless (/api/diabot) donde la API Key vive solo en el servidor
     try {
       const resp = await fetch('/api/diabot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
-          context: ctx,
-          apiKey: savedApiKey
+          context: ctx
         })
       });
 
@@ -270,37 +252,7 @@ class DiaBotAssistant {
       // Si se abre como archivo estático o sin red, pasa al motor contextual local
     }
 
-    // 2. Si el usuario configuró API Key en el navegador y no hay backend Node activo, llamar a Gemini
-    if (savedApiKey) {
-      try {
-        const geminiResp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(savedApiKey)}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                role: 'user',
-                parts: [{
-                  text: `Eres DiaBot, asistente clínico para el cuidado de ${ctx.nombre} (${ctx.edad} años, ${ctx.diagnostico}). Sus signos actuales son: Glucosa ${ctx.glucosa} (${ctx.estadoGlucosa}), Presión arterial ${ctx.presion} (${ctx.estadoPresion}), Pulso ${ctx.pulso}, Ubicación GPS: ${ctx.ubicacion}. Metas médicas: Glucosa ${ctx.metaGlucosa}, Presión ${ctx.metaPresion}. No recetes ni cambies dosis. Responde en español claro en máximo 120 palabras a: "${text}"`
-                }]
-              }]
-            })
-          }
-        );
-        if (geminiResp.ok) {
-          const gData = await geminiResp.json();
-          const aiText = gData?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (aiText) {
-            this.removeTypingIndicator();
-            this.addBotMessage(this.formatearMarkdownSimple(aiText));
-            return;
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 3. Motor de Razonamiento Clínico Contextual en Vivo (Usa los datos reales del Abuelo)
+    // 2. Motor de Razonamiento Clínico Contextual en Vivo (Usa los datos reales del Abuelo)
     setTimeout(() => {
       this.removeTypingIndicator();
       const respuestaContextual = this.generarRespuestaClinicaContextual(text, ctx);
@@ -321,7 +273,7 @@ class DiaBotAssistant {
 
     // 1. Consulta por el estado actual / signos vitales del abuelo
     if (lower.includes('estado') || lower.includes('signos') || lower.includes('como esta') || lower.includes('cómo está') || lower.includes('abuelo') || lower.includes('resumen') || lower.includes('hoy')) {
-      return `<strong>📊 Evaluación Clínica en Tiempo Real — ${ctx.nombre}</strong><br>` +
+      return `<strong>📊 Evaluación Clínica en Tiempo Real - ${ctx.nombre}</strong><br>` +
         `Analizando las últimas lecturas sincronizadas en DiaMon:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>Glucosa capilar:</strong> <code>${ctx.glucosa}</code> (${ctx.contextoGlucosa}) → <strong>${ctx.estadoGlucosa}</strong>. <em>${ctx.protocoloGlucosa}</em></li>` +
@@ -335,7 +287,7 @@ class DiaBotAssistant {
     if (lower.includes('presion') || lower.includes('presión') || lower.includes('hiperten') || lower.includes('tension') || lower.includes('tensión') || lower.includes('valsartan') || lower.includes('valsartán') || lower.includes('nifedipin') || lower.includes('140') || lower.includes('160')) {
       const alertaPA = ctx.sistolicaNum >= 140 || ctx.diastolicaNum >= 90;
       return `<strong>❤️ Manejo de Hipertensión Arterial (${ctx.nombre})</strong><br>` +
-        `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) — <strong>${ctx.estadoPresion}</strong>.<br>` +
+        `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) - <strong>${ctx.estadoPresion}</strong>.<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>Indicaciones actuales:</strong> ${alertaPA ? '⚠️ La presión supera la meta de ' + ctx.metaPresion + '. Pon a Don Damián en reposo sentado, verifica si ya tomó su <strong>Nifedipina (8:00 AM / 8:00 PM)</strong> o su <strong>Valsartán (2:00 PM)</strong> y repite la toma en 10 minutos.' : '✅ Se encuentra dentro de la meta cardiovascular (' + ctx.metaPresion + ') pautada con la ' + ctx.profesional + '.'}</li>` +
         `<li><strong>Signos de alarma:</strong> Si presenta dolor de cabeza intenso, visión borrosa, dolor torácico o presión ≥ 160/100 mmHg, activa el botón <strong>SOS</strong> o acude a urgencias cercanas a Chapacuá (Clínica Blas de Lezo / HUC).</li>` +
@@ -366,13 +318,13 @@ class DiaBotAssistant {
 
     // 5. Medicamentos / Pastillas / Dosis / Firialta / Gabapentina / Lipotic / Ozempic
     if (lower.includes('medicamento') || lower.includes('medicina') || lower.includes('pastilla') || lower.includes('dosis') || lower.includes('metformina') || lower.includes('tratamiento') || lower.includes('esquema') || lower.includes('firialta') || lower.includes('gabapentina') || lower.includes('lipotic') || lower.includes('ozempic') || lower.includes('insulina') || lower.includes('pantoprazol') || lower.includes('atorvastatina')) {
-      return `<strong>💊 Esquema Farmacológico Completo — ${ctx.nombre}</strong><br>` +
+      return `<strong>💊 Esquema Farmacológico Completo - ${ctx.nombre}</strong><br>` +
         `Supervisado con la <strong>${ctx.profesional}</strong>:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>08:00 AM:</strong> <strong>Pantoprazol</strong> (protector gástrico), <strong>Metformina</strong> (control glucémico), <strong>Firialta</strong> (finerenona: protección renal y cardiovascular en diabetes) y <strong>Nifedipina</strong> (antihipertensivo).</li>` +
         `<li><strong>02:00 PM:</strong> <strong>Valsartán</strong> (control vespertino de presión arterial).</li>` +
         `<li><strong>08:00 PM:</strong> <strong>Atorvastatina</strong> (colesterol), <strong>Metformina</strong>, <strong>Gabapentina + Lipotic</strong> (ácido tióctico para neuropatía diabética) y <strong>Nifedipino</strong>.</li>` +
-        `<li><strong>09:00 PM:</strong> <strong>Insulina Basal — 24 Unidades</strong> subcutáneas.</li>` +
+        `<li><strong>09:00 PM:</strong> <strong>Insulina Basal - 24 Unidades</strong> subcutáneas.</li>` +
         `<li><strong>Sábados:</strong> <strong>Ozempic</strong> (aplicación semanal).</li>` +
         `</ul>`;
     }
@@ -392,9 +344,9 @@ class DiaBotAssistant {
       return `<strong>🏥 Red de Urgencias Cercanas en Cartagena</strong><br>` +
         `Para el perfil de <strong>${ctx.nombre}</strong> (DM2 + HTA), los centros de referencia más cercanos son:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
-        `<li><strong>Clínica Blas de Lezo</strong> (Av. Pedro de Heredia / Los Ejecutivos) — Urgencias 24h.</li>` +
-        `<li><strong>Hospital Universitario del Caribe (HUC)</strong> (Zarzagocilla) — Alta complejidad.</li>` +
-        `<li><strong>Clínica Gestión Salud San Fernando</strong> — Atención rápida en su sector residencial.</li>` +
+        `<li><strong>Clínica Blas de Lezo</strong> (Av. Pedro de Heredia / Los Ejecutivos) - Urgencias 24h.</li>` +
+        `<li><strong>Hospital Universitario del Caribe (HUC)</strong> (Zarzagocilla) - Alta complejidad.</li>` +
+        `<li><strong>Clínica Gestión Salud San Fernando</strong> - Atención rápida en su sector residencial.</li>` +
         `</ul>`;
     }
 
@@ -472,3 +424,4 @@ class DiaBotAssistant {
 document.addEventListener('DOMContentLoaded', () => {
   window.diabotInstance = new DiaBotAssistant();
 });
+

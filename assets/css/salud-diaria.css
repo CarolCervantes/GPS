@@ -1,9 +1,4 @@
-/* ============================================================
-   DiaMon — Salud Diaria: Estilos Clínicos Limpios y Humanos
-   Diseñado con sobriedad médica y accesibilidad visual
-   ============================================================ */
-
-/* ---------- 1. Tarjeta de Consejo Educativo (24H) ---------- */
+﻿/* ---------- 1. Tarjeta de Consejo Educativo (24H) ---------- */
 .consejo-card {
   background: #111a2e;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -387,3 +382,4 @@
   border-radius: 50%;
   display: inline-block;
 }
+

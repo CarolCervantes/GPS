@@ -1,5 +1,5 @@
-/**
- * DiaMon — Endpoint Serverless para DiaBot con IA Real (Google Gemini API)
+﻿/**
+ * DiaMon - Endpoint Serverless para DiaBot con IA Real (Google Gemini API)
  * Compatible con Vercel Serverless Functions (/api/diabot) y con server.js local.
  * 
  * Recibe:
@@ -15,7 +15,7 @@ ESQUEMA FARMACOLÓGICO OFICIAL DE DAMIÁN DÍAZ BALSEIRO:
 - 08:00 AM: Pantoprazol (protector gástrico), Metformina (diabetes), Firialta / Finerenona (protección renal y cardiovascular en diabetes) y Nifedipina (hipertensión arterial).
 - 02:00 PM: Valsartán (control vespertino de hipertensión arterial).
 - 08:00 PM: Atorvastatina (colesterol/protección vascular), Metformina (diabetes), Gabapentina + Lipotic / Ácido Tióctico (manejo de neuropatía diabética periférica) y Nifedipino (hipertensión nocturna).
-- 09:00 PM: Insulina Basal — 24 Unidades subcutáneas.
+- 09:00 PM: Insulina Basal - 24 Unidades subcutáneas.
 - Sábados: Ozempic (Semaglutida semanal).
 
 REGLAS CLÍNICAS Y DE SEGURIDAD OBLIGATORIAS:
@@ -46,10 +46,10 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const userMessage = (body.message || '').trim();
+    const userMessage = (body.message || '').trim().slice(0, 600);
     const clinicalContext = body.context || {};
-    const clientApiKey = (body.apiKey || '').trim();
-    const apiKey = process.env.GEMINI_API_KEY || clientApiKey;
+    // SEGURIDAD: La clave de Gemini se lee exclusivamente de variables de entorno del servidor
+    const apiKey = process.env.GEMINI_API_KEY || '';
 
     if (!userMessage) {
       res.statusCode = 400;
@@ -126,3 +126,4 @@ CONTEXTO CLÍNICO ACTUAL DEL PACIENTE (EN VIVO):
     }));
   }
 };
+

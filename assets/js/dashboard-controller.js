@@ -1,5 +1,5 @@
-/**
- * DiaMon — Dashboard Controller Profesional
+﻿/**
+ * DiaMon - Controlador principal del dashboard
  * 1. Navegación por pestañas SPA con redibujado garantizado de mapas (Leaflet invalidateSize)
  * 2. Reloj en vivo y calendario dinámico
  * 3. Gestión reactiva de sesión (Invitado vs Usuario vs Admin)
@@ -19,10 +19,8 @@
     initAccessibleModals();
   });
 
-  // ============================================================
-  // 1. RELOJ Y FECHA EN TIEMPO REAL
-  // ============================================================
-  function initLiveClock() {
+  // // 1. RELOJ Y FECHA EN TIEMPO REAL
+  // function initLiveClock() {
     const clockEl = document.getElementById('dcLiveClock');
     const dateEl = document.getElementById('dcLiveDate');
 
@@ -49,10 +47,8 @@
     setInterval(update, 1000);
   }
 
-  // ============================================================
-  // 2. NAVEGACIÓN SPA Y REDIBUJADO DE MAPAS (Leaflet InvalidateSize)
-  // ============================================================
-  function initTabNavigation() {
+  // // 2. NAVEGACIÓN SPA Y REDIBUJADO DE MAPAS (Leaflet InvalidateSize)
+  // function initTabNavigation() {
     const navItems = document.querySelectorAll('[data-dc-tab]');
     const views = document.querySelectorAll('.dc-view');
 
@@ -130,17 +126,15 @@
     });
   }
 
-  // ============================================================
-  // 3. SINCRONIZACIÓN DE KPIS EN TIEMPO REAL
-  // ============================================================
-  function initKPISync() {
+  // // 3. SINCRONIZACIÓN DE KPIS EN TIEMPO REAL
+  // function initKPISync() {
     const targetNode = document.getElementById('glucoseValue') || document.getElementById('liveGlucose');
     const kpiGlucVal = document.getElementById('kpiGlucoseVal');
 
     if (targetNode && kpiGlucVal) {
       const observer = new MutationObserver(() => {
         const txt = targetNode.textContent.trim();
-        if (txt && txt !== '—') {
+        if (txt && txt !== '-') {
           kpiGlucVal.textContent = txt + ' mg/dL';
         }
       });
@@ -184,10 +178,8 @@
     return { primerNombre, nombreCompleto, iniciales };
   }
 
-  // ============================================================
-  // 4. ESTADO DE SESIÓN (Invitado vs Usuario Autenticado)
-  // ============================================================
-  async function initSessionState() {
+  // // 4. ESTADO DE SESIÓN (Invitado vs Usuario Autenticado)
+  // async function initSessionState() {
     const greetingTitle = document.getElementById('dcWelcomeGreeting');
     const greetingSubtitle = document.getElementById('dcWelcomeSubtitle');
     const sidebarName = document.getElementById('sidebarUserName');
@@ -337,10 +329,8 @@
     };
   }
 
-  // ============================================================
-  // 5. MODALES ACCESIBLES (Auth & Legal)
-  // ============================================================
-  function initAccessibleModals() {
+  // // 5. MODALES ACCESIBLES (Auth & Legal)
+  // function initAccessibleModals() {
     const authModal = document.getElementById('dcAuthModal');
     const legalModal = document.getElementById('dcLegalModal');
 
@@ -404,10 +394,8 @@
     });
   }
 
-  // ============================================================
-  // 6. CONSENTIMIENTO DE COOKIES & ANALÍTICA (Habeas Data)
-  // ============================================================
-  function initCookieConsent() {
+  // // 6. CONSENTIMIENTO DE COOKIES & ANALÍTICA (Habeas Data)
+  // function initCookieConsent() {
     const banner = document.getElementById('dcCookieBanner');
     if (!banner) return;
 
@@ -425,4 +413,5 @@
   }
 
 })();
+
 

@@ -1,4 +1,4 @@
-// ============ REGISTROS DE USUARIO ============
+﻿// REGISTROS DE USUARIO ============
 // Carga y gestiona los registros de salud del usuario desde Supabase.
 
 let todosLosRegistros = [];
@@ -122,10 +122,10 @@ async function cargarDatos(userId) {
   calcularGlucosaStats(glucosaData || []);
 }
 
-// ========== RENDER TABLA ==========
+// RENDER TABLA ==========
 
 function formatearFecha(ts) {
-  if (!ts) return '—';
+  if (!ts) return '-';
   return new Date(ts).toLocaleDateString('es-CO', {
     day: '2-digit',
     month: '2-digit',
@@ -160,15 +160,15 @@ function renderTabla(registros) {
     <tr>
       <td>${formatearFecha(r.ts)}</td>
       <td>${badgeTipo(r.tipo)}</td>
-      <td>${r.valor || '—'}</td>
-      <td>${r.etiquetas?.join(', ') || '—'}</td>
-      <td>${r.notas || '—'}</td>
+      <td>${r.valor || '-'}</td>
+      <td>${r.etiquetas?.join(', ') || '-'}</td>
+      <td>${r.notas || '-'}</td>
       <td></td>
     </tr>
   `).join('');
 }
 
-// ========== KPIs ==========
+// KPIs ==========
 
 function calcularKPIs(registros) {
   const conteo = { glucosa: 0, actividad: 0, alimentacion: 0, medicacion: 0 };
@@ -184,7 +184,7 @@ function calcularKPIs(registros) {
   set('totalMedicacion', conteo.medicacion);
 }
 
-// ========== ESTADÍSTICAS GLUCOSA ==========
+// ESTADÍSTICAS GLUCOSA ==========
 
 function calcularGlucosaStats(lecturas) {
   if (!lecturas || lecturas.length === 0) return;
@@ -228,7 +228,7 @@ function calcularGlucosaStats(lecturas) {
   fillPct('.rango-item:nth-child(3) .rango-pct', pctBajo);
 }
 
-// ========== FILTROS ==========
+// FILTROS ==========
 
 function initFiltros() {
   // Botones segmentados por tipo
@@ -280,7 +280,7 @@ function aplicarFiltros() {
   calcularKPIs(registrosFiltrados);
 }
 
-// ========== DESCARGA PDF ==========
+// DESCARGA PDF ==========
 
 function initPDF() {
   const btn = document.getElementById('btnDescargarPDF');
@@ -303,7 +303,7 @@ function descargarPDF(registros) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('DiaMon — Registros de salud', 14, 14);
+  doc.text('DiaMon - Registros de salud', 14, 14);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text(`Generado: ${new Date().toLocaleDateString('es-CO', { dateStyle: 'long' })}`, 14, 22);
@@ -312,10 +312,10 @@ function descargarPDF(registros) {
   doc.setTextColor(0, 0, 0);
   const filas = registros.map(r => [
     formatearFecha(r.ts),
-    r.tipo || '—',
-    r.valor || '—',
-    r.etiquetas?.join(', ') || '—',
-    r.notas || '—',
+    r.tipo || '-',
+    r.valor || '-',
+    r.etiquetas?.join(', ') || '-',
+    r.notas || '-',
   ]);
 
   doc.autoTable({
@@ -346,3 +346,4 @@ function descargarPDF(registros) {
 
   doc.save(`registros-diamon-${new Date().toISOString().split('T')[0]}.pdf`);
 }
+

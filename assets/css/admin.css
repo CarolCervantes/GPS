@@ -1,8 +1,4 @@
-/* ============================================================
-   DiaMon — Panel de Administración
-   ============================================================ */
-
-/* ---------- Admin mode strip (aparece en todas las páginas
+﻿/* ---------- Admin mode strip (aparece en todas las páginas
    cuando body[data-rol="admin"]) ---------- */
 .admin-strip {
     height: 24px;
@@ -24,7 +20,7 @@
     overflow: hidden;
 }
 
-/* Línea de "scan" que cruza el strip cada 6s — recordatorio sutil */
+/* Línea de "scan" que cruza el strip cada 6s - recordatorio sutil */
 .admin-strip::before {
     content: '';
     position: absolute;
@@ -68,9 +64,7 @@
     opacity: 0.7;
 }
 
-/* ============================================================
-   PANEL DE ADMIN — KPIs + tabla de usuarios
-   ============================================================ */
+
 
 .admin-kpis {
     display: grid;
@@ -380,3 +374,4 @@
 .vincular-field select:focus {
     border-color: var(--brand);
 }
+

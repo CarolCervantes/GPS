@@ -1,0 +1,341 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaMon — Descargar App Móvil (Android &amp; iOS)</title>
+    <meta name="theme-color" content="#0d9488">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="../assets/icon-diamon.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --bg-dark: #082032;
+            --card-bg: #112b3c;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #0f3443 0%, #082032 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 28px 18px;
+        }
+        .wrap {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0d9488, #0284c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .btn-back {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+        @media (max-width: 820px) {
+            .hero-grid { grid-template-columns: 1fr; }
+        }
+        .qr-poster-card {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 24px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-badge {
+            background: #f0fdfa;
+            color: #0d9488;
+            border: 1px solid #99f6e4;
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .qr-frame {
+            padding: 18px;
+            background: #ffffff;
+            border: 3px solid #0d9488;
+            border-radius: 20px;
+            margin: 14px 0;
+            box-shadow: 0 10px 25px rgba(13,148,136,0.15);
+        }
+        .url-input-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 12px;
+        }
+        .url-input-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 12.5px;
+            color: #334155;
+        }
+        .url-input-row button {
+            background: #0d9488;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-weight: 700;
+            font-size: 12.5px;
+            cursor: pointer;
+        }
+        .platforms-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .platform-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 20px;
+            padding: 20px;
+        }
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .platform-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .platform-icon.android { background: rgba(34,197,94,0.18); color: #4ade80; }
+        .platform-icon.apple { background: rgba(56,189,248,0.18); color: #38bdf8; }
+        .platform-icon.senior { background: rgba(168,85,247,0.18); color: #c084fc; }
+        .steps-list {
+            margin: 8px 0 14px 18px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-primary { background: #0d9488; color: #ffffff; }
+        .btn-dark { background: #ffffff; color: #0f172a; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header class="topbar">
+        <a href="index.html" class="brand">
+            <div class="brand-icon"><i class="fas fa-tint"></i></div>
+            <div>
+                <h1 style="font-size:20px; font-weight:800;">DiaMon Mobile · Android &amp; iOS</h1>
+                <span style="font-size:12px; color:#99f6e4;">Caso de Estudio: Monitoreo de Diabetes Tipo 2 e Hipertensión</span>
+            </div>
+        </a>
+        <div style="display:flex; gap:10px;">
+            <button onclick="window.print()" class="btn-back" style="cursor:pointer;">
+                <i class="fas fa-print"></i> Imprimir QR para Tablero
+            </button>
+            <a href="index.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="hero-grid">
+        <!-- PÓSTER QR PARA PROYECTAR O PEGAR EN EL TABLERO -->
+        <div class="qr-poster-card">
+            <span class="qr-badge"><i class="fas fa-qrcode"></i> Escanea con la cámara de tu celular</span>
+            <h2 style="font-size:22px; font-weight:800; color:#0f172a;">Prueba DiaMon en Vivo</h2>
+            <p style="font-size:13.5px; color:#475569; margin-top:4px; max-width:360px;">
+                Compatible con <strong>iPhone (iOS)</strong> y <strong>Android</strong>. Permite ver el mapa GPS del paciente, signos vitales y modo adulto mayor.
+            </p>
+
+            <div class="qr-frame">
+                <div id="qrDownloadCanvas"></div>
+            </div>
+
+            <div style="font-size:12px; font-weight:700; color:#0d9488; margin-bottom:6px;" id="qrCurrentUrlLabel">
+                https://diamon-salud.vercel.app
+            </div>
+
+            <div class="url-input-row">
+                <input type="text" id="customQrUrlInput" placeholder="URL del proyecto o IP local (ej. https://diamon-salud.vercel.app)">
+                <button type="button" onclick="window.actualizarQRDescarga()">Actualizar QR</button>
+            </div>
+        </div>
+
+        <!-- INSTRUCCIONES POR PLATAFORMA -->
+        <div class="platforms-col">
+            <!-- iPhone / iOS -->
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon apple"><i class="fab fa-apple"></i></div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:700;">Instalar en iPhone / iPad (iOS PWA)</h3>
+                        <span style="font-size:12px; color:#99f6e4;">Funciona como App nativa a pantalla completa sin App Store</span>
+                    </div>
+                </div>
+                <ol class="steps-list">
+                    <li>Escanea el código QR con la cámara de tu iPhone para abrir DiaMon en <strong>Safari</strong>.</li>
+                    <li>Toca el botón <strong>Compartir</strong> <i class="fas fa-share-square"></i> en la barra inferior de Safari.</li>
+                    <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong>. Se creará el ícono oficial de DiaMon.</li>
+                </ol>
+                <a href="index.html" class="btn-action btn-dark">
+                    <i class="fas fa-external-link-alt"></i> Abrir App Web Interactiva Ahora
+                </a>
+            </div>
+
+            <!-- Android Studio & APK -->
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon android"><i class="fab fa-android"></i></div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:700;">App Nativa Android (Android Studio + WebAPK)</h3>
+                        <span style="font-size:12px; color:#86efac;">Incluye proyecto nativo en carpeta <code>/android-studio-app</code></span>
+                    </div>
+                </div>
+                <ol class="steps-list">
+                    <li><strong>Instalación directa desde el QR:</strong> Al abrir en Chrome Android, pulsa el botón inferior o <em>"Instalar aplicación"</em>.</li>
+                    <li><strong>En Android Studio:</strong> El proyecto incluye el módulo nativo con permisos <code>ACCESS_FINE_LOCATION</code> y <code>WebView</code> con geolocalización en tiempo real.</li>
+                </ol>
+                <button type="button" id="btnInstallPWA" onclick="window.instalarAppMovil()" class="btn-action btn-primary">
+                    <i class="fas fa-download"></i> Instalar App DiaMon en este Dispositivo
+                </button>
+            </div>
+
+            <!-- Vista Abuelo -->
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon senior"><i class="fas fa-universal-access"></i></div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:700;">Probar Vista Simplificada del Abuelo</h3>
+                        <span style="font-size:12px; color:#e9d5ff;">Diseñada con alto contraste y 4 botones gigantes</span>
+                    </div>
+                </div>
+                <p style="font-size:13px; color:#cbd5e1; margin-bottom:12px;">
+                    Permite mostrar al jurado cómo interactúa el adulto mayor (Botón SOS, Confirmar Pastilla, Anotar Glucosa y Presión).
+                </p>
+                <a href="index.html#modo-abuelo" onclick="localStorage.setItem('diamon_abrir_abuelo','1')" class="btn-action btn-primary" style="background:#7c3aed;">
+                    <i class="fas fa-user-check"></i> Abrir Directamente en Modo Abuelo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/vendor/qrcode.min.js"></script>
+<script>
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    window.instalarAppMovil = async function () {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        } else {
+            alert('Para instalar en iPhone: abre en Safari -> Compartir -> "Agregar a pantalla de inicio". En Android Chrome: menú superior (⋮) -> "Instalar aplicación".');
+        }
+    };
+
+    window.actualizarQRDescarga = function () {
+        const container = document.getElementById('qrDownloadCanvas');
+        const input = document.getElementById('customQrUrlInput');
+        const label = document.getElementById('qrCurrentUrlLabel');
+        if (!container) return;
+
+        let targetUrl = (input && input.value.trim()) ? input.value.trim() : window.location.origin + '/pages/index.html';
+        if (targetUrl.startsWith('file://')) {
+            targetUrl = 'https://diamon-salud.vercel.app/pages/index.html';
+        }
+        if (input && !input.value) input.value = targetUrl;
+        if (label) label.textContent = targetUrl;
+
+        container.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(container, {
+                text: targetUrl,
+                width: 220,
+                height: 220,
+                colorDark: '#082032',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.actualizarQRDescarga();
+    });
+</script>
+</body>
+</html>
+

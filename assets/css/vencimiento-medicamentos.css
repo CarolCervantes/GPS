@@ -1,8 +1,4 @@
-/* ============================================================
-   DiaMon — Vencimiento de Medicamentos Styles
-   ============================================================ */
-
-.venc-list {
+﻿.venc-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -127,3 +123,4 @@
   background: rgba(56, 189, 248, 0.2);
   color: white;
 }
+

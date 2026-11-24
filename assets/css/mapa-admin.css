@@ -1,4 +1,4 @@
-/* Mapa Admin — layout con panel lateral y mapa */
+﻿/* Mapa Admin - layout con panel lateral y mapa */
 
 .mapa-page-content {
   flex: 1;
@@ -265,3 +265,4 @@
     height: 100%;
   }
 }
+

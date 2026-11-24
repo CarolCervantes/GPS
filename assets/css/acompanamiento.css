@@ -1,8 +1,4 @@
-/* ============================================================
-   DiaMon — Sistema de Acompañamiento Inteligente GPS Styles
-   ============================================================ */
-
-.safewalk-card {
+﻿.safewalk-card {
   background: var(--surface-1, #0f1626);
   border: 1px solid var(--border-1, rgba(255, 255, 255, 0.06));
   border-radius: 12px;
@@ -255,3 +251,4 @@
   border-radius: 6px;
   white-space: nowrap;
 }
+

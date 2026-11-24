@@ -1,9 +1,4 @@
-/* ============================================================
-   DIAMON — SISTEMA DE ALERTAS E INCIDENCIAS (DISEÑO OFICIAL)
-   Inspirado exactamente en la interfaz de Alertas Importantes
-   ============================================================ */
-
-/* Envoltorio de la vista */
+﻿/* Envoltorio de la vista */
 .dm-alerts-view-wrap {
   width: 100%;
   max-width: 1060px;
@@ -583,3 +578,4 @@
     gap: 12px;
   }
 }
+

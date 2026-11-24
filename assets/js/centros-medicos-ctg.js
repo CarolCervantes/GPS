@@ -1,9 +1,6 @@
-// ============================================================
-// DiaMon — Directorio y Capa de Centros Médicos en Cartagena de Indias
+﻿// // DiaMon - Directorio y Capa de Centros Médicos en Cartagena de Indias
 // Clínicas de urgencias, hospitales y farmacias 24h
-// ============================================================
-
-const CENTROS_MEDICOS_CARTAGENA = [
+// const CENTROS_MEDICOS_CARTAGENA = [
   {
     id: 'huc',
     nombre: 'Hospital Universitario del Caribe (HUC)',
@@ -97,7 +94,7 @@ const CENTROS_MEDICOS_CARTAGENA = [
   },
   {
     id: 'cruz-roja',
-    nombre: 'Cruz Roja Colombiana — Seccional Bolívar',
+    nombre: 'Cruz Roja Colombiana - Seccional Bolívar',
     tipo: 'hospital',
     urgencias24h: false,
     direccion: 'Av. Pedro de Heredia, Sector España',
@@ -136,7 +133,7 @@ const CENTROS_MEDICOS_CARTAGENA = [
   },
   {
     id: 'rebaja-popa',
-    nombre: 'Drogas La Rebaja — Pie de la Popa',
+    nombre: 'Drogas La Rebaja - Pie de la Popa',
     tipo: 'farmacia',
     urgencias24h: true,
     direccion: 'Calle 30 # 21-12, Pie de la Popa',
@@ -149,7 +146,7 @@ const CENTROS_MEDICOS_CARTAGENA = [
   },
   {
     id: 'drogueria-inglesa-centro',
-    nombre: 'Droguería Inglesa — Centro Histórico',
+    nombre: 'Droguería Inglesa - Centro Histórico',
     tipo: 'farmacia',
     urgencias24h: false,
     direccion: 'Calle San Agustín # 6-18, Centro Amurallado',
@@ -417,3 +414,4 @@ class CentrosMedicosCartagena {
 
 window.CentrosMedicosCartagena = CentrosMedicosCartagena;
 window.CENTROS_MEDICOS_CARTAGENA = CENTROS_MEDICOS_CARTAGENA;
+

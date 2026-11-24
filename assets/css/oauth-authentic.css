@@ -1,10 +1,4 @@
-/* ============================================================
-   DIAMON — EXPERIENCIA AUTÉNTICA OAUTH (GOOGLE, FACEBOOK, APPLE)
-   Réplica exacta del Selector Nativo de Cuentas Google Dark Theme
-   (Idéntico a Brave/Chrome Móvil y Escritorio)
-   ============================================================ */
-
-.dm-google-dialog-backdrop {
+﻿.dm-google-dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 10000;
@@ -356,9 +350,7 @@
   color: #e8eaed;
 }
 
-/* ============================================================
-   CARD DE FACEBOOK Y APPLE
-   ============================================================ */
+
 .dm-fb-header {
   background: #1877f2;
   color: #ffffff;
@@ -400,3 +392,4 @@
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+

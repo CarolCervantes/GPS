@@ -1,15 +1,19 @@
-/**
- * DiaMon — Service Worker de Monitoreo Clínico y Alertas 24/7
- * Garantiza recepción de notificaciones en segundo plano, soporte offline
- * y alertas críticas de salud en Cartagena de Indias.
+﻿/**
+ * DiaMon - Service Worker de Monitoreo Clínico y Alertas 24/7
+ * Incluye estrategia Network-First con Fallback a Caché (Soporte Offline Real)
+ * y Notificaciones Push en segundo plano.
  */
 
-const CACHE_NAME = 'diamon-cache-v2';
+const CACHE_NAME = 'diamon-cache-v3';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
+  '/pages/index.html',
+  '/pages/login.html',
+  '/pages/ficha-emergencia.html',
+  '/pages/descargar-app.html',
   '/assets/css/dashboard-modern.css',
   '/assets/css/alertas-sistema.css',
+  '/assets/js/caso-estudio.js',
   '/assets/js/alertas-sistema.js',
   '/assets/js/telemetria-dispositivo.js'
 ];
@@ -37,15 +41,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Manejo de eventos Push en segundo plano (24/7)
+// Estrategia Network-First con Fallback a Caché para soporte Offline real
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.url.startsWith(self.location.origin)) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cached) => {
+          return cached || caches.match('/pages/index.html');
+        });
+      })
+  );
+});
+
 self.addEventListener('push', (event) => {
   let data = {
     title: '⚠️ DiaMon: Alerta de Salud 24/7',
-    body: 'Se ha detectado una incidencia médica o de geocerca en Cartagena.',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
+    body: 'Se ha detectado una incidencia médica o de geocerca en Chapacuá, Cartagena.',
+    icon: '/assets/icon-diamon.svg',
+    badge: '/assets/icon-diamon.svg',
     vibrate: [300, 100, 300, 100, 300],
-    data: { url: '/index.html#view-alertas' }
+    data: { url: '/pages/index.html#view-alertas' }
   };
 
   if (event.data) {
@@ -70,30 +94,28 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Mensajes enviados desde la pestaña activa
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const payload = event.data.payload || {};
     self.registration.showNotification(payload.title || '⚠️ Alerta Médica DiaMon', {
       body: payload.body || 'Notificación del sistema 24/7.',
-      icon: payload.icon || '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: payload.icon || '/assets/icon-diamon.svg',
+      badge: '/assets/icon-diamon.svg',
       vibrate: [300, 100, 300],
       tag: 'diamon-alerta-local',
       renotify: true,
-      data: { url: payload.url || '/index.html#view-alertas' }
+      data: { url: payload.url || '/pages/index.html#view-alertas' }
     });
   }
 });
 
-// Clic en notificación: enfocar ventana o abrir la vista de alertas
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || '/index.html#view-alertas';
+  const targetUrl = event.notification.data?.url || '/pages/index.html#view-alertas';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      for (let client of windowClients) {
+      for (const client of windowClients) {
         if (client.url.includes('diamon') && 'focus' in client) {
           client.focus();
           client.postMessage({ type: 'NAVIGATE_TAB', tab: 'alertas' });
@@ -106,3 +128,4 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+

@@ -1,0 +1,341 @@
+﻿/* Botón de micrófono en Navbar */
+.btn-mic-sos {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+
+.btn-mic-sos:hover {
+  background: #334155;
+  border-color: #60a5fa;
+}
+
+.btn-mic-sos.listening {
+  background: #b91c1c;
+  color: white;
+  border-color: #ef4444;
+  animation: pulseMic 1.5s infinite;
+}
+
+@keyframes pulseMic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: none; }
+}
+
+/* Pantalla Completa SOS (Overlay) */
+.sos-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 18, 32, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.sos-fullscreen-overlay.active {
+  display: flex;
+}
+
+.sos-fullscreen-card {
+  background: #0f172a;
+  border: 2px solid #b91c1c;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.sos-banner-top {
+  background: #b91c1c;
+  color: white;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.sos-btn-cerrar {
+  background: rgba(0, 0, 0, 0.25);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sos-body-scroll {
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 1. Ubicación en GRANDE */
+.sos-location-box {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 5px solid #0284c7;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sos-location-pill {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #60a5fa;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.sos-barrio-grande {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.25;
+}
+
+.sos-referencia-grande {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.sos-coords-badge {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  background: #0b1220;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.sos-btn-mapa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #0284c7;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* 2. Escalamiento de Contactos */
+.sos-escalamiento-box {
+  background: #141f32;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.sos-escalamiento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sos-esc-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  text-transform: uppercase;
+}
+
+.sos-esc-timer {
+  font-size: 11px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.sos-contacto-card {
+  background: #0b1220;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.sos-contacto-card.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.sos-contacto-card.escalated {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.sos-c-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.sos-c-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.sos-c-phone {
+  font-size: 12px;
+  color: #60a5fa;
+  font-family: var(--font-mono, monospace);
+}
+
+.sos-c-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-sos-call {
+  background: #10b981;
+  color: #064e3b;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.btn-sos-call.secondary {
+  background: #0284c7;
+  color: white;
+}
+
+.btn-sos-wa {
+  background: #25d366;
+  color: #0b1220;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+/* 3. Botón 123 CRUE */
+.btn-call-123 {
+  background: #dc2626;
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
+}
+
+.btn-call-123 i {
+  font-size: 26px;
+}
+
+.crue-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.crue-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+/* 4. Ficha médica rápida */
+.sos-medical-sheet-mini {
+  background: #0b1220;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.sos-med-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.sos-med-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.sos-med-chip {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.sos-med-chip.red {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.35);
+  color: #fca5a5;
+  font-weight: 600;
+}
+
+.sos-first-aid-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.45;
+}
+

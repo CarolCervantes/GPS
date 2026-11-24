@@ -1,9 +1,4 @@
-/* ============================================================
-   DiaMon — Permisos de Ubicación Modal Styles
-   Diseño sobrio, humano y profesional
-   ============================================================ */
-
-.permiso-card {
+﻿.permiso-card {
   max-width: 440px !important;
   padding: 24px 20px;
   background: #0f172a !important;
@@ -142,3 +137,4 @@
   flex-direction: column;
   gap: 10px;
 }
+

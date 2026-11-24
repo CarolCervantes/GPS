@@ -1,4 +1,4 @@
-let reporteData = {
+﻿let reporteData = {
     nombre_usuario: 'Usuario',
     fecha_generacion: new Date().toLocaleDateString('es-CO'),
     total_registros: 0,
@@ -157,7 +157,7 @@ function descargarPDF() {
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('DiaMon — Reporte de Salud', 14, 13);
+    doc.text('DiaMon - Reporte de Salud', 14, 13);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text(`${data.nombre_usuario}  ·  ${data.fecha_generacion}`, 14, 22);
@@ -359,3 +359,4 @@ function initFlatpickr() {
         defaultDate: new Date().toISOString().slice(0, 7),
     });
 }
+

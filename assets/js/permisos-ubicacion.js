@@ -1,9 +1,6 @@
-// ============================================================
-// DiaMon — Módulo de Solicitud y Permisos de Ubicación GPS
+﻿// // DiaMon - Módulo de Solicitud y Permisos de Ubicación GPS
 // Notificación inicial clínica para monitoreo continuo del paciente
-// ============================================================
-
-class PermisosUbicacionManager {
+// class PermisosUbicacionManager {
   constructor() {
     this.storageKey = 'diamon_permiso_ubicacion_tipo';
     this.init();
@@ -175,3 +172,4 @@ class PermisosUbicacionManager {
 document.addEventListener('DOMContentLoaded', () => {
   window.permisosUbicacionInstance = new PermisosUbicacionManager();
 });
+

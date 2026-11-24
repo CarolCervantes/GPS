@@ -27,8 +27,8 @@ import androidx.core.content.ContextCompat;
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_CODE = 1001;
-    // URL oficial desplegada o activos locales (file:///android_asset/index.html)
-    private static final String DIAMON_APP_URL = "https://diamon-salud.vercel.app";
+    // Carga la interfaz idéntica a la Web empaquetada localmente en Android Studio (o desde Vercel)
+    private static final String DIAMON_APP_URL = "file:///android_asset/pages/index.html";
 
     private WebView webView;
 
@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setGeolocationEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
@@ -55,13 +57,20 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String scheme = uri.getScheme();
-                // Permitir llamadas telefónicas directas al 123 / Cuidador y WhatsApp SOS
-                if ("tel".equals(scheme) || "mailto".equals(scheme) || uri.toString().contains("wa.me") || uri.toString().contains("maps.google.com")) {
+                String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
+
+                if ("javascript".equalsIgnoreCase(scheme)) {
+                    return true;
+                }
+                if ("tel".equals(scheme) || "mailto".equals(scheme) || host.contains("wa.me") || host.contains("maps.google.com")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(intent);
                     return true;
                 }
-                return false;
+                if ("file".equalsIgnoreCase(scheme) || ("https".equalsIgnoreCase(scheme) && (host.endsWith("vercel.app") || host.endsWith("supabase.co")))) {
+                    return false;
+                }
+                return true;
             }
         });
 

@@ -1,5 +1,5 @@
--- =====================================================
--- DiaMon — Crear el usuario administrador
+﻿-- =====================================================
+-- DiaMon - Crear el usuario administrador
 -- =====================================================
 --
 -- IMPORTANTE: No commitees credenciales reales en este archivo.
@@ -12,14 +12,14 @@
 --
 -- (2) Crea el usuario admin en Supabase:
 --
---     Opción A — Recomendada (Dashboard):
+--     Opción A - Recomendada (Dashboard):
 --       Authentication → Users → "Add user" → "Create new user"
 --       - Email:    el correo que quieras usar como admin
 --       - Password: una contraseña FUERTE (mínimo 12 caracteres,
 --                   con mayúsculas, minúsculas, números y símbolos)
 --       - Marcar "Auto Confirm User" para no necesitar verificación
 --
---     Opción B — Desde la app:
+--     Opción B - Desde la app:
 --       Regístrate normalmente en https://tu-app/login.html
 --       y confirma el correo. Luego sigue al paso (3).
 --
@@ -50,3 +50,4 @@ where p.rol = 'admin';
 -- where id = (
 --   select id from auth.users where email = 'CORREO_A_DEGRADAR@ejemplo.com'
 -- );
+

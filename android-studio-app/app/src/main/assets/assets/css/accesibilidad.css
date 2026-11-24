@@ -1,0 +1,126 @@
+﻿.btn-access-nav {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+
+.btn-access-nav:hover {
+  background: #334155;
+  border-color: #38bdf8;
+}
+
+.access-option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.access-option-info strong {
+  display: block;
+  font-size: 13px;
+  color: #f8fafc;
+  margin-bottom: 2px;
+}
+
+.access-option-info span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Switch */
+.access-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.access-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.access-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #334155;
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.access-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.access-switch input:checked + .access-slider {
+  background-color: #0284c7;
+}
+
+.access-switch input:checked + .access-slider:before {
+  transform: translateX(20px);
+}
+
+/* 1. MODO TEXTO GRANDE */
+html.access-large-text {
+  font-size: 115% !important;
+}
+
+html.access-large-text .glucose-number {
+  font-size: 64px !important;
+}
+
+html.access-large-text .safewalk-timer-text {
+  font-size: 40px !important;
+}
+
+/* 2. MODO ALTO CONTRASTE */
+html.access-high-contrast {
+  --surface-0: #000000 !important;
+  --surface-1: #0a0f1d !important;
+  --surface-2: #10172a !important;
+  --fg-1: #ffffff !important;
+  --fg-2: #ffffff !important;
+  --fg-3: #e2e8f0 !important;
+  --border-1: rgba(255, 255, 255, 0.25) !important;
+  --border-2: rgba(255, 255, 255, 0.4) !important;
+}
+
+html.access-high-contrast .card,
+html.access-high-contrast .safewalk-card,
+html.access-high-contrast .med-card,
+html.access-high-contrast .checkin-card {
+  border-width: 2px !important;
+}
+
+/* 3. MODO BOTONES GRANDES (TÁCTIL) */
+html.access-large-buttons button,
+html.access-large-buttons .btn-custom,
+html.access-large-buttons .btn-start-safewalk,
+html.access-large-buttons .btn-sos {
+  min-height: 50px !important;
+  font-size: 14px !important;
+  padding: 12px 18px !important;
+}
+

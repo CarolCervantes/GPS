@@ -1,5 +1,5 @@
-/**
- * DiaMon — Autenticación Oficial OAuth 2.0 & OpenID Connect
+﻿/**
+ * DiaMon - Autenticación Oficial OAuth 2.0 & OpenID Connect
  * Redirección y ventanas emergentes oficiales a los proveedores (Google, Facebook, Apple)
  * CERO formularios simulados o réplicas manuales.
  */
@@ -181,3 +181,4 @@
   };
 
 })();
+

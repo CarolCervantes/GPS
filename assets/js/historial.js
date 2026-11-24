@@ -1,4 +1,4 @@
-// ============ HISTORIAL DE RUTAS ============
+﻿// HISTORIAL DE RUTAS ============
 // Carga rutas del usuario (o de admins si es cuidador) desde Supabase.
 // Filtra por período: hoy / 7 días / 30 días / año.
 // Muestra KPIs y tabla con detalle de cada ruta.
@@ -16,7 +16,7 @@ document.addEventListener('dashboardListo', async (e) => {
   await cargarRutas(userId);
 });
 
-// ============ CARGA DE DATOS ============
+// CARGA DE DATOS ============
 
 async function cargarRutas(userId) {
   mostrarCargando();
@@ -70,7 +70,7 @@ async function cargarRutas(userId) {
   aplicarFiltros();
 }
 
-// ============ FILTROS ============
+// FILTROS ============
 
 function aplicarFiltros() {
   let filtradas = todasLasRutas;
@@ -94,7 +94,7 @@ function wirePeriodo() {
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       periodoActivo = periodos[i] || 'hoy';
-      // Necesitamos el userId — lo tomamos del usuario activo
+      // Necesitamos el userId - lo tomamos del usuario activo
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (user) await cargarRutas(user.id);
     });
@@ -135,7 +135,7 @@ function calcularDesde(periodo) {
   return null;
 }
 
-// ============ KPIs ============
+// KPIs ============
 
 function renderKPIs(rutas) {
   const total = rutas.length;
@@ -164,12 +164,12 @@ function renderKPIs(rutas) {
   set('historialTotal', total);
   set('historialDistance', distancia.toFixed(1) + '<span class="unit">km</span>');
   set('historialTime', Math.round(tiempo / 60 * 10) / 10 + '<span class="unit">h</span>');
-  set('historialAvg', (promGlucosa || '—') + (promGlucosa ? '<span class="unit">mg/dL</span>' : ''));
-  set('historialMax', (maxGlucosa || '—') + (maxGlucosa ? '<span class="unit">mg/dL</span>' : ''));
-  set('historialMin', (minGlucosa || '—') + (minGlucosa ? '<span class="unit">mg/dL</span>' : ''));
+  set('historialAvg', (promGlucosa || '-') + (promGlucosa ? '<span class="unit">mg/dL</span>' : ''));
+  set('historialMax', (maxGlucosa || '-') + (maxGlucosa ? '<span class="unit">mg/dL</span>' : ''));
+  set('historialMin', (minGlucosa || '-') + (minGlucosa ? '<span class="unit">mg/dL</span>' : ''));
 }
 
-// ============ TABLA ============
+// TABLA ============
 
 function renderTabla(rutas) {
   const tbody = document.getElementById('tablaRutasBody');
@@ -185,10 +185,10 @@ function renderTabla(rutas) {
       ? new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
       : formatearFechaISO(r.created_at);
 
-    const distancia = r.distancia_km != null ? r.distancia_km + ' km' : '—';
-    const tiempo = r.tiempo_min != null ? r.tiempo_min + ' min' : '—';
-    const promGlucosa = r.glucosa_promedio != null ? r.glucosa_promedio + ' mg/dL' : '—';
-    const maxGlucosa = r.glucosa_max != null ? r.glucosa_max + ' mg/dL' : '—';
+    const distancia = r.distancia_km != null ? r.distancia_km + ' km' : '-';
+    const tiempo = r.tiempo_min != null ? r.tiempo_min + ' min' : '-';
+    const promGlucosa = r.glucosa_promedio != null ? r.glucosa_promedio + ' mg/dL' : '-';
+    const maxGlucosa = r.glucosa_max != null ? r.glucosa_max + ' mg/dL' : '-';
 
     const estadoClase = {
       completada: 'badge-completada',
@@ -216,10 +216,10 @@ function renderTabla(rutas) {
   }).join('');
 }
 
-// ============ UTILS ============
+// UTILS ============
 
 function formatearFechaISO(iso) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   return new Date(iso).toLocaleDateString('es-CO', {
     day: '2-digit', month: 'short', year: 'numeric',
   });
@@ -240,3 +240,4 @@ function mostrarError(msg) {
   const tbody = document.getElementById('tablaRutasBody');
   if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="empty">${escHtml(msg)}</td></tr>`;
 }
+

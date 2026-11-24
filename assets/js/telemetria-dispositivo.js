@@ -1,5 +1,5 @@
-/**
- * DiaMon — Telemetría en Tiempo Real del Dispositivo
+﻿/**
+ * DiaMon - Telemetría en Tiempo Real del Dispositivo
  * 1. Batería en tiempo real (Battery Status API)
  * 2. Ubicación GPS en vivo (Geolocation API con watchPosition + Geocodificación Inversa Nominatim)
  * 3. Podómetro con Reinicio Automático cada 24 horas (Medianoche 00:00:00 / DeviceMotion API)
@@ -27,10 +27,8 @@
     initPodometro24Horas();
   });
 
-  // ============================================================
-  // 1. BATERÍA EN TIEMPO REAL
-  // ============================================================
-  function initBateriaEnTiempoReal() {
+  // // 1. BATERÍA EN TIEMPO REAL
+  // function initBateriaEnTiempoReal() {
     const batEl = document.getElementById('kpiBateriaVal');
     const batBadge = document.getElementById('kpiBateriaBadge');
 
@@ -80,11 +78,8 @@
     }
   }
 
-  // ============================================================
-  // 2. UBICACIÓN GPS EN TIEMPO REAL CON GEOCODIFICACIÓN INVERSA
-  // ============================================================
-
-  // Estimador local enriquecido de zonas de Cartagena y Colombia (fallback ultrarrápido)
+  // // 2. UBICACIÓN GPS EN TIEMPO REAL CON GEOCODIFICACIÓN INVERSA
+  // // Estimador local enriquecido de zonas de Cartagena y Colombia (fallback ultrarrápido)
   function estimarZonaLocal(lat, lng) {
     if (lat >= 10.415 && lat <= 10.435 && lng >= -75.560 && lng <= -75.540) return 'Centro Histórico, Cartagena';
     if (lat >= 10.380 && lat <= 10.410 && lng >= -75.565 && lng <= -75.545) return 'Bocagrande, Cartagena';
@@ -309,10 +304,8 @@
     };
   }
 
-  // ============================================================
-  // 3. PODÓMETRO CON REINICIO ESTRICTO CADA 24 HORAS
-  // ============================================================
-  function initPodometro24Horas() {
+  // // 3. PODÓMETRO CON REINICIO ESTRICTO CADA 24 HORAS
+  // function initPodometro24Horas() {
     const pasosEl = document.getElementById('kpiPasosVal');
     const pasosBadge = document.getElementById('kpiPasosBadge');
 
@@ -465,3 +458,4 @@
   // Exportar al ámbito global
   window.TelemetriaDiaMon = Telemetria;
 })();
+

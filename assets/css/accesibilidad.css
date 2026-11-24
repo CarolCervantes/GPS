@@ -1,8 +1,4 @@
-/* ============================================================
-   DiaMon — Accesibilidad Styles
-   ============================================================ */
-
-.btn-access-nav {
+﻿.btn-access-nav {
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #f1f5f9;
@@ -127,3 +123,4 @@ html.access-large-buttons .btn-sos {
   font-size: 14px !important;
   padding: 12px 18px !important;
 }
+

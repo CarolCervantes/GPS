@@ -1,14 +1,9 @@
-/* ============================================================
-   DiaMon — Vigilancia clínica tranquila
-   Tokens + shell + dashboard
-   ============================================================ */
-
-/* ---------- Tipografía ---------- */
+﻿/* ---------- Tipografía ---------- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ---------- Tokens ---------- */
 :root {
-    /* Superficies — escala apenas perceptible */
+    /* Superficies - escala apenas perceptible */
     --surface-0: #0B1220;
     --surface-1: #0F1626;
     --surface-2: #141F2E;
@@ -21,12 +16,12 @@
     --fg-3: #8893A3;
     --fg-4: #5A6473;
 
-    /* Bordes — progresión */
+    /* Bordes - progresión */
     --border-1: rgba(255, 255, 255, 0.06);
     --border-2: rgba(255, 255, 255, 0.10);
     --border-emph: rgba(255, 255, 255, 0.18);
 
-    /* Señal — paleta del dominio */
+    /* Señal - paleta del dominio */
     --brand: #0284c7;
     --brand-ink: #0f172a;
     --signal-normal: #16a34a;
@@ -48,7 +43,7 @@
     --text-2xl: 40px;
     --text-3xl: 56px;
 
-    /* Espacio — base 4 */
+    /* Espacio - base 4 */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -60,7 +55,7 @@
     --space-12: 48px;
     --space-16: 64px;
 
-    /* Radio — concéntrico: outer = inner + padding */
+    /* Radio - concéntrico: outer = inner + padding */
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
@@ -68,7 +63,7 @@
     --radius-2xl: 24px;
     --radius-full: 9999px;
 
-    /* Profundidad — borders-only + 1 sombra para popovers */
+    /* Profundidad - borders-only + 1 sombra para popovers */
     --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
 
     /* Motion */
@@ -121,9 +116,7 @@ button {
     letter-spacing: -0.01em;
 }
 
-/* ============================================================
-   SHELL — Navbar + Horizon strip
-   ============================================================ */
+
 
 .shell {
     min-height: 100vh;
@@ -223,7 +216,7 @@ button {
     gap: var(--space-2);
 }
 
-/* Botones del header — hit area 40×40 */
+/* Botones del header - hit area 40×40 */
 .btn-bell, .user-avatar-btn {
     position: relative;
     background: transparent;
@@ -309,7 +302,7 @@ button {
     transform: rotate(180deg);
 }
 
-/* Dropdown — única sombra del sistema */
+/* Dropdown - única sombra del sistema */
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 6px);
@@ -426,9 +419,7 @@ button {
     color: var(--signal-alert);
 }
 
-/* ============================================================
-   HORIZON STRIP — firma del producto
-   ============================================================ */
+
 
 .horizon {
     position: sticky;
@@ -553,9 +544,7 @@ button {
 .horizon-legend .dot.warn { background: var(--signal-warn); }
 .horizon-legend .dot.alert { background: var(--signal-alert); }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
+
 
 /* Layout limpio: solo dos mapas en grid 50/50 */
 .dashboard-maps {
@@ -647,7 +636,7 @@ button {
     font-size: 12px;
 }
 
-/* Mapa en vivo — altura mayor */
+/* Mapa en vivo - altura mayor */
 .map-live-container #map {
     height: 420px;
 }
@@ -686,7 +675,7 @@ button {
     font-family: var(--font-mono);
 }
 
-/* Legado — evitar errores si algo todavía referencia estas clases */
+/* Legado - evitar errores si algo todavía referencia estas clases */
 .dashboard {
     display: grid;
     grid-template-columns: 1fr 380px;
@@ -817,7 +806,7 @@ button {
     outline-offset: -1px;
 }
 
-/* Marker custom — respira con la misma cadencia que el Pulse Ring */
+/* Marker custom - respira con la misma cadencia que el Pulse Ring */
 .diamon-marker {
     position: relative;
     width: 14px;
@@ -970,9 +959,7 @@ button {
     margin-left: var(--space-2);
 }
 
-/* ============================================================
-   PULSE RING — firma del producto sobre el valor de glucosa
-   ============================================================ */
+
 
 .glucose-pulse {
     position: relative;
@@ -1118,9 +1105,7 @@ button {
     animation: now-breath 2s ease-in-out infinite;
 }
 
-/* ============================================================
-   TIME IN RANGES — sparkbars + delta
-   ============================================================ */
+
 
 .range-grid {
     display: grid;
@@ -1197,9 +1182,7 @@ button {
     color: var(--fg-1);
 }
 
-/* ============================================================
-   TENDENCIAS — sparkline + lecturas recientes
-   ============================================================ */
+
 
 .trend-summary {
     display: flex;
@@ -1290,9 +1273,7 @@ button {
 .reading .badge.stable { color: var(--brand); }
 .reading .badge.normal { color: var(--signal-normal); }
 
-/* ============================================================
-   ALERTAS
-   ============================================================ */
+
 
 .alerts-list {
     display: flex;
@@ -1335,9 +1316,7 @@ button {
     line-height: 1.4;
 }
 
-/* ============================================================
-   PAGE ENTER — split + stagger
-   ============================================================ */
+
 
 .stagger > * {
     opacity: 0;
@@ -1355,9 +1334,7 @@ button {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ============================================================
-   GPS CONTROL PANEL
-   ============================================================ */
+
 
 .gps-control-panel {
     background: var(--surface-1);
@@ -1640,9 +1617,7 @@ button {
     background: #10b981;
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+
 
 @media (max-width: 960px) {
     .dashboard-maps {
@@ -1679,9 +1654,7 @@ button {
     }
 }
 
-/* ============================================================
-   SCROLLBARS (sutiles)
-   ============================================================ */
+
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1691,9 +1664,7 @@ button {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-emph); }
 
-/* ============================================================
-   ALERTAS DINÁMICAS + BOTÓN SOS
-   ============================================================ */
+
 
 .alert-empty {
     text-align: center;
@@ -1802,3 +1773,4 @@ button {
     opacity: 1;
     transform: translateX(0);
 }
+

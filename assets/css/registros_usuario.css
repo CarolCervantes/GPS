@@ -1,10 +1,4 @@
-/* ============================================================
-   Registros — extensión específica
-   Reutiliza .page-content, .page-header, .kpi-card, .toolbar,
-   .tabla, .badge-status, .segmented de historial.css/styles.css
-   ============================================================ */
-
-/* Tipo badges — dot de color en vez de fondo saturado */
+﻿/* Tipo badges - dot de color en vez de fondo saturado */
 .tipo-badge {
     display: inline-flex;
     align-items: center;
@@ -83,9 +77,7 @@
 
 .btn-icon:active { transform: scale(0.96); }
 
-/* ============================================================
-   Distribución de glucosa — barras unificadas
-   ============================================================ */
+
 
 .glucosa-resumen {
     background: var(--surface-1);
@@ -242,3 +234,4 @@
     color: #dc2626;
     border-color: #fca5a5;
 }
+

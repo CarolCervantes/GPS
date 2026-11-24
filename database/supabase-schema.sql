@@ -1,4 +1,4 @@
--- =====================================================
+﻿-- =====================================================
 -- Esquema Supabase para la app DiaMon (GPS)
 -- =====================================================
 -- Cómo aplicarlo:
@@ -39,7 +39,7 @@ alter table public.profiles
 alter table public.profiles enable row level security;
 
 -- -----------------------------------------------------
--- 3) Helper is_admin() — comprueba si el usuario actual es admin.
+-- 3) Helper is_admin() - comprueba si el usuario actual es admin.
 -- SECURITY DEFINER para que pueda leer su propio rol sin recursión RLS.
 -- -----------------------------------------------------
 create or replace function public.is_admin()
@@ -110,11 +110,11 @@ set search_path = public
 as $$
 declare
   desired_rol text := 'usuario';
-  admin_code  text;
+  rol_meta    text;
 begin
-  admin_code := new.raw_user_meta_data->>'admin_code';
-  if admin_code is not null and admin_code = 'DIAMON-ADMIN-2026' then
-    desired_rol := 'admin';
+  rol_meta := new.raw_user_meta_data->>'rol';
+  if rol_meta in ('cuidador', 'monitoreado', 'usuario') then
+    desired_rol := rol_meta;
   end if;
 
   insert into public.profiles (id, nombre, rol)
@@ -122,7 +122,8 @@ begin
     new.id,
     coalesce(new.raw_user_meta_data->>'nombre', 'Usuario'),
     desired_rol
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$;
@@ -133,14 +134,14 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- -----------------------------------------------------
--- 6) Funciones admin — listar usuarios y cambiar rol
+-- 6) Funciones admin - listar usuarios y cambiar rol
 -- Estas funciones son SECURITY DEFINER para que un admin
 -- pueda leer auth.users.email (que normalmente no es accesible
 -- desde el cliente) y para que el cambio de rol pase por una
 -- comprobación explícita de is_admin().
 -- -----------------------------------------------------
 
--- Lista todos los usuarios — solo accesible por admins.
+-- Lista todos los usuarios - solo accesible por admins.
 create or replace function public.admin_list_users()
 returns table (
   id         uuid,
@@ -169,7 +170,7 @@ $$;
 
 grant execute on function public.admin_list_users() to authenticated;
 
--- Cambia el rol de un usuario — solo accesible por admins.
+-- Cambia el rol de un usuario - solo accesible por admins.
 -- Bloquea que un admin se auto-degrade si es el único admin existente.
 create or replace function public.admin_set_role(target_user uuid, new_role text)
 returns void
@@ -233,24 +234,8 @@ $$;
 
 grant execute on function public.admin_kpis() to authenticated;
 
--- -----------------------------------------------------
--- 6.4) verificar_codigo_admin(code) — valida el código de admin
--- desde el cliente (usado por el login cuando seleccionas "Administrador").
--- Devuelve true/false. El código real solo vive aquí.
--- -----------------------------------------------------
-create or replace function public.verificar_codigo_admin(code text)
-returns boolean
-language plpgsql
-security definer
-stable
-set search_path = public
-as $$
-begin
-  return code is not null and code = 'DIAMON-ADMIN-2026';
-end;
-$$;
-
-grant execute on function public.verificar_codigo_admin(text) to anon, authenticated;
+-- La asignación del rol 'admin' se realiza exclusivamente desde el servidor
+-- (ver database/seed-admin.sql) y nunca mediante códigos en el frontend.
 
 -- =====================================================
 -- 7) TABLAS DE DATOS DEL PRODUCTO
@@ -494,7 +479,7 @@ alter table public.profiles
   add constraint profiles_rol_check
   check (rol in ('usuario', 'admin', 'cuidador', 'monitoreado'));
 
--- Actualizar trigger para aceptar nuevos roles desde metadata
+-- Actualizar trigger para aceptar roles desde metadata (sin código admin quemado)
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -503,15 +488,11 @@ set search_path = public
 as $$
 declare
   desired_rol text := 'usuario';
-  admin_code  text;
   rol_meta    text;
 begin
-  admin_code := new.raw_user_meta_data->>'admin_code';
-  rol_meta   := new.raw_user_meta_data->>'rol';
+  rol_meta := new.raw_user_meta_data->>'rol';
 
-  if admin_code is not null and admin_code = 'DIAMON-ADMIN-2026' then
-    desired_rol := 'admin';
-  elsif rol_meta in ('cuidador', 'monitoreado') then
+  if rol_meta in ('cuidador', 'monitoreado', 'usuario') then
     desired_rol := rol_meta;
   end if;
 
@@ -520,7 +501,8 @@ begin
     new.id,
     coalesce(new.raw_user_meta_data->>'nombre', 'Usuario'),
     desired_rol
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$;
@@ -661,3 +643,4 @@ end;
 $$;
 
 grant execute on function public.buscar_monitoreado_por_email(text) to authenticated;
+

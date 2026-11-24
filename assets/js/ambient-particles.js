@@ -1,5 +1,5 @@
-/**
- * DiaMon — Partículas de Luz Ambiental y Polvo Clínico en Canvas
+﻿/**
+ * DiaMon - Efecto visual de fondo en login
  * Partículas suaves en suspensión con profundidad y movimiento browniano orgánico
  */
 
@@ -69,3 +69,4 @@
 
   animate();
 })();
+

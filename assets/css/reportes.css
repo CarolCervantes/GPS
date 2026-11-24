@@ -1,9 +1,4 @@
-/* ============================================================
-   Reportes — extensión específica
-   Reutiliza .page-content, .page-header, .kpi-card, etc.
-   ============================================================ */
-
-/* ---------- Cards de resumen con icono ---------- */
+﻿/* ---------- Cards de resumen con icono ---------- */
 .resumen-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -308,9 +303,7 @@
     font-size: var(--text-xs);
 }
 
-/* ============================================================
-   MODAL — el reporte se "traza" fila por fila
-   ============================================================ */
+
 
 .modal {
     position: fixed;
@@ -429,7 +422,7 @@
 .btn-cerrar-modal:hover { color: var(--fg-1); border-color: var(--border-emph); }
 .btn-cerrar-modal:active { transform: scale(0.96); }
 
-/* ---------- Reporte preview — staggered rows ---------- */
+/* ---------- Reporte preview - staggered rows ---------- */
 .reporte-preview {
     background: var(--surface-0);
     border-radius: var(--radius-lg);
@@ -543,9 +536,7 @@
     }
 }
 
-/* ============================================================
-   Flatpickr — tema oscuro coherente con DiaMon
-   ============================================================ */
+
 .flatpickr-calendar {
     background: var(--surface-3) !important;
     border: 1px solid var(--border-2) !important;
@@ -600,3 +591,4 @@ span.flatpickr-weekday {
     color: var(--fg-1) !important;
     fill: var(--fg-1) !important;
 }
+
