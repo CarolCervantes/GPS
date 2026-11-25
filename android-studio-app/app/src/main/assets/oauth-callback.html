@@ -264,17 +264,32 @@
             }
         }
 
-        // Obtener base de datos de pacientes/usuarios
+        // Obtener base de datos de pacientes/usuarios (compatible array y objeto)
         function getPacientesDb() {
             try {
                 const raw = localStorage.getItem('diamon_pacientes_db');
-                if (raw) return JSON.parse(raw);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) return parsed;
+                    if (typeof parsed === 'object' && parsed !== null) return Object.values(parsed);
+                }
             } catch (e) {}
             return [];
         }
 
-        function savePacientesDb(db) {
-            localStorage.setItem('diamon_pacientes_db', JSON.stringify(db));
+        function savePacientesDb(dbList) {
+            try {
+                const dict = {};
+                if (Array.isArray(dbList)) {
+                    dbList.forEach(u => {
+                        const code = u.codigoPaciente || u.id || ('DM-' + Math.floor(1000 + Math.random() * 9000));
+                        dict[code] = u;
+                    });
+                } else if (typeof dbList === 'object' && dbList !== null) {
+                    Object.assign(dict, dbList);
+                }
+                localStorage.setItem('diamon_pacientes_db', JSON.stringify(dict));
+            } catch (e) {}
         }
 
         async function processOAuthCallback() {
@@ -473,7 +488,7 @@
                         <label>Rol en DiaMon <small>(Define permisos en la plataforma)</small></label>
                         <select id="dmRegRol" class="dm-cb-select" onchange="window.cambiarRolRegistro(this.value)">
                             <option value="usuario">Paciente con Diabetes (Monitoreo de glucosa y GPS)</option>
-                            <option value="familiar">Familiar / Supervisor Clínico (Acompañamiento)</option>
+                            <option value="cuidador">Cuidador / Familiar Clínico (Acompañamiento)</option>
                             <option value="admin">Administrador del Sistema (Acceso Clínico Restringido)</option>
                         </select>
                     </div>
@@ -551,7 +566,8 @@
                     creado_en: new Date().toISOString()
                 };
 
-                if (rol === 'familiar') {
+                if (rol === 'cuidador' || rol === 'familiar') {
+                    rol = 'cuidador';
                     const codSupervisar = document.getElementById('dmFamiliarCodPaciente')?.value.trim() || 'DM-8492';
                     nuevoUsuario.codigoPacienteSupervisado = codSupervisar;
                     nuevoUsuario.pacienteVinculado = {

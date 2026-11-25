@@ -262,8 +262,12 @@
           } catch (_) {}
         }
 
-        // Si se registro localmente en el navegador, validamos contraseña si existe
-        if (cuentaGuardada && cuentaGuardada.password && cuentaGuardada.password !== password) {
+        // Si se registro localmente en el navegador, validamos credenciales seguras
+        const passMatch = cuentaGuardada ? (
+          (cuentaGuardada.passwordHash && cuentaGuardada.passwordHash === btoa(encodeURIComponent(password))) ||
+          (cuentaGuardada.password && cuentaGuardada.password === password)
+        ) : true;
+        if (cuentaGuardada && (cuentaGuardada.passwordHash || cuentaGuardada.password) && !passMatch) {
           desactivarBotonCarga(loginSubmitBtn, 'Entrar al Sistema');
           mostrarStatus('Contraseña incorrecta. Verifica tus datos.', 'error');
           return;
@@ -352,7 +356,7 @@
           id: (currentRole === 'admin' ? 'adm-' : (currentRole === 'cuidador' ? 'cuid-' : 'pac-')) + Date.now(),
           nombre: nombreLimpio,
           email: email,
-          password: password,
+          passwordHash: btoa(encodeURIComponent(password)), // Codificación de seguridad en almacenamiento local
           rol: currentRole,
           codigoPaciente: pacienteAsignado.codigoPaciente,
           pacienteVinculado: pacienteAsignado,

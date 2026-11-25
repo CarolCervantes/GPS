@@ -318,6 +318,25 @@ class SaludDiariaManager {
           localStorage.setItem(this.storageKeyMeds, JSON.stringify(savedMeds));
         } catch (_) {}
 
+        if (window.supabaseClient) {
+          window.supabaseClient.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+              const medObj = MEDICAMENTOS_PREDETERMINADOS.find(m => m.id === id);
+              window.supabaseClient.from('tomas_medicamento').upsert({
+                user_id: user.id,
+                medicamento_id: id,
+                medicamento_nombre: medObj?.nombre || id,
+                dosis: medObj?.dosis || 'Dosis prescrita',
+                horario_programado: medObj?.horario || horaActual,
+                fecha: new Date().toISOString().split('T')[0],
+                tomada: isChecked,
+                confirmado_por: 'paciente',
+                ts: new Date().toISOString()
+              }, { onConflict: 'user_id,medicamento_id,fecha' }).then(() => {}).catch(err => console.warn('[SaludDiaria] Supabase sync:', err));
+            }
+          }).catch(() => {});
+        }
+
         this.renderMedicamentos(savedMeds);
 
         if (window.mostrarNotificacion) {

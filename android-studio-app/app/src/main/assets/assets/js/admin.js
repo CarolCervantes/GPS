@@ -156,7 +156,7 @@ async function alternarRol(btn) {
   // Actualiza estado local
   const u = estadoUsuarios.find(x => x.id === targetId);
   if (u) u.rol = newRol;
-  toast(newRol === 'admin' ? 'Usuario promovido a admin.' : 'Usuario degradado a usuario.', 'exito');
+  toast(`Rol actualizado exitosamente a: ${newRol}.`, 'exito');
 
   renderUsuarios();
   cargarKPIs();

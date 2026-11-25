@@ -93,7 +93,7 @@ document.addEventListener('dashboardListo', async (e) => {
     const { data: admins } = await supabaseClient
       .from('profiles')
       .select('id')
-      .eq('rol', 'admin');
+      .in('rol', ['monitoreado', 'admin']);
     adminIds = admins?.map(a => a.id) || [];
   }
 

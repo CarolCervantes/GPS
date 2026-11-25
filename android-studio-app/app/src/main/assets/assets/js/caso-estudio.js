@@ -623,10 +623,30 @@
 
       this.actualizarTodaLaUI();
       this.emitirPorCanales('PRESION_ACTUALIZADA', { presion: nuevaPA });
+
+      if (window.supabaseClient) {
+        try {
+          const { data: { user } } = await window.supabaseClient.auth.getUser();
+          if (user) {
+            await window.supabaseClient.from('presion_arterial').insert({
+              user_id: user.id,
+              sistolica: sis,
+              diastolica: dia,
+              pulso_bpm: bpm,
+              brazo: brazo || 'izquierdo',
+              postura: postura || 'sentado',
+              sintomas: notas.trim() || evalPA.protocolo
+            });
+          }
+        } catch (e) {
+          console.warn('[CasoEstudio] Supabase offline o sin sesion para presion:', e);
+        }
+      }
+
       return nuevaPA;
     }
 
-    guardarMetasPersonalizadas(nuevasMetas, datosPaciente = {}) {
+    async guardarMetasPersonalizadas(nuevasMetas, datosPaciente = {}) {
       this.metas = { ...this.metas, ...nuevasMetas };
       this.paciente = { ...this.paciente, ...datosPaciente };
       this.guardarJSON(STORAGE_KEYS.METAS, this.metas);
@@ -634,6 +654,29 @@
       this.sincronizarFichaQROficial();
       this.actualizarTodaLaUI();
       this.emitirPorCanales('METAS_ACTUALIZADAS');
+
+      if (window.supabaseClient) {
+        try {
+          const { data: { user } } = await window.supabaseClient.auth.getUser();
+          if (user) {
+            await window.supabaseClient.from('metas_paciente').upsert({
+              user_id: user.id,
+              glucosa_min: parseInt(this.metas.glucosaMin, 10) || 80,
+              glucosa_meta_ayunas: parseInt(this.metas.glucosaMetaAyunas, 10) || 135,
+              glucosa_max_post: parseInt(this.metas.glucosaMaxPost, 10) || 180,
+              sistolica_min: parseInt(this.metas.sistolicaMin, 10) || 95,
+              sistolica_max: parseInt(this.metas.sistolicaMax, 10) || 140,
+              diastolica_min: parseInt(this.metas.diastolicaMin, 10) || 60,
+              diastolica_max: parseInt(this.metas.diastolicaMax, 10) || 90,
+              profesional_nombre: this.paciente.profesionalGuia || 'Enf. Jefe Elizabeth Vargas Caro',
+              profesional_registro: this.paciente.registroProfesional || 'Caso de Estudio Barrio Chapacua',
+              updated_at: new Date().toISOString()
+            });
+          }
+        } catch (e) {
+          console.warn('[CasoEstudio] Supabase offline o sin sesion para metas:', e);
+        }
+      }
     }
 
     // ============================================================
@@ -1187,8 +1230,30 @@
       if (pEl) pEl.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica}`;
     }
 
-    confirmarPastillaRapidaAbuelo() {
+    async confirmarPastillaRapidaAbuelo() {
       const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
+      if (window.supabaseClient) {
+        try {
+          const { data: { user } } = await window.supabaseClient.auth.getUser();
+          if (user) {
+            await window.supabaseClient.from('tomas_medicamento').upsert({
+              user_id: user.id,
+              medicamento_id: 'esquema-general',
+              medicamento_nombre: 'Esquema Integral Damián Díaz (DM2 + HTA)',
+              dosis: 'Dosis programada según horario',
+              horario_programado: hora,
+              fecha: new Date().toISOString().split('T')[0],
+              tomada: true,
+              confirmado_por: 'paciente',
+              ts: new Date().toISOString()
+            }, { onConflict: 'user_id,medicamento_id,fecha' });
+          }
+        } catch (e) {
+          console.warn('[CasoEstudio] Supabase offline o sin sesion para toma medicamento:', e);
+        }
+      }
+
       if (window.emitirAlerta24Horas) {
         window.emitirAlerta24Horas({
           titulo: 'Medicación confirmada por Damián Díaz Balseiro',

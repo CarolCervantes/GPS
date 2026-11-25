@@ -49,6 +49,8 @@
     const views = document.querySelectorAll('.dc-view');
 
     window.switchView = function (targetTab) {
+      // Normalizar tab: si se solicita 'medicamentos', redirigir a la vista 'salud'
+      if (targetTab === 'medicamentos') targetTab = 'salud';
       // Activar botón del sidebar
       // Actualizar estado en sidebar desktop y en barra móvil
       navItems.forEach(item => {

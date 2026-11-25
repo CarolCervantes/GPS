@@ -313,14 +313,25 @@
 
     // Sincronizar en Supabase si está activo
     if (window.supabaseClient) {
-      try {
-        window.supabaseClient.from('alertas').insert({
-          tipo: nuevaAlerta.tipo,
-          descripcion: `${nuevaAlerta.titulo} · ${nuevaAlerta.subtitulo}`,
-          estado: 'activa',
-          ts: new Date().toISOString()
-        }).then(() => {});
-      } catch (_) {}
+      (async () => {
+        try {
+          const { data: { user } } = await window.supabaseClient.auth.getUser();
+          const tiposPermitidos = ['zona_segura', 'geocerca', 'gps_perdido', 'glucosa_alta', 'glucosa_baja', 'presion_alta', 'presion_baja', 'medicacion_pendiente', 'medicamento', 'medicamento_tomado', 'ubicacion', 'emergencia_manual', 'sistema', 'recordatorio'];
+          const tipoFinal = tiposPermitidos.includes(nuevaAlerta.tipo) ? nuevaAlerta.tipo : 'sistema';
+          const alertaPayload = {
+            tipo: tipoFinal,
+            descripcion: `${nuevaAlerta.titulo} · ${nuevaAlerta.subtitulo || ""}`,
+            estado: 'activa',
+            ts: new Date().toISOString()
+          };
+          if (user?.id) {
+            alertaPayload.user_id = user.id;
+          }
+          await window.supabaseClient.from('alertas').insert(alertaPayload);
+        } catch (err) {
+          console.warn('[AlertasSistema] Error sincronizando alerta con Supabase:', err);
+        }
+      })();
     }
   };
 

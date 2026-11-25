@@ -42,7 +42,7 @@ async function cargarRutas(userId) {
     const { data: admins } = await supabaseClient
       .from('profiles')
       .select('id')
-      .eq('rol', 'admin');
+      .in('rol', ['monitoreado', 'admin']);
     if (admins && admins.length > 0) {
       userIds = admins.map(a => a.id);
     }

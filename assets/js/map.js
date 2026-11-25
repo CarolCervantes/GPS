@@ -572,7 +572,7 @@ function initializeGPSMap(userId) {
       const { data: admins, error: adminsError } = await supabaseClient
         .from('profiles')
         .select('id')
-        .eq('rol', 'admin');
+        .in('rol', ['monitoreado', 'admin']);
       if (adminsError) {
         console.error('Error obteniendo admins:', adminsError);
         mostrarEstadoRuta('error');
