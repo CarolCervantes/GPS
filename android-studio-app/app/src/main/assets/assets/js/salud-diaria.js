@@ -338,6 +338,9 @@ class SaludDiariaManager {
         }
 
         this.renderMedicamentos(savedMeds);
+        if (window.medicalQRManager && typeof window.medicalQRManager.refreshAllQRs === 'function') {
+          window.medicalQRManager.refreshAllQRs();
+        }
 
         if (window.mostrarNotificacion) {
           const medName = MEDICAMENTOS_PREDETERMINADOS.find(m => m.id === id)?.nombre || 'Medicamento';

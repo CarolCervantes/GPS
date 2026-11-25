@@ -167,3 +167,77 @@ create policy "own metas" on public.metas_paciente
 drop policy if exists "cuidador gestiona metas" on public.metas_paciente;
 create policy "cuidador gestiona metas" on public.metas_paciente
   for all using (public.es_cuidador_de(user_id)) with check (public.es_cuidador_de(user_id));
+
+-- 9. Función RPC pública de solo lectura para Ficha Médica QR (escaneo desde cualquier celular)
+create or replace function public.obtener_ficha_qr_publica(p_user_id uuid)
+returns jsonb
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+declare
+  v_perfil jsonb;
+  v_metas jsonb;
+  v_glucosa jsonb;
+  v_presion jsonb;
+  v_tomas_hoy int := 0;
+  v_tomas_ids jsonb := '[]'::jsonb;
+  v_gps jsonb;
+begin
+  if p_user_id is null then
+    return null;
+  end if;
+
+  select to_jsonb(p) into v_perfil
+  from (select id, nombre, rol, created_at from public.profiles where id = p_user_id) p;
+
+  select to_jsonb(m) into v_metas
+  from public.metas_paciente m where m.user_id = p_user_id;
+
+  select to_jsonb(g) into v_glucosa
+  from (
+    select valor, contexto, fuente, notas, ts
+    from public.glucosa_lecturas
+    where user_id = p_user_id
+    order by ts desc
+    limit 1
+  ) g;
+
+  select to_jsonb(pa) into v_presion
+  from (
+    select sistolica, diastolica, pulso_bpm, brazo, postura, sintomas, ts
+    from public.presion_arterial
+    where user_id = p_user_id
+    order by ts desc
+    limit 1
+  ) pa;
+
+  select count(*), coalesce(jsonb_agg(medicamento_id), '[]'::jsonb)
+  into v_tomas_hoy, v_tomas_ids
+  from public.tomas_medicamento
+  where user_id = p_user_id and fecha = current_date and tomada = true;
+
+  select to_jsonb(loc) into v_gps
+  from (
+    select lat, lng, velocidad, ts
+    from public.gps_lecturas
+    where user_id = p_user_id
+    order by ts desc
+    limit 1
+  ) loc;
+
+  return jsonb_build_object(
+    'perfil', v_perfil,
+    'metas', v_metas,
+    'ultima_glucosa', v_glucosa,
+    'ultima_presion', v_presion,
+    'tomas_hoy', v_tomas_hoy,
+    'tomas_ids', v_tomas_ids,
+    'ultima_ubicacion', v_gps,
+    'consultado_en', now()
+  );
+end;
+$$;
+
+grant execute on function public.obtener_ficha_qr_publica(uuid) to anon, authenticated;

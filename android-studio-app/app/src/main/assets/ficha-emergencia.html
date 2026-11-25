@@ -3,146 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiaMon — Ficha Médica de Emergencia (SOS)</title>
+    <title>DiaMon — Perfil Clínico & Estado del Paciente (QR)</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/icon-diamon.svg">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/medical-qr.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --qr-bg: #060b14;
+            --qr-card: #0f172a;
+            --qr-card-soft: #131f35;
+            --qr-border: rgba(148, 163, 184, 0.16);
+            --qr-teal: #14b8a6;
+            --qr-sky: #38bdf8;
+            --qr-green: #10b981;
+            --qr-amber: #f59e0b;
+            --qr-red: #ef4444;
+        }
+        * { box-sizing: border-box; }
         body {
-            background-color: #080d16;
+            background: radial-gradient(circle at 50% 0%, #0d2137 0%, var(--qr-bg) 65%);
             color: #f1f5f9;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
-            padding: 16px;
+            padding: 16px 14px 36px;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
-        .emergency-container {
-            max-width: 520px;
+        .qr-page-wrap {
+            max-width: 560px;
             width: 100%;
         }
-        .alert-banner {
-            background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
-            margin-bottom: 20px;
-            animation: pulseBanner 2s infinite ease-in-out;
+
+        /* Cabecera de Identificación */
+        .qr-top-pill {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 184, 166, 0.12);
+            border: 1px solid rgba(20, 184, 166, 0.35);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #5eead4;
+            margin-bottom: 14px;
         }
-        @keyframes pulseBanner {
-            0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.4); }
-            50% { box-shadow: 0 0 28px rgba(220, 38, 38, 0.8); }
+        .qr-live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            margin-right: 6px;
+            box-shadow: 0 0 8px #10b981;
+            animation: blinkDot 1.8s infinite;
         }
-        .alert-banner h1 {
-            margin: 0 0 6px 0;
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+        @keyframes blinkDot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
         }
-        .alert-banner p {
-            margin: 0;
-            font-size: 13px;
-            opacity: 0.95;
+        .qr-refresh-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #e2e8f0;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
         }
-        .protocol-box {
-            background: #111c2e;
-            border-left: 4px solid #f59e0b;
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 20px;
+
+        /* Tarjeta de Perfil Principal */
+        .qr-hero-card {
+            background: linear-gradient(145deg, #111e34 0%, #0b1322 100%);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+            margin-bottom: 16px;
         }
-        .protocol-box h3 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            color: #fbbf24;
+        .qr-profile-head {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 14px;
+            margin-bottom: 14px;
         }
-        .protocol-steps {
-            margin: 0;
-            padding-left: 18px;
-            font-size: 12px;
-            line-height: 1.6;
+        .qr-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0d9488, #0284c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+        }
+        .qr-name-block { flex: 1; min-width: 0; }
+        .qr-code-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--qr-sky);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .qr-patient-name {
+            margin: 2px 0 4px;
+            font-size: 21px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+        .qr-meta-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11.5px;
+        }
+        .qr-pill {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 2px 9px;
+            border-radius: 999px;
             color: #cbd5e1;
+            font-weight: 600;
         }
-        .action-call-grid {
+        .qr-pill-blood {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+            font-weight: 800;
+        }
+
+        /* Botones Rápidos SOS */
+        .qr-actions-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 14px;
         }
-        .btn-emergency-call {
+        .qr-act-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 14px 10px;
-            border-radius: 10px;
+            gap: 5px;
+            padding: 11px 6px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 700;
+            font-size: 11.5px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             transition: transform 0.15s;
         }
-        .btn-emergency-call:active {
-            transform: scale(0.97);
+        .qr-act-btn:active { transform: scale(0.97); }
+        .qr-act-btn i { font-size: 18px; }
+        .qr-act-call { background: #10b981; color: #042f2e; }
+        .qr-act-wa { background: #25d366; color: #052e16; }
+        .qr-act-123 { background: #ef4444; color: #ffffff; }
+
+        /* Secciones */
+        .qr-section {
+            background: var(--qr-card);
+            border: 1px solid var(--qr-border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
-        .btn-call-family {
-            background: #10b981;
-            color: #064e3b;
-        }
-        .btn-call-crue {
-            background: #ef4444;
-            color: #ffffff;
-        }
-        .btn-emergency-call i {
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-        .btn-emergency-call span {
-            font-size: 13px;
-        }
-        .btn-emergency-call small {
-            font-size: 11px;
-            opacity: 0.85;
-            font-weight: normal;
-        }
-        .medical-sheet {
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 20px;
-        }
-        .sheet-section-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #38bdf8;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 6px;
-            margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .data-row {
+        .qr-sec-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .qr-sec-title {
+            margin: 0;
             font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--qr-sky);
+            display: flex;
+            align-items: center;
+            gap: 7px;
         }
-        .data-row .lbl {
-            color: #94a3b8;
-        }
-        .data-row .val {
-            color: #f8fafc;
+
+        /* Banner general ¿Cómo va? */
+        .qr-overall-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 12.5px;
             font-weight: 600;
-            text-align: right;
         }
+        .qr-overall-banner.ok {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+        }
+        .qr-overall-banner.warn {
+            background: rgba(245, 158, 11, 0.14);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+        }
+        .qr-overall-banner.danger {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+
+        /* Grid de 4 KPIs de ¿Cómo va hoy? */
+        .qr-vitals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .qr-vital-box {
+            background: var(--qr-card-soft);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 13px;
+            padding: 12px;
+        }
+        .qr-vital-lbl {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        .qr-vital-val {
+            font-size: 21px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.15;
+        }
+        .qr-vital-sub {
+            font-size: 11px;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        .st-ok { color: #34d399; }
+        .st-warn { color: #fbbf24; }
+        .st-danger { color: #f87171; }
+
+        .qr-prog-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .qr-prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0d9488, #38bdf8);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .qr-map-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.32);
+            border-radius: 10px;
+            color: #7dd3fc;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* Diagnósticos y Medicamentos */
+        .qr-dx-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .qr-dx-chip {
+            background: rgba(239, 68, 68, 0.13);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .qr-data-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12.5px;
+        }
+        .qr-data-row:last-child { border-bottom: none; }
+        .qr-data-row .lbl { color: #94a3b8; }
+        .qr-data-row .val { color: #f8fafc; font-weight: 600; text-align: right; }
+
+        .qr-med-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .qr-med-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--qr-card-soft);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 12px;
+        }
+        .qr-med-time {
+            font-weight: 800;
+            color: #5eead4;
+            min-width: 68px;
+            font-size: 11.5px;
+        }
+        .qr-med-name { flex: 1; color: #e2e8f0; line-height: 1.35; }
+        .qr-med-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .qr-med-status.done { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+        .qr-med-status.pend { background: rgba(148, 163, 184, 0.14); color: #94a3b8; }
+
+        /* Protocolo */
+        .qr-proto-box {
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--qr-amber);
+            border-radius: 10px;
+            padding: 13px 14px;
+            margin-bottom: 16px;
+        }
+        .qr-proto-box h3 {
+            margin: 0 0 8px;
+            font-size: 13px;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .qr-proto-box ol {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #cbd5e1;
+        }
+        .qr-proto-box li { margin-bottom: 6px; }
+
         .return-app-btn {
             display: block;
             text-align: center;
@@ -150,149 +382,514 @@
             font-size: 12px;
             text-decoration: none;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .return-app-btn:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
 <body>
 
-<div class="emergency-container">
+<div class="qr-page-wrap">
 
-    <!-- Banner SOS -->
-    <div class="alert-banner">
-        <i class="fas fa-exclamation-triangle" style="font-size: 26px; margin-bottom: 8px;"></i>
-        <h1>Ficha Médica de Emergencia</h1>
-        <p>Portador de Diabetes Mellitus · Requiere asistencia médica</p>
+    <!-- Barra de sincronización -->
+    <div class="qr-top-pill">
+        <span><span class="qr-live-dot"></span><span id="qrSyncLabel">Ficha Clínica QR · DiaMon</span></span>
+        <button type="button" class="qr-refresh-btn" id="btnRefreshLive" onclick="window.sincronizarDesdeSupabase()">
+            <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
     </div>
 
-    <!-- Botones de llamada rápida -->
-    <div class="action-call-grid">
-        <a id="btnCallFamily" href="tel:+573001234567" class="btn-emergency-call btn-call-family">
-            <i class="fas fa-phone-alt"></i>
-            <span>Llamar Familiar</span>
-            <small id="callFamilySub">Contacto de Emergencia</small>
-        </a>
-        <a href="tel:123" class="btn-emergency-call btn-call-crue">
-            <i class="fas fa-ambulance"></i>
-            <span>Llamar al 123</span>
-            <small>CRUE Cartagena / Emergencias</small>
-        </a>
-    </div>
+    <!-- 1. PERFIL DEL PACIENTE -->
+    <div class="qr-hero-card">
+        <div class="qr-profile-head">
+            <div class="qr-avatar" id="dispAvatar">DD</div>
+            <div class="qr-name-block">
+                <div class="qr-code-tag" id="dispCodigo">PACIENTE MONITOREADO · DM-8492</div>
+                <h1 class="qr-patient-name" id="dispNombre">Damián Díaz Balseiro</h1>
+                <div class="qr-meta-pills">
+                    <span class="qr-pill qr-pill-blood" id="dispSangreBadge"><i class="fas fa-tint"></i> Sangre O+</span>
+                    <span class="qr-pill" id="dispEdad">74 años</span>
+                    <span class="qr-pill" id="dispCiudad"><i class="fas fa-map-pin"></i> Chapacuá, Cartagena</span>
+                </div>
+            </div>
+        </div>
 
-    <!-- Protocolo Primeros Auxilios -->
-    <div class="protocol-box">
-        <h3><i class="fas fa-first-aid"></i> Protocolo Inmediato de Rescate:</h3>
-        <ol class="protocol-steps">
-            <li><strong>Si el paciente está consciente pero mareado, pálido o sudoroso (Hipoglucemia):</strong> Administre de inmediato 15g de carbohidratos simples (jugo azucarado, 3 sobres de azúcar disueltos en agua o gaseosa común).</li>
-            <li><strong>Si el paciente está inconsciente o convulsionando:</strong> <u>NUNCA INTRODUZCA LÍQUIDOS NI ALIMENTOS EN SU BOCA</u>. Colóquelo de lado (posición lateral de seguridad) y llame inmediatamente al 123.</li>
-            <li>Consulte la información clínica y notifique a su acudiente.</li>
-        </ol>
-    </div>
-
-    <!-- Ficha de Datos del Paciente -->
-    <div class="medical-sheet">
-        <h4 class="sheet-section-title"><i class="fas fa-user-injured"></i> Datos del Paciente</h4>
-        
-        <div class="data-row">
-            <span class="lbl">Nombre completo:</span>
-            <span class="val" id="dispNombre">Damián Díaz Balseiro</span>
+        <div class="qr-data-row">
+            <span class="lbl">Guía clínica:</span>
+            <span class="val" id="dispMedico">Enf. Jefe Elizabeth Vargas Caro</span>
         </div>
-        <div class="data-row">
-            <span class="lbl">Diagnóstico:</span>
-            <span class="val" style="color:#f87171;" id="dispCondicion">Diabetes Tipo 2 Insulinorrequiriente + Hipertensión Arterial</span>
-        </div>
-        <div class="data-row">
-            <span class="lbl">Grupo Sanguíneo:</span>
-            <span class="val" id="dispSangre">O+</span>
-        </div>
-        <div class="data-row">
-            <span class="lbl">Alergias a Medicamentos:</span>
-            <span class="val" style="color:#fb7185;" id="dispAlergias">Ninguna reportada</span>
-        </div>
-        <div class="data-row">
-            <span class="lbl">Tratamiento e Insulina:</span>
-            <span class="val" id="dispTratamiento">8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic</span>
-        </div>
-        <div class="data-row">
-            <span class="lbl">Ciudad / Ubicación:</span>
-            <span class="val">Barrio Chapacuá, Cartagena de Indias</span>
-        </div>
-        <div class="data-row">
-            <span class="lbl">Centro Médico de Referencia:</span>
+        <div class="qr-data-row">
+            <span class="lbl">Hospital / EPS referencia:</span>
             <span class="val" id="dispCentro">Hospital Univ. del Caribe / Blas de Lezo</span>
         </div>
+        <div class="qr-data-row">
+            <span class="lbl">Acudiente / Cuidador:</span>
+            <span class="val" id="dispAcudiente">Familiar / Cuidador (+57 300 456 7890)</span>
+        </div>
+
+        <!-- Botones de Acción SOS -->
+        <div class="qr-actions-grid">
+            <a id="btnCallFamily" href="tel:+573004567890" class="qr-act-btn qr-act-call">
+                <i class="fas fa-phone-alt"></i>
+                <span>Llamar Familiar</span>
+            </a>
+            <a id="btnWhatsappSOS" href="https://wa.me/573004567890" target="_blank" rel="noopener" class="qr-act-btn qr-act-wa">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsApp SOS</span>
+            </a>
+            <a href="tel:123" class="qr-act-btn qr-act-123">
+                <i class="fas fa-ambulance"></i>
+                <span>Urgencias 123</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Notas Médicas Adicionales -->
-    <div class="medical-sheet">
-        <h4 class="sheet-section-title"><i class="fas fa-notes-medical"></i> Indicaciones Críticas</h4>
-        <p id="dispNotas" style="font-size:12px; color:#cbd5e1; line-height:1.6; margin:0;">
-            Paciente con riesgo de hipoglucemia severa rápida. Lleva glucómetro y microdosis de rescate en su morral.
+    <!-- 2. ¿CÓMO VA HOY? (ESTADO Y SIGNOS VITALES ACTUALES) -->
+    <div class="qr-section">
+        <div class="qr-sec-header">
+            <h2 class="qr-sec-title"><i class="fas fa-heartbeat"></i> ¿Cómo va el paciente hoy?</h2>
+            <span style="font-size:11px; color:#94a3b8;" id="dispHoraLectura">Último reporte</span>
+        </div>
+
+        <div id="dispOverallBanner" class="qr-overall-banner ok">
+            <i class="fas fa-check-circle" style="font-size:18px;"></i>
+            <div id="dispOverallText">Paciente estable: glucosa y presión arterial dentro de las metas clínicas pautadas.</div>
+        </div>
+
+        <div class="qr-vitals-grid">
+            <!-- Glucosa -->
+            <div class="qr-vital-box">
+                <div class="qr-vital-lbl"><i class="fas fa-tint" style="color:#5eead4;"></i> Glucosa Capilar</div>
+                <div class="qr-vital-val" id="dispGlucosaVal">114 <small style="font-size:12px; font-weight:600;">mg/dL</small></div>
+                <div class="qr-vital-sub st-ok" id="dispGlucosaSub">En meta · Ayunas (TIR 100%)</div>
+            </div>
+
+            <!-- Presión Arterial -->
+            <div class="qr-vital-box">
+                <div class="qr-vital-lbl"><i class="fas fa-heart" style="color:#38bdf8;"></i> Presión Arterial</div>
+                <div class="qr-vital-val" id="dispPresionVal">126/78 <small style="font-size:11px; font-weight:600;">mmHg</small></div>
+                <div class="qr-vital-sub st-ok" id="dispPresionSub">Controlada · 71 BPM</div>
+            </div>
+
+            <!-- Medicamentos de Hoy -->
+            <div class="qr-vital-box">
+                <div class="qr-vital-lbl"><i class="fas fa-pills" style="color:#fbbf24;"></i> Tomas de Hoy</div>
+                <div class="qr-vital-val" id="dispMedsCount">0 de 5</div>
+                <div class="qr-prog-bar"><div class="qr-prog-fill" id="dispMedsBar" style="width:0%;"></div></div>
+                <div class="qr-vital-sub" style="color:#cbd5e1;" id="dispMedsSub">Esquema diario en curso</div>
+            </div>
+
+            <!-- Ubicación y Geocerca -->
+            <div class="qr-vital-box">
+                <div class="qr-vital-lbl"><i class="fas fa-satellite-dish" style="color:#a78bfa;"></i> Perímetro GPS</div>
+                <div class="qr-vital-val" style="font-size:16px;" id="dispGeoEstado">En Zona Segura</div>
+                <div class="qr-vital-sub st-ok" id="dispGeoSub">Chapacuá (Radio 400 m)</div>
+            </div>
+        </div>
+
+        <a id="btnVerMapaGoogle" href="https://www.google.com/maps?q=10.39991,-75.47886" target="_blank" rel="noopener" class="qr-map-link">
+            <i class="fas fa-map-marked-alt"></i> Ver ubicación GPS exacta en Google Maps
+        </a>
+    </div>
+
+    <!-- 3. ¿QUÉ TIENE Y QUÉ TOMA? (CONDICIÓN MÉDICA Y ESQUEMA) -->
+    <div class="qr-section">
+        <div class="qr-sec-header">
+            <h2 class="qr-sec-title"><i class="fas fa-notes-medical"></i> ¿Qué padece y qué medicamentos usa?</h2>
+        </div>
+
+        <div class="qr-dx-chips" id="dispCondicionChips">
+            <span class="qr-dx-chip">Diabetes Mellitus Tipo 2 Insulinorrequiriente</span>
+            <span class="qr-dx-chip">Hipertensión Arterial</span>
+            <span class="qr-dx-chip">Neuropatía Diabética</span>
+        </div>
+
+        <div class="qr-data-row">
+            <span class="lbl">Alergias a medicamentos:</span>
+            <span class="val" style="color:#fda4af;" id="dispAlergias">Ninguna alergia medicamentosa reportada</span>
+        </div>
+        <div class="qr-data-row">
+            <span class="lbl">Metas clínicas pautadas:</span>
+            <span class="val" id="dispMetas">Glucosa 80–180 mg/dL · PA &lt; 140/90 mmHg</span>
+        </div>
+
+        <div style="font-size:11.5px; font-weight:700; color:#94a3b8; margin-top:12px; text-transform:uppercase;">
+            Esquema Farmacológico Diario &amp; Estado de Hoy:
+        </div>
+        <div class="qr-med-list" id="dispListaEsquema">
+            <!-- Renderizado dinámico con estado de hoy -->
+        </div>
+    </div>
+
+    <!-- 4. PROTOCOLO DE PRIMEROS AUXILIOS -->
+    <div class="qr-proto-box">
+        <h3><i class="fas fa-first-aid"></i> Qué hacer en caso de emergencia:</h3>
+        <ol>
+            <li><strong>Si presenta mareo, sudor frío o temblor y está consciente (Hipoglucemia &lt; 80 mg/dL):</strong> Aplicar <strong>Regla 15-15</strong>: darle 15 g de azúcar rápida (medio vaso de jugo o 3 sobres de azúcar en agua) y medir en 15 min.</li>
+            <li><strong>Si presenta dolor de cabeza fuerte o presión ≥ 160/100 mmHg:</strong> Mantenerlo sentado en reposo y comunicarse de inmediato con el familiar o urgencias.</li>
+            <li><strong>Si está inconsciente o desmayado:</strong> <u>NUNCA darle líquidos ni alimentos por boca</u>. Colocarlo de lado y llamar al <strong>123</strong>.</li>
+        </ol>
+        <p id="dispNotas" style="font-size:11.5px; color:#94a3b8; margin:8px 0 0; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;">
+            Paciente adulto mayor del Barrio Chapacuá (Cartagena) con Insulina Basal 24 UI nocturna y Ozempic semanal.
         </p>
     </div>
 
     <a href="index.html" class="return-app-btn">
-        <i class="fas fa-arrow-left"></i> Volver a la plataforma DiaMon
+        <i class="fas fa-arrow-left"></i> Abrir plataforma completa DiaMon
     </a>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js?v=7"></script>
 <script>
-    // Decodificar datos desde el Hash de la URL o LocalStorage
+(function () {
+    'use strict';
+
+    const CASA_CHAPACUA = { lat: 10.39991, lng: -75.47886, radio: 400 };
+
+    const ESQUEMA_BASE = [
+        { id: 'med-1', bit: 1,  hora: '08:00 AM', nombre: 'Pantoprazol + Metformina + Firialta + Nifedipina' },
+        { id: 'med-2', bit: 2,  hora: '02:00 PM', nombre: 'Valsartán (Control Hipertensión Arterial)' },
+        { id: 'med-3', bit: 4,  hora: '08:00 PM', nombre: 'Atorvastatina + Metformina + Gabapentina + Lipotic + Nifedipino' },
+        { id: 'med-4', bit: 8,  hora: '09:00 PM', nombre: 'Insulina Basal — 24 Unidades subcutáneas' },
+        { id: 'med-5', bit: 16, hora: 'Sábados',  nombre: 'Ozempic (Semaglutida semanal subcutánea)' }
+    ];
+
+    const estadoFicha = {
+        uid: '',
+        codigo: 'DM-8492',
+        nombre: 'Damián Díaz Balseiro',
+        edad: 74,
+        sangre: 'O+',
+        condicion: 'Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética',
+        alergias: 'Ninguna alergia medicamentosa reportada',
+        medico: 'Enf. Jefe Elizabeth Vargas Caro',
+        centro: 'Hospital Univ. del Caribe / Clínica Blas de Lezo',
+        contactoNombre: 'Familiar / Cuidador Principal',
+        contactoTel: '+573004567890',
+        notas: '',
+        glucosa: 114,
+        glucosaCtx: 'ayunas',
+        tir: 100,
+        sis: 126,
+        dia: 78,
+        pulso: 71,
+        medsBitmask: 0,
+        medsTomadasOverride: null,
+        animo: 'estable',
+        lat: 10.39991,
+        lng: -75.47886,
+        fuente: 'QR Instantáneo'
+    };
+
+    function distanciaMetros(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function cargarDesdeParametrosYLocal() {
+        // 1) Soporte local si se abre en el mismo dispositivo
+        try {
+            const stored = JSON.parse(localStorage.getItem('diamon_medical_profile') || 'null');
+            if (stored) {
+                if (stored.nombre) estadoFicha.nombre = stored.nombre;
+                if (stored.codigoPaciente) estadoFicha.codigo = stored.codigoPaciente;
+                if (stored.condicion) estadoFicha.condicion = stored.condicion;
+                if (stored.grupoSanguineo) estadoFicha.sangre = stored.grupoSanguineo;
+                if (stored.alergias) estadoFicha.alergias = stored.alergias;
+                if (stored.contactoNombre) estadoFicha.contactoNombre = stored.contactoNombre;
+                if (stored.contactoTelefono) estadoFicha.contactoTel = stored.contactoTelefono;
+                if (stored.centroReferencia) estadoFicha.centro = stored.centroReferencia;
+                if (stored.medicoTratante) estadoFicha.medico = stored.medicoTratante;
+                if (stored.notasEmergencia) estadoFicha.notas = stored.notasEmergencia;
+            }
+            const glLocal = JSON.parse(localStorage.getItem('diamon_damian_glucosa_v5') || '[]');
+            if (glLocal[0]?.valor) {
+                estadoFicha.glucosa = Number(glLocal[0].valor);
+                estadoFicha.glucosaCtx = glLocal[0].contexto || 'ayunas';
+            }
+            const paLocal = JSON.parse(localStorage.getItem('diamon_damian_presion_v5') || '[]');
+            if (paLocal[0]?.sistolica) {
+                estadoFicha.sis = Number(paLocal[0].sistolica);
+                estadoFicha.dia = Number(paLocal[0].diastolica);
+                estadoFicha.pulso = Number(paLocal[0].pulso || 71);
+            }
+        } catch (_) {}
+
+        // 2) Soporte compatibilidad Hash antiguo (#json)
+        if (window.location.hash && window.location.hash.length > 2) {
+            try {
+                const parsed = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
+                if (parsed.n) estadoFicha.nombre = parsed.n;
+                if (parsed.c) estadoFicha.condicion = parsed.c;
+                if (parsed.s) estadoFicha.sangre = parsed.s;
+                if (parsed.a) estadoFicha.alergias = parsed.a;
+                if (parsed.cn) estadoFicha.contactoNombre = parsed.cn;
+                if (parsed.ct) estadoFicha.contactoTel = parsed.ct;
+                if (parsed.h) estadoFicha.centro = parsed.h;
+                if (parsed.m) estadoFicha.notas = parsed.m;
+            } catch (_) {}
+        }
+
+        // 3) Parámetros compactos del nuevo QR (?n=...&g=...&pa=...)
+        const q = new URLSearchParams(window.location.search);
+        if (q.get('u')) estadoFicha.uid = q.get('u');
+        if (q.get('id')) estadoFicha.codigo = q.get('id');
+        if (q.get('n')) estadoFicha.nombre = q.get('n');
+        if (q.get('ed')) estadoFicha.edad = parseInt(q.get('ed'), 10) || 74;
+        if (q.get('gs')) estadoFicha.sangre = q.get('gs');
+        if (q.get('g')) estadoFicha.glucosa = parseInt(q.get('g'), 10) || 114;
+        if (q.get('gc')) estadoFicha.glucosaCtx = q.get('gc');
+        if (q.get('tir')) estadoFicha.tir = parseInt(q.get('tir'), 10) || 100;
+        if (q.get('pa') && q.get('pa').includes('-')) {
+            const [s, d] = q.get('pa').split('-');
+            estadoFicha.sis = parseInt(s, 10) || 126;
+            estadoFicha.dia = parseInt(d, 10) || 78;
+        }
+        if (q.get('p')) estadoFicha.pulso = parseInt(q.get('p'), 10) || 71;
+        if (q.get('mb') !== null) estadoFicha.medsBitmask = parseInt(q.get('mb'), 10) || 0;
+        if (q.get('an')) estadoFicha.animo = q.get('an');
+        if (q.get('la')) estadoFicha.lat = parseFloat(q.get('la')) || 10.39991;
+        if (q.get('ln')) estadoFicha.lng = parseFloat(q.get('ln')) || -75.47886;
+        if (q.get('tel')) estadoFicha.contactoTel = q.get('tel');
+        if (q.get('al')) estadoFicha.alergias = q.get('al');
+    }
+
+    function renderizarFicha() {
+        const iniciales = (estadoFicha.nombre || 'DD')
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(p => p[0].toUpperCase())
+            .join('');
+
+        document.getElementById('dispAvatar').textContent = iniciales || 'DD';
+        document.getElementById('dispCodigo').textContent = `PACIENTE MONITOREADO · ${estadoFicha.codigo}`;
+        document.getElementById('dispNombre').textContent = estadoFicha.nombre;
+        document.getElementById('dispSangreBadge').innerHTML = `<i class="fas fa-tint"></i> Sangre ${estadoFicha.sangre}`;
+        document.getElementById('dispEdad').textContent = `${estadoFicha.edad} años`;
+        document.getElementById('dispMedico').textContent = estadoFicha.medico;
+        document.getElementById('dispCentro').textContent = estadoFicha.centro;
+        document.getElementById('dispAlergias').textContent = estadoFicha.alergias;
+        if (estadoFicha.notas) {
+            document.getElementById('dispNotas').textContent = estadoFicha.notas;
+        }
+
+        // Contacto y WhatsApp con ubicación
+        const cleanPhone = (estadoFicha.contactoTel || '+573004567890').replace(/\s+/g, '');
+        const waDigits = cleanPhone.replace(/[^\d]/g, '');
+        document.getElementById('dispAcudiente').textContent = `${estadoFicha.contactoNombre} (${estadoFicha.contactoTel})`;
+        document.getElementById('btnCallFamily').href = `tel:${cleanPhone}`;
+
+        const mapsUrl = `https://www.google.com/maps?q=${estadoFicha.lat},${estadoFicha.lng}`;
+        document.getElementById('btnVerMapaGoogle').href = mapsUrl;
+        const msgWa = encodeURIComponent(
+            `🚨 Hola, acabo de escanear el código QR médico DiaMon de ${estadoFicha.nombre} (${estadoFicha.codigo}). ` +
+            `Últimos signos registrados: Glucosa ${estadoFicha.glucosa} mg/dL, PA ${estadoFicha.sis}/${estadoFicha.dia} mmHg. ` +
+            `Ubicación GPS reportada: ${mapsUrl}`
+        );
+        document.getElementById('btnWhatsappSOS').href = `https://wa.me/${waDigits}?text=${msgWa}`;
+
+        // Evaluación Glucosa
+        const g = Number(estadoFicha.glucosa);
+        let gText = 'En meta clínica';
+        let gClass = 'st-ok';
+        let nivelGlobal = 'ok';
+        if (g < 80) {
+            gText = g < 70 ? 'Hipoglucemia Severa (<70)' : 'Alerta Baja (<80)';
+            gClass = 'st-danger';
+            nivelGlobal = 'danger';
+        } else if (g >= 240) {
+            gText = 'Hiperglucemia Crítica';
+            gClass = 'st-danger';
+            nivelGlobal = 'danger';
+        } else if (g > 180) {
+            gText = 'Glucosa Elevada';
+            gClass = 'st-warn';
+            if (nivelGlobal === 'ok') nivelGlobal = 'warn';
+        }
+
+        const ctxMap = { ayunas: 'En ayunas', preprandial: 'Pre-comida', postprandial_2h: '2h post-comida', nocturna: 'Pre-insulina 9PM', rescate: 'Control síntoma' };
+        document.getElementById('dispGlucosaVal').innerHTML = `${g} <small style="font-size:12px; font-weight:600;">mg/dL</small>`;
+        const gSub = document.getElementById('dispGlucosaSub');
+        gSub.className = `qr-vital-sub ${gClass}`;
+        gSub.textContent = `${gText} · ${ctxMap[estadoFicha.glucosaCtx] || estadoFicha.glucosaCtx} (TIR ${estadoFicha.tir}%)`;
+
+        // Evaluación Presión
+        const sis = Number(estadoFicha.sis);
+        const dia = Number(estadoFicha.dia);
+        let paText = 'Presión Controlada';
+        let paClass = 'st-ok';
+        if (sis >= 160 || dia >= 100) {
+            paText = 'Crisis Hipertensiva';
+            paClass = 'st-danger';
+            nivelGlobal = 'danger';
+        } else if (sis < 95 || dia < 60) {
+            paText = 'Hipotensión (Riesgo mareo)';
+            paClass = 'st-danger';
+            nivelGlobal = 'danger';
+        } else if (sis > 140 || dia > 90) {
+            paText = 'Presión Elevada';
+            paClass = 'st-warn';
+            if (nivelGlobal === 'ok') nivelGlobal = 'warn';
+        }
+        document.getElementById('dispPresionVal').innerHTML = `${sis}/${dia} <small style="font-size:11px; font-weight:600;">mmHg</small>`;
+        const pSub = document.getElementById('dispPresionSub');
+        pSub.className = `qr-vital-sub ${paClass}`;
+        pSub.textContent = `${paText} · ${estadoFicha.pulso} BPM`;
+
+        // Medicamentos de Hoy
+        let tomadas = 0;
+        const listaHtml = ESQUEMA_BASE.map(item => {
+            const ok = (estadoFicha.medsBitmask & item.bit) !== 0;
+            if (ok) tomadas++;
+            return `
+                <div class="qr-med-row">
+                    <span class="qr-med-time">${item.hora}</span>
+                    <span class="qr-med-name">${item.nombre}</span>
+                    <span class="qr-med-status ${ok ? 'done' : 'pend'}">${ok ? '✓ Tomada hoy' : 'Programada'}</span>
+                </div>
+            `;
+        }).join('');
+        if (estadoFicha.medsTomadasOverride !== null && tomadas === 0) {
+            tomadas = estadoFicha.medsTomadasOverride;
+        }
+        const pctMeds = Math.min(100, Math.round((tomadas / ESQUEMA_BASE.length) * 100));
+        document.getElementById('dispMedsCount').textContent = `${tomadas} de ${ESQUEMA_BASE.length}`;
+        document.getElementById('dispMedsBar').style.width = `${pctMeds}%`;
+        document.getElementById('dispMedsSub').textContent = `${pctMeds}% del esquema de hoy completado`;
+        document.getElementById('dispListaEsquema').innerHTML = listaHtml;
+
+        // Geocerca GPS
+        const dist = Math.round(distanciaMetros(estadoFicha.lat, estadoFicha.lng, CASA_CHAPACUA.lat, CASA_CHAPACUA.lng));
+        const dentro = dist <= CASA_CHAPACUA.radio;
+        const geoEst = document.getElementById('dispGeoEstado');
+        const geoSub = document.getElementById('dispGeoSub');
+        if (dentro) {
+            geoEst.textContent = 'En Zona Segura';
+            geoSub.className = 'qr-vital-sub st-ok';
+            geoSub.textContent = `A ${dist} m de casa · Chapacuá`;
+        } else {
+            geoEst.textContent = 'Fuera de Zona';
+            geoSub.className = 'qr-vital-sub st-warn';
+            geoSub.textContent = `A ${dist} m del hogar (>400 m)`;
+            if (nivelGlobal === 'ok') nivelGlobal = 'warn';
+        }
+
+        // Banner resumen general ¿Cómo va?
+        const banner = document.getElementById('dispOverallBanner');
+        const bannerTxt = document.getElementById('dispOverallText');
+        const animoMap = { bien: 'Se reportó sintiéndose bien hoy.', regular: 'Reportó malestar leve hoy.', mal: 'Reportó sentirse mal hoy.' };
+        const extraAnimo = animoMap[estadoFicha.animo] ? ` ${animoMap[estadoFicha.animo]}` : '';
+
+        banner.className = `qr-overall-banner ${nivelGlobal}`;
+        if (nivelGlobal === 'danger') {
+            bannerTxt.textContent = `¡Atención prioritaria! Signos fuera de rango seguro (${gText} / ${paText}). Revisar protocolo abajo y contactar familiar.${extraAnimo}`;
+        } else if (nivelGlobal === 'warn') {
+            bannerTxt.textContent = `En observación preventiva: ${!dentro ? 'fuera de geocerca habitual' : 'valores ligeramente elevados'}.${extraAnimo}`;
+        } else {
+            bannerTxt.textContent = `Paciente estable: glucosa (${g} mg/dL), presión (${sis}/${dia} mmHg) y ubicación en parámetros seguros.${extraAnimo}`;
+        }
+
+        // Chips de diagnóstico
+        const partesDx = (estadoFicha.condicion || '').split('+').map(s => s.trim()).filter(Boolean);
+        if (partesDx.length > 0) {
+            document.getElementById('dispCondicionChips').innerHTML = partesDx
+                .map(dx => `<span class="qr-dx-chip">${dx}</span>`)
+                .join('');
+        }
+
+        document.getElementById('qrSyncLabel').textContent = `Ficha Clínica QR · ${estadoFicha.fuente}`;
+        document.getElementById('dispHoraLectura').textContent = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Consulta en vivo desde Supabase si existe ?u=<uuid> y la RPC obtener_ficha_qr_publica está activa
+    window.sincronizarDesdeSupabase = async function () {
+        const sb = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+        if (!sb) return;
+
+        const btn = document.getElementById('btnRefreshLive');
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando';
+
+        if (estadoFicha.uid && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(estadoFicha.uid)) {
+            try {
+                const { data, error } = await sb.rpc('obtener_ficha_qr_publica', { p_user_id: estadoFicha.uid });
+                if (!error && data) {
+                    if (data.perfil?.nombre) estadoFicha.nombre = data.perfil.nombre;
+                    if (data.ultima_glucosa?.valor) {
+                        estadoFicha.glucosa = Number(data.ultima_glucosa.valor);
+                        estadoFicha.glucosaCtx = data.ultima_glucosa.contexto || estadoFicha.glucosaCtx;
+                    }
+                    if (data.ultima_presion?.sistolica) {
+                        estadoFicha.sis = Number(data.ultima_presion.sistolica);
+                        estadoFicha.dia = Number(data.ultima_presion.diastolica);
+                        if (data.ultima_presion.pulso_bpm) estadoFicha.pulso = Number(data.ultima_presion.pulso_bpm);
+                    }
+                    if (typeof data.tomas_hoy === 'number') {
+                        estadoFicha.medsTomadasOverride = data.tomas_hoy;
+                        if (Array.isArray(data.tomas_ids)) {
+                            let mask = 0;
+                            ESQUEMA_BASE.forEach(m => {
+                                if (data.tomas_ids.includes(m.id)) mask |= m.bit;
+                            });
+                            if (mask > 0) estadoFicha.medsBitmask = mask;
+                        }
+                    }
+                    if (data.ultima_ubicacion?.lat && data.ultima_ubicacion?.lng) {
+                        estadoFicha.lat = Number(data.ultima_ubicacion.lat);
+                        estadoFicha.lng = Number(data.ultima_ubicacion.lng);
+                    }
+                    estadoFicha.fuente = 'En Vivo (Supabase Cloud)';
+                    renderizarFicha();
+                }
+            } catch (_) {}
+        }
+
+        if (btn) btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
+    };
+
+    // Suscribirse también al canal Realtime Broadcast para ver cambios en vivo sin recargar
+    function suscribirCanalEnVivo() {
+        const sb = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+        if (!sb || typeof sb.channel !== 'function') return;
+        try {
+            sb.channel('diamon-damian-live')
+                .on('broadcast', { event: 'telemetria-damian' }, ({ payload }) => {
+                    if (!payload) return;
+                    if (payload.glucosa?.valor) {
+                        estadoFicha.glucosa = Number(payload.glucosa.valor);
+                        estadoFicha.glucosaCtx = payload.glucosa.contexto || estadoFicha.glucosaCtx;
+                    }
+                    if (payload.presion?.sistolica) {
+                        estadoFicha.sis = Number(payload.presion.sistolica);
+                        estadoFicha.dia = Number(payload.presion.diastolica);
+                        if (payload.presion.pulso) estadoFicha.pulso = Number(payload.presion.pulso);
+                    }
+                    if (payload.lat && payload.lng) {
+                        estadoFicha.lat = Number(payload.lat);
+                        estadoFicha.lng = Number(payload.lng);
+                    }
+                    estadoFicha.fuente = 'Tiempo Real Activo';
+                    renderizarFicha();
+                })
+                .subscribe();
+        } catch (_) {}
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        let profile = null;
-
-        if (window.location.hash && window.location.hash.length > 1) {
-            try {
-                const raw = decodeURIComponent(window.location.hash.substring(1));
-                const parsed = JSON.parse(raw);
-                profile = {
-                    nombre: parsed.n,
-                    condicion: parsed.c,
-                    tratamiento: parsed.t,
-                    grupoSanguineo: parsed.s,
-                    alergias: parsed.a,
-                    contactoNombre: parsed.cn,
-                    contactoTelefono: parsed.ct,
-                    centroReferencia: parsed.h,
-                    notasEmergencia: parsed.m
-                };
-            } catch (e) {
-                console.warn('Error decodificando hash:', e);
-            }
-        }
-
-        if (!profile) {
-            try {
-                const stored = localStorage.getItem('diamon_medical_profile');
-                if (stored) profile = JSON.parse(stored);
-            } catch (e) {}
-        }
-
-        if (profile) {
-            if (profile.nombre) document.getElementById('dispNombre').textContent = profile.nombre;
-            if (profile.condicion) document.getElementById('dispCondicion').textContent = profile.condicion;
-            if (profile.grupoSanguineo) document.getElementById('dispSangre').textContent = profile.grupoSanguineo;
-            if (profile.alergias) document.getElementById('dispAlergias').textContent = profile.alergias;
-            if (profile.tratamiento) document.getElementById('dispTratamiento').textContent = profile.tratamiento;
-            if (profile.centroReferencia) document.getElementById('dispCentro').textContent = profile.centroReferencia;
-            if (profile.notasEmergencia) document.getElementById('dispNotas').textContent = profile.notasEmergencia;
-
-            if (profile.contactoTelefono) {
-                const cleanPhone = profile.contactoTelefono.replace(/\s+/g, '');
-                const btn = document.getElementById('btnCallFamily');
-                btn.href = 'tel:' + cleanPhone;
-                document.getElementById('callFamilySub').textContent = (profile.contactoNombre || 'Familiar') + ' (' + profile.contactoTelefono + ')';
-            }
-        }
+        cargarDesdeParametrosYLocal();
+        renderizarFicha();
+        window.sincronizarDesdeSupabase();
+        suscribirCanalEnVivo();
     });
+})();
 </script>
 </body>
 </html>
-

@@ -852,6 +852,10 @@
       if (repPromG) repPromG.textContent = `${res.promedioG} mg/dL`;
       if (repPromPA) repPromPA.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg`;
       if (repTIR) repTIR.textContent = `${res.enRangoG}% en meta`;
+
+      if (window.medicalQRManager && typeof window.medicalQRManager.refreshAllQRs === 'function') {
+        window.medicalQRManager.refreshAllQRs();
+      }
     }
 
     renderHistorialRecienteDashboard() {
