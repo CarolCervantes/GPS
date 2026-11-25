@@ -42,7 +42,15 @@ async function initAdmin() {
 }
 
 async function cargarKPIs() {
-  const { data, error } = await supabaseClient.rpc('admin_kpis').catch(() => ({ data: null, error: true }));
+  let data = null;
+  let error = null;
+  try {
+    const res = await supabaseClient.rpc('admin_kpis');
+    data = res?.data ?? null;
+    error = res?.error ?? null;
+  } catch (e) {
+    error = e || true;
+  }
   if (error || !data) {
     setText('kpiTotal',   3);
     setText('kpiAdmins',  1);
@@ -62,7 +70,15 @@ async function cargarUsuarios() {
   if (!tbody) return;
   tbody.innerHTML = '<tr class="loading-row"><td colspan="4">cargando usuarios…</td></tr>';
 
-  const { data, error } = await supabaseClient.rpc('admin_list_users').catch(() => ({ data: null, error: true }));
+  let data = null;
+  let error = null;
+  try {
+    const res = await supabaseClient.rpc('admin_list_users');
+    data = res?.data ?? null;
+    error = res?.error ?? null;
+  } catch (e) {
+    error = e || true;
+  }
   if (error || !data || data.length === 0) {
     estadoUsuarios = [
       { id: 'pac-damian-diaz-01', nombre: 'Damián Díaz Balseiro (Paciente · DM-8492)', email: 'damian.diaz@diamon.co', rol: 'monitoreado', created_at: new Date().toISOString() },

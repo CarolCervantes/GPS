@@ -8,7 +8,13 @@
 
   const canvas = document.getElementById('ambientCanvas');
   if (!canvas) return;
+  // En móviles o con preferencia de movimiento reducido, evitar animaciones pesadas de canvas para fluidez total
+  if (window.innerWidth <= 768 || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    canvas.style.display = 'none';
+    return;
+  }
   const ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
   let width = (canvas.width = window.innerWidth);
   let height = (canvas.height = window.innerHeight);

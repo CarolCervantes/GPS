@@ -264,17 +264,29 @@
             }
         }
 
-        // Obtener base de datos de pacientes/usuarios
+        // Obtener base de datos de pacientes/usuarios (soporta formato objeto { 'DM-8492': {...} } y array legado)
         function getPacientesDb() {
             try {
                 const raw = localStorage.getItem('diamon_pacientes_db');
-                if (raw) return JSON.parse(raw);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        const map = {};
+                        parsed.forEach(u => {
+                            if (u && (u.codigoPaciente || u.id)) map[u.codigoPaciente || u.id] = u;
+                        });
+                        return map;
+                    }
+                    if (parsed && typeof parsed === 'object') return parsed;
+                }
             } catch (e) {}
-            return [];
+            return {};
         }
 
         function savePacientesDb(db) {
-            localStorage.setItem('diamon_pacientes_db', JSON.stringify(db));
+            try {
+                localStorage.setItem('diamon_pacientes_db', JSON.stringify(db));
+            } catch (_) {}
         }
 
         async function processOAuthCallback() {
@@ -407,7 +419,7 @@
 
             // 4. Vinculación con DiaMon: verificar si el correo ya existe
             const db = getPacientesDb();
-            const existingUser = db.find(u => u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase());
+            const existingUser = Object.values(db).find(u => u && u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase());
 
             if (existingUser) {
                 // YA ESTÁ REGISTRADO: Vincular cuenta externa sin crear duplicados
@@ -574,7 +586,7 @@
                 }
 
                 // Guardar en la base de datos de DiaMon sin duplicados
-                db.push(nuevoUsuario);
+                db[codigoUnico] = nuevoUsuario;
                 savePacientesDb(db);
 
                 // Activar sesión segura

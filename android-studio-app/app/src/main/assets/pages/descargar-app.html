@@ -314,7 +314,7 @@
             <div class="brand-icon"><i class="fas fa-tint"></i></div>
             <div>
                 <div style="font-size:18px; font-weight:800;">DiaMon GPS Salud</div>
-                <div style="font-size:12px; color:#5eead4;">Descarga directa por Código QR · v1.2.1</div>
+                <div style="font-size:12px; color:#5eead4;">Descarga directa por Código QR · v1.3.1</div>
             </div>
         </a>
         <div class="topbar-actions">
@@ -344,7 +344,7 @@
             </span>
             <h2 id="qrHeading" style="font-size:21px; font-weight:800; color:#0f172a;">Instala DiaMon en tu Android</h2>
             <p id="qrSubheading" style="font-size:13px; color:#475569; margin-top:4px; max-width:360px; line-height:1.45;">
-                Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.2.1 · 6 MB)</strong> al instante.
+                Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.3.1 · 6 MB)</strong> al instante.
             </p>
 
             <div class="qr-frame">
@@ -376,7 +376,7 @@
                 <div class="platform-header">
                     <div class="platform-icon android"><i class="fab fa-android"></i></div>
                     <div>
-                        <h3 style="font-size:16px; font-weight:800;">App Nativa Android (APK v1.2.1)</h3>
+                        <h3 style="font-size:16px; font-weight:800;">App Nativa Android (APK v1.3.1)</h3>
                         <span style="font-size:12px; color:#86efac;">GPS en vivo · Reloj Bluetooth BLE · SOS 123 · SQLite Offline</span>
                     </div>
                 </div>
@@ -476,7 +476,7 @@
         if (modoQRActual === 'apk') {
             if (badge) badge.innerHTML = '<i class="fas fa-qrcode"></i> Escanea para descargar DiaMon-GPS.apk';
             if (heading) heading.textContent = 'Instala DiaMon en tu Android';
-            if (sub) sub.innerHTML = 'Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.2.1 · 6 MB)</strong> al instante.';
+            if (sub) sub.innerHTML = 'Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.3.1 · 6 MB)</strong> al instante.';
         } else {
             if (badge) badge.innerHTML = '<i class="fas fa-qrcode"></i> Escanea para abrir la App Web / iPhone';
             if (heading) heading.textContent = 'Abre DiaMon en cualquier celular';
@@ -514,7 +514,7 @@
 
         if (waBtn) {
             const textoWa = modoQRActual === 'apk'
-                ? `Descarga la app móvil de DiaMon GPS Salud (Android APK v1.2.1) desde este enlace: ${targetUrl}`
+                ? `Descarga la app móvil de DiaMon GPS Salud (Android APK v1.3.1) desde este enlace: ${targetUrl}`
                 : `Abre DiaMon GPS Salud en tu celular desde este enlace: ${targetUrl}`;
             waBtn.href = `https://wa.me/?text=${encodeURIComponent(textoWa)}`;
         }

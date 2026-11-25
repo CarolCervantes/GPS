@@ -380,7 +380,9 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == INITIAL_PERMISSIONS_CODE) {
             boolean grantedLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED;
-            if (grantedLocation && webView != null) {
+            String currentUrl = webView != null ? webView.getUrl() : null;
+            // Solo recargar si ya está en el dashboard/mapa; nunca interrumpir el login
+            if (grantedLocation && webView != null && currentUrl != null && !currentUrl.contains("login.html")) {
                 webView.reload();
             }
             return;

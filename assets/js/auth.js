@@ -50,7 +50,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  let { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: { user: null } }));
+  let user = null;
+  try {
+    const sb = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+    if (sb && !sb.__isOfflineStub && sb.auth && navigator.onLine !== false) {
+      const resp = await Promise.race([
+        sb.auth.getUser(),
+        new Promise((resolve) => setTimeout(() => resolve({ data: { user: null } }), 2000))
+      ]);
+      user = resp?.data?.user || null;
+    }
+  } catch (_) {}
   let localUser = null;
 
   if (!user) {

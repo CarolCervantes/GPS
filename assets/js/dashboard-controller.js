@@ -374,9 +374,12 @@
     let currentUser = null;
 
     try {
-      if (window.supabaseClient && window.supabaseClient.auth) {
-        const { data } = await window.supabaseClient.auth.getUser();
-        currentUser = data?.user || null;
+      if (navigator.onLine !== false && window.supabaseClient && !window.supabaseClient.__isOfflineStub && window.supabaseClient.auth) {
+        const resp = await Promise.race([
+          window.supabaseClient.auth.getUser(),
+          new Promise((resolve) => setTimeout(() => resolve({ data: { user: null } }), 2000))
+        ]);
+        currentUser = resp?.data?.user || null;
       }
     } catch (_) {}
 
@@ -446,7 +449,7 @@
       }
 
       if (greetingTitle) {
-        greetingTitle.innerHTML = `Hola, <span id="headerUserName">${primerNombre}</span> 👋`;
+        greetingTitle.innerHTML = `Hola, <span id="headerUserName">${primerNombre}</span>`;
       }
 
       // Ajustar interfaz segun el rol para que Paciente sea mas simplificada y distinta de Cuidador y Admin
@@ -535,10 +538,17 @@
     window.actualizarInterfazUsuario = initSessionState;
 
     window.cerrarSesionDiaMon = async function () {
-      sessionStorage.removeItem('diamon_demo_user');
-      localStorage.removeItem('diamon_current_user');
-      if (window.supabaseClient && window.supabaseClient.auth) {
-        try { await window.supabaseClient.auth.signOut(); } catch (_) {}
+      try {
+        sessionStorage.removeItem('diamon_demo_user');
+        localStorage.removeItem('diamon_current_user');
+      } catch (_) {}
+      if (window.supabaseClient && !window.supabaseClient.__isOfflineStub && window.supabaseClient.auth) {
+        try {
+          await Promise.race([
+            window.supabaseClient.auth.signOut(),
+            new Promise((resolve) => setTimeout(resolve, 1200))
+          ]);
+        } catch (_) {}
       }
       window.location.href = 'login.html';
     };

@@ -1,9 +1,9 @@
 /**
  * DiaMon — Autenticación Social (Google, Apple, Facebook, Microsoft)
- * - En dominio web autorizado con credenciales OAuth reales configuradas, usa el flujo OAuth 2.0 oficial.
- * - En la App Android Studio (file:// WebView, donde Google/Meta bloquean WebViews) o cuando
- *   el proveedor aún no tiene App ID/redirect registrado, ofrece acceso rápido directo con selección
- *   de cuenta y rol (Paciente / Cuidador / Admin) para no bloquear al usuario.
+ * - Siempre abre un modal de acceso rápido confiable y centrado (Web, Móvil y Android WebView),
+ *   evitando pantallas congeladas o errores 400/403 redirect_uri_mismatch de proveedores externos.
+ * - Si el usuario configura explícitamente su propio Client ID en "OAuth Clientes" desde un
+ *   dominio HTTP/HTTPS autorizado, habilita el flujo OAuth 2.0 externo oficial.
  */
 (function () {
   'use strict';
@@ -35,6 +35,15 @@
     }
   };
 
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function generarTokenSeguro(longitud = 24) {
     try {
       const array = new Uint8Array(longitud);
@@ -54,27 +63,40 @@
   }
 
   function puedeUsarOAuthExterno(prov, config) {
+    // En App Android (WebView file://) los proveedores externos bloquean WebViews: usar modal integrado.
     if (esEntornoWebViewOArchivo()) return false;
     if (!config) return false;
 
-    const host = window.location.hostname || '';
-    const esProdDominio = host.endsWith('.vercel.app') && host.includes('diamon');
-    const esLocalhost8080 = (host === 'localhost' || host === '127.0.0.1') && window.location.port === '8080';
-
-    if (prov === 'google') {
-      const customId = localStorage.getItem('diamon_oauth_google_client_id');
-      return Boolean(customId) || (esProdDominio || esLocalhost8080);
-    }
-    if (prov === 'facebook') {
-      return Boolean(config.isFacebookConfigured);
-    }
-    if (prov === 'apple') {
-      return Boolean(config.isAppleConfigured);
-    }
-    if (prov === 'microsoft') {
-      return Boolean(localStorage.getItem('diamon_oauth_ms_client_id'));
-    }
+    // Solo redirigir a OAuth externo si el usuario configuró explícitamente su propio Client ID en localStorage.
+    try {
+      if (prov === 'google') {
+        return Boolean((localStorage.getItem('diamon_oauth_google_client_id') || '').trim());
+      }
+      if (prov === 'facebook') {
+        return Boolean((localStorage.getItem('diamon_oauth_fb_app_id') || '').trim());
+      }
+      if (prov === 'apple') {
+        return Boolean((localStorage.getItem('diamon_oauth_apple_client_id') || '').trim());
+      }
+      if (prov === 'microsoft') {
+        return Boolean((localStorage.getItem('diamon_oauth_ms_client_id') || '').trim());
+      }
+    } catch (_) {}
     return false;
+  }
+
+  function aplicarEstiloBackdropSeguro(modal) {
+    modal.className = 'dm-oauth-modal-backdrop';
+    modal.style.position = 'fixed';
+    modal.style.inset = '0';
+    modal.style.zIndex = '99999';
+    modal.style.background = 'rgba(2, 6, 18, 0.84)';
+    modal.style.backdropFilter = 'blur(12px)';
+    modal.style.webkitBackdropFilter = 'blur(12px)';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.padding = '16px';
+    modal.style.overflowY = 'auto';
   }
 
   function abrirModalAccesoRapidoSocial(prov) {
@@ -93,22 +115,29 @@
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'dmSocialQuickModal';
-      modal.className = 'dm-oauth-universal-backdrop';
-      modal.style.display = 'none';
+      modal.addEventListener('click', (ev) => {
+        if (ev.target === modal) window.cerrarModalSocialRapido();
+      });
       document.body.appendChild(modal);
     }
+    aplicarEstiloBackdropSeguro(modal);
 
     const necesitaCodigo = rolActual === 'cuidador' || rolActual === 'admin';
     const codePlaceholder = rolActual === 'admin'
       ? 'Código Admin (DIAMON-ADMIN-2026)'
       : 'Código del Paciente (Ej: DM-8492)';
-    const defaultCode = rolActual === 'cuidador' ? 'DM-8492' : '';
+    const defaultCode = rolActual === 'cuidador'
+      ? 'DM-8492'
+      : (rolActual === 'admin' ? (helpers.CODIGO_ADMIN_SISTEMA || 'DIAMON-ADMIN-2026') : '');
 
-    const nombreSugerido = ultimaCuenta?.nombre || '';
-    const emailSugerido = ultimaCuenta?.email || '';
+    const nombreRapido = escapeHtml(ultimaCuenta?.nombre || 'Damián Díaz Balseiro');
+    const emailRapido = escapeHtml(ultimaCuenta?.email || 'damian.diaz@diamon.co');
+    const inicialesRapidas = escapeHtml((ultimaCuenta?.nombre || 'DD').trim().slice(0, 2).toUpperCase() || 'DD');
+    const nombreSugerido = escapeHtml(ultimaCuenta?.nombre || '');
+    const emailSugerido = escapeHtml(ultimaCuenta?.email || '');
 
     modal.innerHTML = `
-      <div class="dm-oauth-modal-card" style="max-width:420px; width:100%;">
+      <div class="dm-oauth-modal-card" style="max-width:420px; width:100%; max-height:90vh; overflow-y:auto; margin:auto;" onclick="event.stopPropagation()">
         <button type="button" class="dm-oauth-close-btn" onclick="window.cerrarModalSocialRapido()" aria-label="Cerrar">
           <i class="fas fa-times"></i>
         </button>
@@ -121,13 +150,13 @@
           <p>Perfil seleccionado: <strong style="color:#5eead4;">${rolLabel}</strong></p>
         </div>
 
-        <button type="button" onclick="window.completarLoginSocialRapido('${prov}', true)" style="width:100%; background:rgba(13,148,136,0.2); border:1px solid rgba(94,234,212,0.45); color:#ffffff; border-radius:14px; padding:12px 14px; margin-bottom:14px; cursor:pointer; display:flex; align-items:center; gap:12px; text-align:left;">
+        <button type="button" id="dmSocialOneTapBtn" onclick="window.completarLoginSocialRapido('${prov}', true)" style="width:100%; background:rgba(13,148,136,0.22); border:1px solid rgba(94,234,212,0.5); color:#ffffff; border-radius:14px; padding:12px 14px; margin-bottom:14px; cursor:pointer; display:flex; align-items:center; gap:12px; text-align:left; touch-action:manipulation;">
           <span style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#0d9488,#0284c7); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;">
-            ${(ultimaCuenta?.nombre || 'DD').slice(0, 2).toUpperCase()}
+            ${inicialesRapidas}
           </span>
           <span style="flex:1; min-width:0;">
-            <strong style="display:block; font-size:13.5px; color:#ffffff;">${ultimaCuenta?.nombre || 'Damián Díaz Balseiro'}</strong>
-            <span style="display:block; font-size:11.5px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis;">${ultimaCuenta?.email || 'damian.diaz@diamon.co'} · Entrar en 1 toque</span>
+            <strong style="display:block; font-size:14px; color:#ffffff;">${nombreRapido}</strong>
+            <span style="display:block; font-size:12px; color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${emailRapido} · Entrar en 1 toque</span>
           </span>
           <i class="fas fa-arrow-right" style="color:#5eead4;"></i>
         </button>
@@ -135,26 +164,26 @@
         <form id="dmFormSocialQuick" onsubmit="window.completarLoginSocialRapido('${prov}', false, event)" style="display:flex; flex-direction:column; gap:10px;">
           <div>
             <label style="display:block; font-size:12px; color:#cbd5e1; font-weight:600; margin-bottom:4px;">Tu nombre</label>
-            <input type="text" id="dmSocialNombre" value="${nombreSugerido}" placeholder="Ej: Carol Cervantes" style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.35); border-radius:12px; padding:11px 13px; color:#ffffff; font-size:14px; outline:none;">
+            <input type="text" id="dmSocialNombre" value="${nombreSugerido}" placeholder="Ej: Carol Cervantes" style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.35); border-radius:12px; padding:12px 13px; color:#ffffff; font-size:15px; outline:none; box-sizing:border-box;">
           </div>
           <div>
             <label style="display:block; font-size:12px; color:#cbd5e1; font-weight:600; margin-bottom:4px;">Correo de ${meta.nombre}</label>
-            <input type="email" id="dmSocialEmail" value="${emailSugerido}" placeholder="${meta.placeholderEmail}" required style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.35); border-radius:12px; padding:11px 13px; color:#ffffff; font-size:14px; outline:none;">
+            <input type="email" id="dmSocialEmail" value="${emailSugerido}" placeholder="${meta.placeholderEmail}" required style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.35); border-radius:12px; padding:12px 13px; color:#ffffff; font-size:15px; outline:none; box-sizing:border-box;">
           </div>
           ${necesitaCodigo ? `
           <div>
             <label style="display:block; font-size:12px; color:#cbd5e1; font-weight:600; margin-bottom:4px;">${rolActual === 'admin' ? 'Código de Administrador' : 'Código del Paciente'}</label>
-            <input type="text" id="dmSocialCode" value="${defaultCode}" placeholder="${codePlaceholder}" style="width:100%; background:#071526; border:1px solid rgba(94,234,212,0.45); border-radius:12px; padding:11px 13px; color:#ffffff; font-size:14px; text-transform:uppercase; outline:none;">
+            <input type="text" id="dmSocialCode" value="${escapeHtml(defaultCode)}" placeholder="${codePlaceholder}" style="width:100%; background:#071526; border:1px solid rgba(94,234,212,0.45); border-radius:12px; padding:12px 13px; color:#ffffff; font-size:15px; text-transform:uppercase; outline:none; box-sizing:border-box;">
           </div>
           ` : ''}
-          <div id="dmSocialError" style="display:none; font-size:12px; color:#fca5a5; background:rgba(220,38,38,0.18); border:1px solid rgba(248,113,113,0.4); padding:8px 10px; border-radius:10px;"></div>
-          <button type="submit" style="width:100%; background:linear-gradient(135deg,#0d9488,#0284c7); border:none; border-radius:14px; padding:13px; color:#ffffff; font-weight:700; font-size:14.5px; cursor:pointer; margin-top:4px;">
+          <div id="dmSocialError" style="display:none; font-size:12.5px; color:#fca5a5; background:rgba(220,38,38,0.2); border:1px solid rgba(248,113,113,0.45); padding:9px 11px; border-radius:10px;"></div>
+          <button type="submit" id="dmSocialSubmitBtn" style="width:100%; background:linear-gradient(135deg,#0d9488,#0284c7); border:none; border-radius:14px; padding:13px; color:#ffffff; font-weight:700; font-size:15px; cursor:pointer; margin-top:4px; min-height:48px; touch-action:manipulation;">
             <i class="${meta.icono}" style="margin-right:6px;"></i> Entrar con ${meta.nombre}
           </button>
         </form>
 
         <div class="dm-oauth-modal-footer" style="flex-direction:column; gap:4px; text-align:center;">
-          <span style="font-size:11px; color:#94a3b8;">Acceso directo optimizado para App Android y entorno local.</span>
+          <span style="font-size:11.5px; color:#94a3b8;">Acceso directo optimizado para App Android y navegador.</span>
         </div>
       </div>
     `;
@@ -168,137 +197,142 @@
   };
 
   window.completarLoginSocialRapido = function (prov, usarCuentaRapida, e) {
-    if (e) e.preventDefault();
-
-    const helpers = window.DiaMonAuthHelpers || {};
-    const rolActual = typeof helpers.getCurrentRole === 'function' ? helpers.getCurrentRole() : 'usuario';
-    const errEl = document.getElementById('dmSocialError');
-    if (errEl) errEl.style.display = 'none';
-
-    let nombre = '';
-    let email = '';
-    let codeInput = '';
-
-    if (usarCuentaRapida) {
-      let ultima = null;
-      try {
-        const raw = localStorage.getItem('diamon_current_user');
-        if (raw) ultima = JSON.parse(raw);
-      } catch (_) {}
-      nombre = ultima?.nombre || 'Damián Díaz Balseiro';
-      email = ultima?.email || 'damian.diaz@diamon.co';
-      codeInput = rolActual === 'admin' ? (helpers.CODIGO_ADMIN_SISTEMA || 'DIAMON-ADMIN-2026') : 'DM-8492';
-    } else {
-      nombre = (document.getElementById('dmSocialNombre')?.value || '').trim();
-      email = (document.getElementById('dmSocialEmail')?.value || '').trim().toLowerCase();
-      codeInput = (document.getElementById('dmSocialCode')?.value || '').trim().toUpperCase();
-
-      if (!email || !email.includes('@')) {
-        if (errEl) {
-          errEl.textContent = 'Ingresa un correo electrónico válido para continuar.';
-          errEl.style.display = 'block';
-        }
-        return;
-      }
-      if (!nombre) {
-        nombre = typeof helpers.formatearNombreLimpio === 'function'
-          ? helpers.formatearNombreLimpio(email)
-          : email.split('@')[0];
-      }
-    }
-
-    // Validar códigos según rol
-    if (rolActual === 'admin') {
-      const codAdmin = helpers.CODIGO_ADMIN_SISTEMA || 'DIAMON-ADMIN-2026';
-      if (codeInput !== codAdmin) {
-        if (errEl) {
-          errEl.textContent = `Para ingresar como Administrador usa el código ${codAdmin}.`;
-          errEl.style.display = 'block';
-        }
-        return;
-      }
-    }
-
-    const dbPacientes = typeof helpers.obtenerBasePacientes === 'function'
-      ? helpers.obtenerBasePacientes()
-      : { 'DM-8492': { id: 'pac-damian-diaz-01', nombre: 'Damián Díaz Balseiro', codigoPaciente: 'DM-8492' } };
-
-    let pacienteObj = dbPacientes['DM-8492'];
-
-    if (rolActual === 'cuidador') {
-      const cod = codeInput || 'DM-8492';
-      if (!dbPacientes[cod]) {
-        if (errEl) {
-          errEl.textContent = `El código "${cod}" no existe. Usa DM-8492 o el código del paciente registrado.`;
-          errEl.style.display = 'block';
-        }
-        return;
-      }
-      pacienteObj = dbPacientes[cod];
-    } else if (rolActual === 'usuario') {
-      const existente = typeof helpers.buscarPacientePorEmail === 'function'
-        ? helpers.buscarPacientePorEmail(email)
-        : null;
-      if (existente) {
-        pacienteObj = existente;
-      } else if (!email.includes('damian')) {
-        const nuevoCod = typeof helpers.generarCodigoPacienteUnico === 'function'
-          ? helpers.generarCodigoPacienteUnico()
-          : 'DM-' + Math.floor(1000 + Math.random() * 9000);
-        pacienteObj = {
-          id: 'pac-' + Date.now(),
-          nombre,
-          email,
-          rol: 'usuario',
-          codigoPaciente: nuevoCod,
-          glucosa: 112,
-          estadoGlucosa: 'En meta clínica',
-          ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
-          bateria: 95,
-          pasos: 1200
-        };
-        if (typeof helpers.guardarPacienteEnBase === 'function') {
-          helpers.guardarPacienteEnBase(pacienteObj);
-        }
-      }
-    }
-
-    const sessionObj = {
-      id: `${prov}-${Date.now()}`,
-      nombre: rolActual === 'usuario' ? (pacienteObj.nombre || nombre) : nombre,
-      email,
-      rol: rolActual,
-      proveedor: prov,
-      codigoPaciente: pacienteObj.codigoPaciente || 'DM-8492',
-      pacienteVinculado: pacienteObj
-    };
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
     try {
-      sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionObj));
-      localStorage.setItem('diamon_current_user', JSON.stringify(sessionObj));
-    } catch (_) {}
+      const helpers = window.DiaMonAuthHelpers || {};
+      const rolActual = typeof helpers.getCurrentRole === 'function' ? helpers.getCurrentRole() : 'usuario';
+      const errEl = document.getElementById('dmSocialError');
+      if (errEl) errEl.style.display = 'none';
 
-    window.cerrarModalSocialRapido();
+      let nombre = '';
+      let email = '';
+      let codeInput = '';
 
-    const msgEl = document.getElementById('authStatusMsg');
-    if (msgEl) {
-      const provNombre = (PROVIDER_META[prov] || PROVIDER_META.google).nombre;
-      msgEl.textContent = `¡Bienvenido(a), ${sessionObj.nombre}! Sesión iniciada con ${provNombre}.`;
-      msgEl.className = 'dm-status-msg show success';
-      msgEl.style.display = 'block';
+      if (usarCuentaRapida) {
+        let ultima = null;
+        try {
+          const raw = localStorage.getItem('diamon_current_user');
+          if (raw) ultima = JSON.parse(raw);
+        } catch (_) {}
+        nombre = ultima?.nombre || 'Damián Díaz Balseiro';
+        email = ultima?.email || 'damian.diaz@diamon.co';
+        codeInput = rolActual === 'admin' ? (helpers.CODIGO_ADMIN_SISTEMA || 'DIAMON-ADMIN-2026') : 'DM-8492';
+      } else {
+        nombre = (document.getElementById('dmSocialNombre')?.value || '').trim();
+        email = (document.getElementById('dmSocialEmail')?.value || '').trim().toLowerCase();
+        codeInput = (document.getElementById('dmSocialCode')?.value || '').trim().toUpperCase();
+
+        if (!email || !email.includes('@')) {
+          if (errEl) {
+            errEl.textContent = 'Ingresa un correo electrónico válido para continuar.';
+            errEl.style.display = 'block';
+          }
+          return;
+        }
+        if (!nombre) {
+          nombre = typeof helpers.formatearNombreLimpio === 'function'
+            ? helpers.formatearNombreLimpio(email)
+            : email.split('@')[0];
+        }
+      }
+
+      if (rolActual === 'admin') {
+        const codAdmin = helpers.CODIGO_ADMIN_SISTEMA || 'DIAMON-ADMIN-2026';
+        if (codeInput !== codAdmin) {
+          if (errEl) {
+            errEl.textContent = `Para ingresar como Administrador usa el código ${codAdmin}.`;
+            errEl.style.display = 'block';
+          }
+          return;
+        }
+      }
+
+      const dbPacientes = typeof helpers.obtenerBasePacientes === 'function'
+        ? helpers.obtenerBasePacientes()
+        : { 'DM-8492': { id: 'pac-damian-diaz-01', nombre: 'Damián Díaz Balseiro', codigoPaciente: 'DM-8492' } };
+
+      let pacienteObj = dbPacientes['DM-8492'] || { id: 'pac-damian-diaz-01', nombre: 'Damián Díaz Balseiro', codigoPaciente: 'DM-8492' };
+
+      if (rolActual === 'cuidador') {
+        const cod = codeInput || 'DM-8492';
+        if (!dbPacientes[cod]) {
+          if (errEl) {
+            errEl.textContent = `El código "${cod}" no existe. Usa DM-8492 o el código del paciente registrado.`;
+            errEl.style.display = 'block';
+          }
+          return;
+        }
+        pacienteObj = dbPacientes[cod];
+      } else if (rolActual === 'usuario') {
+        const existente = typeof helpers.buscarPacientePorEmail === 'function'
+          ? helpers.buscarPacientePorEmail(email)
+          : null;
+        if (existente) {
+          pacienteObj = existente;
+        } else if (!email.includes('damian')) {
+          const nuevoCod = typeof helpers.generarCodigoPacienteUnico === 'function'
+            ? helpers.generarCodigoPacienteUnico()
+            : 'DM-' + Math.floor(1000 + Math.random() * 9000);
+          pacienteObj = {
+            id: 'pac-' + Date.now(),
+            nombre,
+            email,
+            rol: 'usuario',
+            codigoPaciente: nuevoCod,
+            glucosa: 112,
+            estadoGlucosa: 'En meta clínica',
+            ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
+            bateria: 95,
+            pasos: 1200
+          };
+          if (typeof helpers.guardarPacienteEnBase === 'function') {
+            helpers.guardarPacienteEnBase(pacienteObj);
+          }
+        }
+      }
+
+      const sessionObj = {
+        id: `${prov}-${Date.now()}`,
+        nombre: rolActual === 'usuario' ? (pacienteObj.nombre || nombre) : nombre,
+        email,
+        rol: rolActual,
+        proveedor: prov,
+        codigoPaciente: pacienteObj.codigoPaciente || 'DM-8492',
+        pacienteVinculado: pacienteObj
+      };
+
+      try {
+        sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionObj));
+        localStorage.setItem('diamon_current_user', JSON.stringify(sessionObj));
+      } catch (_) {}
+
+      window.cerrarModalSocialRapido();
+
+      const msgEl = document.getElementById('authStatusMsg');
+      if (msgEl) {
+        const provNombre = (PROVIDER_META[prov] || PROVIDER_META.google).nombre;
+        msgEl.textContent = `¡Bienvenido(a), ${sessionObj.nombre}! Entrando con ${provNombre}...`;
+        msgEl.className = 'dm-status-msg show success';
+        msgEl.style.display = 'block';
+      }
+
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 150);
+    } catch (err) {
+      const errEl = document.getElementById('dmSocialError');
+      if (errEl) {
+        errEl.textContent = 'No se pudo iniciar sesión: ' + (err?.message || 'intenta de nuevo.');
+        errEl.style.display = 'block';
+      }
     }
-
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 450);
   };
 
   window.loginConOAuth = function (proveedor) {
     const prov = (proveedor || 'google').toLowerCase();
     const config = window.DIAMON_OAUTH_CONFIG;
 
-    // Si estamos en Android App (file://) o el proveedor no tiene credenciales/redirect autorizados,
-    // usar el acceso rápido social integrado para evitar pantallas de error 400/403.
     if (!puedeUsarOAuthExterno(prov, config)) {
       abrirModalAccesoRapidoSocial(prov);
       return;
@@ -308,9 +342,11 @@
     const state = generarTokenSeguro(24);
     const nonce = generarTokenSeguro(24);
 
-    sessionStorage.setItem('diamon_oauth_state', state);
-    sessionStorage.setItem('diamon_oauth_nonce', nonce);
-    sessionStorage.setItem('diamon_oauth_provider', prov);
+    try {
+      sessionStorage.setItem('diamon_oauth_state', state);
+      sessionStorage.setItem('diamon_oauth_nonce', nonce);
+      sessionStorage.setItem('diamon_oauth_provider', prov);
+    } catch (_) {}
 
     let authUrl = '';
 
@@ -374,7 +410,6 @@
     }
   };
 
-  // Escuchar mensaje del popup cuando el callback oficial termine
   window.addEventListener('message', function (event) {
     if (event.origin !== window.location.origin) return;
 
@@ -382,60 +417,72 @@
       const usuario = event.data.user;
       const msgEl = document.getElementById('authStatusMsg');
       if (msgEl) {
-        msgEl.innerHTML = `<i class="fas fa-check-circle"></i> ¡Bienvenido, <strong>${usuario.nombre || 'Usuario'}</strong>! Entrando a DiaMon...`;
+        msgEl.innerHTML = `<i class="fas fa-check-circle"></i> ¡Bienvenido, <strong>${escapeHtml(usuario.nombre || 'Usuario')}</strong>! Entrando a DiaMon...`;
         msgEl.className = 'dm-status-msg show success';
+        msgEl.style.display = 'block';
       }
 
       setTimeout(() => {
         window.location.href = 'index.html';
-      }, 700);
+      }, 300);
     }
   });
 
-  // Modal para configuración de credenciales OAuth
+  window.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      window.cerrarModalSocialRapido();
+      window.cerrarModalConfiguracionOAuth();
+    }
+  });
+
   window.abrirModalConfiguracionOAuth = function () {
     let modal = document.getElementById('dmConfigOAuthModal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'dmConfigOAuthModal';
-      modal.className = 'dm-oauth-universal-backdrop';
-      modal.style.display = 'none';
+      modal.addEventListener('click', (ev) => {
+        if (ev.target === modal) window.cerrarModalConfiguracionOAuth();
+      });
       document.body.appendChild(modal);
     }
+    aplicarEstiloBackdropSeguro(modal);
+
+    const redirectUri = window.DIAMON_OAUTH_CONFIG ? window.DIAMON_OAUTH_CONFIG.getRedirectUri() : '';
+    const savedGoogle = (() => { try { return localStorage.getItem('diamon_oauth_google_client_id') || ''; } catch (_) { return ''; } })();
+    const savedFb = (() => { try { return localStorage.getItem('diamon_oauth_fb_app_id') || ''; } catch (_) { return ''; } })();
 
     modal.innerHTML = `
-      <div class="dm-oauth-universal-card" style="max-width:520px; text-align:left; background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.3); border-radius:24px; padding:32px 28px; position:relative;">
-        <button type="button" class="dm-oauth-close-circle" onclick="window.cerrarModalConfiguracionOAuth()" aria-label="Cerrar" style="position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.1); border:none; color:#fff; width:34px; height:34px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+      <div class="dm-oauth-modal-card" style="max-width:500px; width:100%; max-height:90vh; overflow-y:auto; text-align:left; margin:auto;" onclick="event.stopPropagation()">
+        <button type="button" class="dm-oauth-close-btn" onclick="window.cerrarModalConfiguracionOAuth()" aria-label="Cerrar">
           <i class="fas fa-times"></i>
         </button>
         <div style="text-align:center; margin-bottom:16px;">
-          <div style="font-size:32px; color:#38bdf8; margin-bottom:6px;"><i class="fas fa-sliders-h"></i></div>
-          <h3 style="margin:0; font-family:'Outfit',sans-serif; color:#fff; font-size:20px;">Credenciales de Proveedores OAuth</h3>
-          <p style="font-size:12.5px; color:#94a3b8; margin:4px 0 0;">Configura tus Client IDs de Google Cloud, Meta y Apple para habilitar el flujo oficial.</p>
+          <div style="font-size:30px; color:#5eead4; margin-bottom:6px;"><i class="fas fa-sliders-h"></i></div>
+          <h3 style="margin:0; color:#fff; font-size:19px;">Credenciales OAuth Externas (Opcional)</h3>
+          <p style="font-size:12.5px; color:#94a3b8; margin:4px 0 0;">Si dejas estos campos vacíos, DiaMon usa el acceso rápido integrado compatible con Android y Web.</p>
         </div>
 
-        <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:12px; margin-bottom:16px; font-size:12px; color:#cbd5e1;">
+        <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:12px; margin-bottom:14px; font-size:12px; color:#cbd5e1;">
           <strong style="color:#38bdf8; display:block; margin-bottom:4px;"><i class="fas fa-globe"></i> URI de Redirección Autorizada:</strong>
-          <code style="word-break:break-all; color:#f1f5f9; background:#0f172a; padding:4px 8px; border-radius:6px; display:block;">${window.DIAMON_OAUTH_CONFIG.getRedirectUri()}</code>
-          <span style="font-size:11px; color:#94a3b8; display:block; margin-top:4px;">Registra esta URL exacta en Google Cloud Console para evitar el error invalid_client.</span>
+          <code style="word-break:break-all; color:#f1f5f9; background:#071526; padding:5px 8px; border-radius:6px; display:block;">${escapeHtml(redirectUri)}</code>
         </div>
 
         <form onsubmit="window.guardarConfiguracionOAuth(event)">
           <div style="margin-bottom:12px;">
             <label style="font-size:12.5px; color:#cbd5e1; font-weight:600; display:block; margin-bottom:4px;">
-              <i class="fab fa-google" style="color:#4285F4;"></i> Google Client ID
+              <i class="fab fa-google" style="color:#4285F4;"></i> Google Client ID (Opcional)
             </label>
-            <input type="text" id="dmConfigGoogleClientId" placeholder="Pega tu Client ID de Google Cloud Console" style="width:100%; background:#0f172a; border:1px solid rgba(148,163,184,0.3); border-radius:10px; padding:10px; color:#fff; font-size:12.5px; box-sizing:border-box;" value="${window.DIAMON_OAUTH_CONFIG.googleClientId}">
+            <input type="text" id="dmConfigGoogleClientId" placeholder="Vacío = Acceso rápido integrado" style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.3); border-radius:10px; padding:10px; color:#fff; font-size:13px; box-sizing:border-box;" value="${escapeHtml(savedGoogle)}">
           </div>
 
           <div style="margin-bottom:12px;">
             <label style="font-size:12.5px; color:#cbd5e1; font-weight:600; display:block; margin-bottom:4px;">
-              <i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook App ID
+              <i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook App ID (Opcional)
             </label>
-            <input type="text" id="dmConfigFbAppId" placeholder="Pega tu App ID de Meta Developers" style="width:100%; background:#0f172a; border:1px solid rgba(148,163,184,0.3); border-radius:10px; padding:10px; color:#fff; font-size:12.5px; box-sizing:border-box;" value="${window.DIAMON_OAUTH_CONFIG.facebookAppId}">
+            <input type="text" id="dmConfigFbAppId" placeholder="Vacío = Acceso rápido integrado" style="width:100%; background:#071526; border:1px solid rgba(148,163,184,0.3); border-radius:10px; padding:10px; color:#fff; font-size:13px; box-sizing:border-box;" value="${escapeHtml(savedFb)}">
           </div>
 
-          <button type="submit" style="width:100%; background:linear-gradient(135deg,#0284c7,#2563eb); border:none; border-radius:12px; padding:12px; color:#fff; font-weight:700; cursor:pointer; font-size:14px; margin-top:10px;">
+          <button type="submit" style="width:100%; background:linear-gradient(135deg,#0d9488,#0284c7); border:none; border-radius:12px; padding:12px; color:#fff; font-weight:700; cursor:pointer; font-size:14px; margin-top:8px;">
             Guardar Credenciales
           </button>
         </form>
@@ -443,31 +490,32 @@
     `;
 
     modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
   };
 
   window.cerrarModalConfiguracionOAuth = function () {
     const modal = document.getElementById('dmConfigOAuthModal');
-    if (modal) {
-      modal.classList.remove('active');
-      setTimeout(() => modal.style.display = 'none', 250);
-    }
+    if (modal) modal.style.display = 'none';
   };
 
   window.guardarConfiguracionOAuth = function (e) {
-    e.preventDefault();
-    const gId = document.getElementById('dmConfigGoogleClientId')?.value.trim();
-    const fbId = document.getElementById('dmConfigFbAppId')?.value.trim();
+    if (e) e.preventDefault();
+    const gId = (document.getElementById('dmConfigGoogleClientId')?.value || '').trim();
+    const fbId = (document.getElementById('dmConfigFbAppId')?.value || '').trim();
 
-    if (gId !== undefined) window.DIAMON_OAUTH_CONFIG.googleClientId = gId;
-    if (fbId !== undefined) window.DIAMON_OAUTH_CONFIG.facebookAppId = fbId;
+    try {
+      if (gId) localStorage.setItem('diamon_oauth_google_client_id', gId);
+      else localStorage.removeItem('diamon_oauth_google_client_id');
+
+      if (fbId) localStorage.setItem('diamon_oauth_fb_app_id', fbId);
+      else localStorage.removeItem('diamon_oauth_fb_app_id');
+    } catch (_) {}
 
     window.cerrarModalConfiguracionOAuth();
     const msgEl = document.getElementById('authStatusMsg');
     if (msgEl) {
-      msgEl.innerHTML = `<i class="fas fa-check-circle"></i> Credenciales OAuth actualizadas. Ahora puedes conectar directamente.`;
+      msgEl.innerHTML = `<i class="fas fa-check-circle"></i> Configuración OAuth guardada correctamente.`;
       msgEl.className = 'dm-status-msg show success';
+      msgEl.style.display = 'block';
     }
   };
-
 })();

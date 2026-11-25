@@ -41,6 +41,10 @@ const cartagenaCenter = [10.39991, -75.47886]; // Casa de Damián Díaz Balseiro
 function initializeGPSMap(userId) {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
+  if (typeof L === 'undefined') {
+    mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;color:#94a3b8;background:#081c2e;border-radius:14px;"><div><i class="fas fa-wifi" style="font-size:28px;color:#5eead4;margin-bottom:8px;display:block;"></i><strong>Mapa GPS esperando conexión</strong><br><small>Tus signos vitales, medicamentos y alertas SOS siguen activos sin internet.</small></div></div>';
+    return;
+  }
 
   // ========== INICIALIZACIÓN DEL MAPA ==========
   const map = L.map('map', {

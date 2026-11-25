@@ -180,7 +180,7 @@
               </div>
               <div class="dc-profile-menu-text">
                 <span class="dc-profile-menu-title">Información de la app</span>
-                <span class="dc-profile-menu-desc">Versión 1.0.0</span>
+                <span class="dc-profile-menu-desc">Versión 1.3.1 · Hexagonal</span>
               </div>
             </div>
             <i class="fas fa-chevron-right dc-profile-menu-chevron"></i>
@@ -275,7 +275,7 @@
               </div>
               <div class="dc-profile-menu-text">
                 <span class="dc-profile-menu-title">Información de la app</span>
-                <span class="dc-profile-menu-desc">Versión 1.0.0 · DiaMon Cartagena</span>
+                <span class="dc-profile-menu-desc">Versión 1.3.1 · DiaMon Cartagena</span>
               </div>
             </div>
             <i class="fas fa-chevron-right dc-profile-menu-chevron"></i>
@@ -494,7 +494,7 @@
             <i class="fas fa-tint"></i>
           </div>
           <h4 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">DiaMon</h4>
-          <span style="font-size:12px; color:#2563eb; font-weight:700;">Versión 1.0.0 (Production Build)</span>
+          <span style="font-size:12px; color:#0d9488; font-weight:700;">Versión 1.3.1 (Arquitectura Hexagonal)</span>
         </div>
 
         <div class="dc-app-info-card">
@@ -559,13 +559,23 @@
   };
 
   window.ejecutarCierreSesion = function () {
-    sessionStorage.removeItem('diamon_demo_user');
-    localStorage.removeItem('diamon_current_user');
+    try {
+      sessionStorage.removeItem('diamon_demo_user');
+      localStorage.removeItem('diamon_current_user');
+    } catch (_) {}
+    if (window.supabaseClient && !window.supabaseClient.__isOfflineStub && window.supabaseClient.auth) {
+      try { window.supabaseClient.auth.signOut().catch(() => {}); } catch (_) {}
+    }
     window.cerrarModalPerfil();
     mostrarToastPerfil('Has cerrado sesión correctamente');
+    const esAndroid = Boolean(window.DiaMonAndroid);
     setTimeout(() => {
-      window.location.reload();
-    }, 600);
+      if (esAndroid) {
+        window.location.href = 'login.html';
+      } else {
+        window.location.reload();
+      }
+    }, 350);
   };
 
   // ============================================================

@@ -12,9 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Identity Services Oficial -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <!-- Estilos de DiaMon -->
     <link rel="stylesheet" href="../assets/css/auth-modern.css">
     <link rel="stylesheet" href="../assets/css/oauth-authentic.css">
@@ -57,7 +54,7 @@
 
 <!-- ==================== CONTROLES SUPERIORES (v1.0 & GRID) ==================== -->
 <header class="dm-topbar-hud">
-    <div class="dm-version-pill">v1.0</div>
+    <div class="dm-version-pill">v1.3</div>
     <a href="index.html" class="dm-grid-icon-btn" title="Ir al Dashboard Principal" aria-label="Dashboard DiaMon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="2"></rect>
@@ -431,6 +428,9 @@
                     </button>
                 </form>
 
+                <!-- Notificación de Estado Visible Inmediatamente debajo del formulario -->
+                <div id="authStatusMsg" class="dm-status-msg" role="alert"></div>
+
                 <!-- Separador Elegante: "o continúa con" -->
                 <div class="dm-divider-strip">
                     <span class="dm-divider-line"></span>
@@ -475,16 +475,13 @@
                     </button>
                 </div>
 
-                <!-- Notificación de Estado Flotante -->
-                <div id="authStatusMsg" class="dm-status-msg" role="alert"></div>
-
-                <!-- Pie de Tarjeta: Volver al Dashboard y Ajustes OAuth -->
-                <footer class="dm-card-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px;">
-                    <a href="index.html" class="dm-back-anchor">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Volver al Dashboard</span>
+                <!-- Pie de Tarjeta: Entrar directo y Ajustes OAuth -->
+                <footer class="dm-card-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; gap: 10px; flex-wrap: wrap;">
+                    <a href="index.html" class="dm-back-anchor" onclick="window.entrarComoInvitadoRapido && window.entrarComoInvitadoRapido(event)">
+                        <i class="fas fa-arrow-right-to-bracket"></i>
+                        <span>Entrar al Dashboard</span>
                     </a>
-                    <button type="button" onclick="window.abrirModalConfiguracionOAuth()" style="background: transparent; border: none; color: #64748b; font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#64748b'" title="Configuración de Credenciales OAuth para producción">
+                    <button type="button" onclick="window.abrirModalConfiguracionOAuth()" style="background: transparent; border: none; color: #94a3b8; font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Configuración de Credenciales OAuth para producción">
                         <i class="fas fa-shield-alt"></i>
                         <span>OAuth Clientes</span>
                     </button>
@@ -496,15 +493,14 @@
     </div>
 </main>
 
-<!-- Scripts de Autenticación & Efectos -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Scripts de Autenticación & Efectos (Locales primero para respuesta instantánea sin bloqueo de red) -->
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/ambient-particles.js"></script>
 <script src="../assets/js/oauth-config.js"></script>
 <script src="../assets/js/auth-modern.js"></script>
 <script src="../assets/js/oauth-authentic.js"></script>
+<script src="../assets/js/ambient-particles.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async defer onload="window.initSupabaseReal && window.initSupabaseReal()"></script>
 </body>
 </html>
 

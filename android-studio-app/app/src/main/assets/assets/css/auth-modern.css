@@ -1166,18 +1166,20 @@ body {
 /* ============================================================
    MODAL DE AUTENTICACIÓN GOOGLE & REDES (DISEÑO FROSTED GLASS)
    ============================================================ */
-.dm-oauth-modal-backdrop {
+.dm-oauth-modal-backdrop,
+.dm-oauth-universal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(2, 6, 18, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999;
+  background: rgba(2, 6, 18, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  animation: dmModalFadeIn 0.25s ease-out;
+  padding: 16px;
+  overflow-y: auto;
+  animation: dmModalFadeIn 0.2s ease-out;
 }
 
 @keyframes dmModalFadeIn {
@@ -1298,25 +1300,35 @@ body {
     display: none !important;
   }
 
-  .dm-scene-wrapper,
-  .dm-auth-stage,
-  .dm-center-card-container {
+  .dm-viewport-scene,
+  .dm-3d-stage,
+  .dm-center-card-layer {
     width: 100% !important;
-    padding: 16px 14px 28px 14px !important;
+    min-height: auto !important;
+    padding: 12px 10px 24px 10px !important;
     margin: 0 auto !important;
+    perspective: none !important;
+    transform-style: flat !important;
   }
 
   .dm-frosted-glass-card {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 24px 18px !important;
+    padding: 22px 18px !important;
     border-radius: 24px !important;
     box-shadow: 0 18px 42px rgba(2, 12, 27, 0.65) !important;
   }
 
-  .dm-input-group input,
-  .dm-input-group select,
-  .dm-submit-btn {
+  .dm-capsule-input,
+  .dm-action-pill-button,
+  .dm-tab-pill-btn,
+  .dm-role-choice-btn,
+  .dm-social-circle-btn {
+    touch-action: manipulation;
+  }
+
+  .dm-capsule-input,
+  .dm-action-pill-button {
     min-height: 48px !important;
     font-size: 15px !important;
   }
