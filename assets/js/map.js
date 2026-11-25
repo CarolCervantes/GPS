@@ -186,10 +186,32 @@ function initializeGPSMap(userId) {
     updateRouteMarkers();
   }
 
+  function actualizarEnlaceGoogleMaps(lat, lng) {
+    const link = document.getElementById('btnOpenGoogleMapsLive');
+    if (link && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+      link.href = `https://www.google.com/maps?q=${Number(lat).toFixed(6)},${Number(lng).toFixed(6)}`;
+    }
+  }
+
+  function actualizarBarraTrazoPrincipal() {
+    const bar = document.getElementById('liveMapDrawBar');
+    const countEl = document.getElementById('liveMapDrawCount');
+    const toggleBtn = document.getElementById('btnToggleLiveRouteDraw');
+    if (bar) bar.style.display = routeModeActive ? 'flex' : 'none';
+    if (countEl) countEl.textContent = `${route.length} punto(s) marcados`;
+    if (toggleBtn) {
+      toggleBtn.classList.toggle('active', routeModeActive);
+      toggleBtn.innerHTML = routeModeActive
+        ? '<i class="fas fa-times"></i> Salir de Trazo'
+        : '<i class="fas fa-route"></i> Trazar Ruta';
+    }
+  }
+
   function addPointToRoute(lat, lng) {
     route.push([lat, lng]);
     drawRoute();
     updateRouteTextarea();
+    actualizarBarraTrazoPrincipal();
   }
 
   function addCurrentPointToRoute() {
@@ -201,15 +223,64 @@ function initializeGPSMap(userId) {
     route = [];
     drawRoute();
     updateRouteTextarea();
+    actualizarBarraTrazoPrincipal();
   }
 
-  function toggleRouteMode() {
-    routeModeActive = !routeModeActive;
+  function toggleRouteMode(forzar) {
+    routeModeActive = typeof forzar === 'boolean' ? forzar : !routeModeActive;
     if (routeModeBtn) {
       routeModeBtn.classList.toggle('active', routeModeActive);
       routeModeBtn.textContent = routeModeActive ? 'Modo ruta activado' : 'Marcar recorrido con clic';
     }
+    actualizarBarraTrazoPrincipal();
+    if (routeModeActive && window.mostrarNotificacion) {
+      window.mostrarNotificacion('Haz clic en 2 o más puntos del mapa para trazar una ruta y guardarla en Historial.', 'info');
+    }
   }
+
+  window.toggleTrazoEnMapaPrincipal = toggleRouteMode;
+  window.limpiarTrazoMapaPrincipal = clearRoute;
+  window.guardarTrazoMapaPrincipal = async function () {
+    if (route.length < 2) {
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('Marca al menos 2 puntos en el mapa para guardar la ruta.', 'warn');
+      }
+      return;
+    }
+    const pts = route.map(([lat, lng]) => ({ lat, lng, ts: Date.now() }));
+    const ptsCalles = window.DiaMonRutasHistoricas?.obtenerRutaPorCallesOSRM
+      ? await window.DiaMonRutasHistoricas.obtenerRutaPorCallesOSRM(pts, 'driving')
+      : pts;
+    if (window.DiaMonRutasHistoricas?.guardarNuevaRuta) {
+      await window.DiaMonRutasHistoricas.guardarNuevaRuta({
+        nombre: `Ruta Mapa en Vivo · ${new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
+        puntos: ptsCalles,
+        origen: 'mapa_principal'
+      });
+    }
+    clearRoute();
+    toggleRouteMode(false);
+  };
+  window.centrarMapaEnPaciente = function () {
+    if (typeof window.actualizarUbicacionGPSManual === 'function') {
+      window.actualizarUbicacionGPSManual();
+    }
+    if (marker && map) {
+      map.setView(marker.getLatLng(), 16, { animate: true });
+      marker.openPopup();
+    }
+  };
+  window.verRutaHaciaHospitalEnMapa = function (nombre, lat, lng) {
+    if (typeof window.switchView === 'function') {
+      window.switchView('inicio');
+    }
+    setTimeout(() => {
+      if (window.mapInstance) window.mapInstance.invalidateSize(true);
+      if (window.centrosMedicosInstance && typeof window.centrosMedicosInstance.trazarRutaHacia === 'function') {
+        window.centrosMedicosInstance.trazarRutaHacia([lat, lng], nombre);
+      }
+    }, 250);
+  };
 
   function getSimulatedRoute() {
     return [
@@ -389,6 +460,7 @@ function initializeGPSMap(userId) {
     if (!map || !marker) return;
     const newPos = L.latLng(lat, lng);
     marker.setLatLng(newPos);
+    actualizarEnlaceGoogleMaps(lat, lng);
     if (form.latitude) form.latitude.value = Number(lat).toFixed(5);
     if (form.longitude) form.longitude.value = Number(lng).toFixed(5);
     if (accuracyCircle) {
@@ -421,6 +493,7 @@ function initializeGPSMap(userId) {
   // ========== EVENT LISTENERS ==========
   marker.on('dragend', () => {
     const position = marker.getLatLng();
+    actualizarEnlaceGoogleMaps(position.lat, position.lng);
     form.latitude.value = position.lat.toFixed(5);
     form.longitude.value = position.lng.toFixed(5);
     if (window.centrosMedicosInstance) {
@@ -445,6 +518,7 @@ function initializeGPSMap(userId) {
 
     form.latitude.value = event.latlng.lat.toFixed(5);
     form.longitude.value = event.latlng.lng.toFixed(5);
+    actualizarEnlaceGoogleMaps(event.latlng.lat, event.latlng.lng);
     marker.setLatLng(event.latlng);
     if (accuracyCircle) accuracyCircle.setLatLng(event.latlng);
     if (window.casoEstudio && typeof window.casoEstudio.procesarMovimientoMapa === 'function') {

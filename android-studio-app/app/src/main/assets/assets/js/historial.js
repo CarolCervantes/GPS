@@ -3,16 +3,57 @@
 // Filtra por período: hoy / 7 días / 30 días / año.
 // Muestra KPIs y tabla con detalle de cada ruta.
 
+const RUTAS_LOCAL_KEY = 'diamon_rutas_historicas_v1';
 let todasLasRutas = [];
 let periodoActivo = 'hoy';
 let busqueda = '';
+let historialInitialized = false;
+
+function leerRutasLocalesHistorial() {
+  try {
+    const raw = localStorage.getItem(RUTAS_LOCAL_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (_) {}
+  return [];
+}
+
+function filtrarPorPeriodoLocal(rutas, periodo) {
+  const desde = calcularDesde(periodo);
+  if (!desde) return rutas;
+  const desdeMs = desde.getTime();
+  return rutas.filter(r => {
+    const ts = r.ts || (r.created_at ? new Date(r.created_at).getTime() : Date.now());
+    return ts >= desdeMs;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!historialInitialized) {
+    historialInitialized = true;
+    wirePeriodo();
+    wireBusqueda();
+    // Cargar inmediatamente rutas locales para que funcione incluso en modo invitado
+    todasLasRutas = filtrarPorPeriodoLocal(leerRutasLocalesHistorial(), periodoActivo);
+    aplicarFiltros();
+  }
+});
 
 document.addEventListener('dashboardListo', async (e) => {
   const userId = e.detail?.user?.id;
-  if (!userId) return;
+  if (!historialInitialized) {
+    historialInitialized = true;
+    wirePeriodo();
+    wireBusqueda();
+  }
+  if (!userId) {
+    todasLasRutas = filtrarPorPeriodoLocal(leerRutasLocalesHistorial(), periodoActivo);
+    aplicarFiltros();
+    return;
+  }
 
-  wirePeriodo();
-  wireBusqueda();
   await cargarRutas(userId);
 });
 
@@ -62,11 +103,17 @@ async function cargarRutas(userId) {
   const { data, error } = await query;
 
   if (error) {
-    mostrarError('No se pudieron cargar las rutas: ' + error.message);
+    // Fallback limpio a rutas locales si Supabase no tiene sesión o falla
+    todasLasRutas = filtrarPorPeriodoLocal(leerRutasLocalesHistorial(), periodoActivo);
+    aplicarFiltros();
     return;
   }
 
-  todasLasRutas = data || [];
+  const localesPeriodo = filtrarPorPeriodoLocal(leerRutasLocalesHistorial(), periodoActivo);
+  const mapa = new Map();
+  localesPeriodo.forEach(r => mapa.set(String(r.id), r));
+  (data || []).forEach(r => mapa.set(`sb-${r.id}`, r));
+  todasLasRutas = Array.from(mapa.values());
   aplicarFiltros();
 }
 
@@ -94,9 +141,13 @@ function wirePeriodo() {
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       periodoActivo = periodos[i] || 'hoy';
-      // Necesitamos el userId — lo tomamos del usuario activo
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (user) await cargarRutas(user.id);
+      // Actualizar locales inmediatamente y luego Supabase si hay sesión
+      todasLasRutas = filtrarPorPeriodoLocal(leerRutasLocalesHistorial(), periodoActivo);
+      aplicarFiltros();
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) await cargarRutas(user.id);
+      } catch (_) {}
     });
   });
 }

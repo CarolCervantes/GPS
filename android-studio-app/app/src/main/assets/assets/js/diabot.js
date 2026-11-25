@@ -29,6 +29,8 @@ class DiaBotAssistant {
     if (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function') {
       const r = window.casoEstudio.obtenerResumenClinicoActual();
       const ubic = window.TelemetriaDiaMon?.ubicacion?.zona || r.paciente.barrioResidencia;
+      const wLectura = window.monitoreoWearable?.ultimaLectura || null;
+      const wEval = window.monitoreoWearable?.ultimaEvaluacion || null;
       return {
         nombre: r.paciente.nombre,
         edad: r.paciente.edad,
@@ -42,7 +44,9 @@ class DiaBotAssistant {
         presion: `${r.ultimaPresion.sistolica}/${r.ultimaPresion.diastolica} mmHg`,
         sistolicaNum: r.ultimaPresion.sistolica,
         diastolicaNum: r.ultimaPresion.diastolica,
-        pulso: `${r.ultimaPresion.pulso} BPM`,
+        pulso: wLectura ? `${wLectura.ritmoCardiacoBpm} BPM (Wearable)` : `${r.ultimaPresion.pulso} BPM`,
+        temperaturaCorporal: wLectura && wLectura.temperaturaC !== null ? `${wLectura.temperaturaC} °C` : 'No medida',
+        estadoWearablePreventivo: wEval ? wEval.titulo : 'Estable',
         estadoPresion: r.evalP.etiqueta,
         protocoloPresion: r.evalP.protocolo,
         metaGlucosa: `${r.metas.glucosaMin}–${r.metas.glucosaMaxPost} mg/dL`,
@@ -426,4 +430,9 @@ class DiaBotAssistant {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.diabotInstance = new DiaBotAssistant();
+  window.abrirDiaBotChat = function (forceState) {
+    if (window.diabotInstance) {
+      window.diabotInstance.toggleChat(forceState);
+    }
+  };
 });

@@ -1282,3 +1282,42 @@ body {
 .dm-oauth-switch-link:hover {
   color: #7dd3fc;
 }
+
+/* ============================================================
+   OPTIMIZACIÓN MÓVIL NATIVA PARA PANTALLA DE LOGIN (TELÉFONO)
+   ============================================================ */
+@media (max-width: 600px) {
+  html, body {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    align-items: flex-start !important;
+  }
+
+  .dm-topbar-hud {
+    display: none !important;
+  }
+
+  .dm-scene-wrapper,
+  .dm-auth-stage,
+  .dm-center-card-container {
+    width: 100% !important;
+    padding: 16px 14px 28px 14px !important;
+    margin: 0 auto !important;
+  }
+
+  .dm-frosted-glass-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px 18px !important;
+    border-radius: 24px !important;
+    box-shadow: 0 18px 42px rgba(2, 12, 27, 0.65) !important;
+  }
+
+  .dm-input-group input,
+  .dm-input-group select,
+  .dm-submit-btn {
+    min-height: 48px !important;
+    font-size: 15px !important;
+  }
+}

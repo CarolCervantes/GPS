@@ -343,3 +343,287 @@
   margin: 0;
   line-height: 1.45;
 }
+
+/* ============================================================
+   MODO SENCILLO / MODO ABUELO — ALERTA SOS ULTRA CLARA
+   ============================================================ */
+.sos-simple-card {
+  background: linear-gradient(160deg, #061b2e 0%, #082f49 60%, #042f2e 100%);
+  border: 2px solid #dc2626;
+  border-radius: 20px;
+  max-width: 500px;
+}
+
+.sos-simple-card.is-escalated {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25), 0 24px 55px rgba(0, 0, 0, 0.85);
+}
+
+.sos-banner-top.is-ok {
+  background: #0f766e;
+}
+
+.sos-banner-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sos-simple-body {
+  padding: 18px;
+  gap: 14px;
+}
+
+.sos-stage-box {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+}
+
+.sos-stage-box.escalated {
+  background: rgba(220, 38, 38, 0.16);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.sos-stage-box.ok {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.sos-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.sos-stage-badge.amber {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+}
+
+.sos-stage-badge.red {
+  background: rgba(220, 38, 38, 0.35);
+  color: #ffffff;
+  border: 1px solid rgba(252, 165, 165, 0.6);
+}
+
+.sos-stage-badge.green {
+  background: rgba(16, 185, 129, 0.25);
+  color: #bbf7d0;
+  border: 1px solid rgba(74, 222, 128, 0.5);
+}
+
+.sos-stage-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.sos-stage-desc {
+  margin: 0;
+  font-size: 14.5px;
+  color: #f1f5f9;
+  line-height: 1.45;
+}
+
+.sos-countdown-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+}
+
+.sos-countdown-num {
+  font-size: 38px;
+  font-weight: 900;
+  color: #fde047;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+}
+
+.sos-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sos-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  transition: width 0.9s linear;
+}
+
+.sos-big-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 58px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: none;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.sos-big-btn:hover {
+  filter: brightness(1.07);
+}
+
+.sos-big-btn:active {
+  transform: scale(0.98);
+}
+
+.sos-big-btn.green {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+}
+
+.sos-big-btn.teal {
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+}
+
+.sos-big-btn.blue {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+
+.sos-big-btn.red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 8px 22px rgba(220, 38, 38, 0.42);
+}
+
+.sos-big-btn.compact {
+  min-height: 48px;
+  font-size: 14.5px;
+  padding: 11px 12px;
+}
+
+.sos-big-btn.pulse {
+  animation: sosPulseBtn 1.5s infinite;
+}
+
+@keyframes sosPulseBtn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+  50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+}
+
+.sos-two-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sos-quick-symptoms-wrap {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 11px 12px;
+}
+
+.sos-mini-heading {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.sos-quick-symptoms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sos-quick-symptom-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sos-quick-symptom-btn.active {
+  background: rgba(13, 148, 136, 0.45);
+  border-color: #5eead4;
+  color: #ffffff;
+}
+
+.sos-packet-card {
+  background: rgba(6, 27, 46, 0.78);
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sos-packet-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #5eead4;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sos-packet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.sos-packet-row i {
+  color: #38bdf8;
+  margin-top: 3px;
+  width: 15px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sos-inline-map-link {
+  color: #5eead4;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .sos-two-actions {
+    grid-template-columns: 1fr;
+  }
+}

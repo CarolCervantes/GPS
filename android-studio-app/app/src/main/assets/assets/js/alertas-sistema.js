@@ -106,7 +106,19 @@
   // ============================================================
   // 2. SINTETIZADOR DE AUDIO CLÍNICO 24/7 (WEB AUDIO API)
   // ============================================================
-  function reproducirAlarmaAudio(tipo = 'aviso') {
+  function sonidoAlertasHabilitado() {
+    try {
+      const raw = localStorage.getItem('diamon_config_prefs_v1');
+      if (raw) {
+        const prefs = JSON.parse(raw);
+        if (typeof prefs.sonidoAlertas === 'boolean') return prefs.sonidoAlertas;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  function reproducirAlarmaAudio(tipo = 'aviso', forzar = false) {
+    if (!forzar && !sonidoAlertasHabilitado()) return;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -116,7 +128,14 @@
         ctx.resume();
       }
 
-      if (tipo === 'geocerca' || tipo === 'critica') {
+      if (
+        tipo === 'geocerca' ||
+        tipo === 'critica' ||
+        tipo === 'escalamiento_cuidador' ||
+        tipo === 'preventiva_hipoglucemia' ||
+        tipo === 'preventiva_hiperglucemia' ||
+        tipo === 'preventiva_biometrica'
+      ) {
         // Alarma urgente de emergencia: dos pulsos en tono agudo (880Hz -> 440Hz)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -166,10 +185,13 @@
     }
   }
 
-  window.probarSonidoAlerta = function () {
-    reproducirAlarmaAudio('geocerca');
+  window.probarSonidoAlerta = function (forzar = true) {
+    reproducirAlarmaAudio('geocerca', forzar);
     if (window.mostrarNotificacion) {
-      window.mostrarNotificacion('🔊 Alarma acústica 24/7 verificada en tu dispositivo.', 'info');
+      const estado = sonidoAlertasHabilitado()
+        ? 'Alarma acústica 24/7 verificada en tu dispositivo.'
+        : 'Prueba reproducida (nota: la alarma automática está silenciada en Configuración).';
+      window.mostrarNotificacion(estado, 'info');
     }
   };
 
@@ -241,7 +263,15 @@
     }
   };
 
-  function enviarNotificacionNativa(titulo, cuerpo, url = '/index.html#view-alertas') {
+  function enviarNotificacionNativa(titulo, cuerpo, url = '/index.html#view-alertas', esCritica = true) {
+    // Puente nativo Android Studio (Notificación OS + vibración de emergencia)
+    if (window.DiaMonAndroid && typeof window.DiaMonAndroid.dispararNotificacionNativa === 'function') {
+      try {
+        window.DiaMonAndroid.dispararNotificacionNativa(String(titulo || 'DiaMon'), String(cuerpo || ''), Boolean(esCritica));
+        return;
+      } catch (_) {}
+    }
+
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
     if (swRegistration && swRegistration.showNotification) {
@@ -311,6 +341,27 @@
       window.mostrarNotificacion(`🔔 Nueva alerta: ${nuevaAlerta.titulo}`, 'warn');
     }
 
+    // Sincronizar con el Backend Hexagonal (/api/alertas)
+    if (window.DiaMonBackendAdapter && typeof window.DiaMonBackendAdapter.sincronizarAlertaEmergencia === 'function') {
+      const mapaTipo = {
+        glucosa_baja: 'hipoglucemia',
+        glucosa_alta: 'hiperglucemia',
+        geocerca: 'geocerca',
+        sos: 'sos_manual',
+        sos_voz: 'sos_voz',
+        wearable_preventiva: 'wearable_preventiva'
+      };
+      window.DiaMonBackendAdapter.sincronizarAlertaEmergencia({
+        tipo: mapaTipo[nuevaAlerta.tipo] || 'sos_manual',
+        severidad: nuevaAlerta.color === 'red' ? 'critica' : (nuevaAlerta.color === 'amber' ? 'alta' : 'info'),
+        titulo: nuevaAlerta.titulo,
+        mensaje: nuevaAlerta.subtitulo || nuevaAlerta.descripcion || nuevaAlerta.titulo,
+        ubicacion: nuevaAlerta.coordenadas
+          ? { lat: nuevaAlerta.coordenadas.lat, lng: nuevaAlerta.coordenadas.lng, zona: nuevaAlerta.ubicacion || '' }
+          : null
+      }).catch(() => {});
+    }
+
     // Sincronizar en Supabase si está activo
     if (window.supabaseClient) {
       try {
@@ -324,27 +375,46 @@
     }
   };
 
-  // Verificación continua de geocerca con el GPS en vivo
+  // Verificación continua de geocerca con el GPS en vivo (lee la zona configurada dinámicamente)
+  function obtenerGeocercaActiva() {
+    try {
+      if (window.casoEstudio && typeof window.casoEstudio.obtenerZonasSeguras === 'function') {
+        const zonas = window.casoEstudio.obtenerZonasSeguras();
+        const activa = Array.isArray(zonas) ? (zonas.find(z => z.activa !== false) || zonas[0]) : null;
+        if (activa && activa.centro_lat && activa.centro_lng) {
+          return {
+            lat: Number(activa.centro_lat),
+            lng: Number(activa.centro_lng),
+            radioMetros: Number(activa.radio_metros) || GEOFENCE_HOME.radioMetros,
+            nombre: activa.nombre || 'Zona Segura Principal'
+          };
+        }
+      }
+    } catch (_) {}
+    return { ...GEOFENCE_HOME, nombre: 'Casa en Chapacuá' };
+  }
+
   function verificarGeocercaEnTiempoReal(lat, lng) {
     if (!lat || !lng) return;
-    const dist = calcularDistanciaMetros(lat, lng, GEOFENCE_HOME.lat, GEOFENCE_HOME.lng);
+    const geocerca = obtenerGeocercaActiva();
+    const dist = calcularDistanciaMetros(lat, lng, geocerca.lat, geocerca.lng);
     const ahora = Date.now();
 
-    // Si supera el radio de seguridad (> 1.2 km) y no ha alertado en los últimos 45 minutos
-    if (dist > GEOFENCE_HOME.radioMetros && (ahora - ultimaAlertaGeocercaTs) > 45 * 60000) {
+    // Si supera el radio de seguridad configurado y no ha alertado en los últimos 45 minutos
+    if (dist > geocerca.radioMetros && (ahora - ultimaAlertaGeocercaTs) > 45 * 60000) {
       ultimaAlertaGeocercaTs = ahora;
       const km = (dist / 1000).toFixed(1);
       window.emitirAlerta24Horas({
         titulo: 'Salida de zona segura',
-        subtitulo: `Tu familiar salió de la zona segura (${km} km de su sector habitual).`,
+        subtitulo: `Tu familiar salió de ${geocerca.nombre} (${km} km · límite ${geocerca.radioMetros}m).`,
         tipo: 'geocerca',
         color: 'red',
         icono: 'fas fa-map-marker-alt',
         badgeTexto: 'Pendiente',
         badgeClase: 'badge-pendiente',
         coordenadas: { lat, lng },
-        ubicacion: `Sector a ${km} km de San Fernando, Cartagena`,
-        descripcion: `El GPS registró coordenadas fuera del perímetro seguro (${km} km). Se recomienda verificar la ruta del paciente en el mapa y llamar al contacto de emergencia si es necesario.`
+        ubicacion: `A ${km} km de ${geocerca.nombre}`,
+        descripcion: `El GPS registró coordenadas fuera del perímetro seguro de ${geocerca.radioMetros}m (${km} km). Se recomienda verificar la ruta del paciente en el mapa y llamar al contacto de emergencia si es necesario.`
       });
     }
   }

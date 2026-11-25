@@ -1,7 +1,15 @@
 ﻿const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const diabotHandler = require('./api/diabot');
+
+// Adaptadores de Entrada HTTP del Backend Hexagonal (mismos handlers que Vercel Serverless)
+const API_ROUTES = {
+  '/api/diabot': require('./api/diabot'),
+  '/api/wearable': require('./api/wearable'),
+  '/api/registros': require('./api/registros'),
+  '/api/alertas': require('./api/alertas'),
+  '/api/salud': require('./api/salud')
+};
 
 const PORT = process.env.PORT || 8080;
 const ROOT = __dirname;
@@ -17,17 +25,38 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.sql': 'text/plain; charset=utf-8'
+  '.sql': 'text/plain; charset=utf-8',
+  '.apk': 'application/vnd.android.package-archive'
 };
+
+function dispatchApiHandler(handler, req, res) {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
+    handler(req, res);
+    return;
+  }
+
+  let rawBody = '';
+  req.on('data', chunk => { rawBody += chunk.toString(); });
+  req.on('end', () => {
+    try {
+      req.body = rawBody ? JSON.parse(rawBody) : {};
+    } catch (_) {
+      req.body = {};
+    }
+    handler(req, res);
+  });
+}
 
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('X-Frame-Options', 'DENY');
+  }
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(self)');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(self), bluetooth=(self)');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -37,19 +66,27 @@ const server = http.createServer((req, res) => {
 
   let reqPath = req.url.split('?')[0].split('#')[0];
 
-  // Endpoint de IA Real para DiaBot (/api/diabot)
-  if (reqPath === '/api/diabot') {
-    let rawBody = '';
-    req.on('data', chunk => { rawBody += chunk.toString(); });
-    req.on('end', () => {
-      try {
-        req.body = rawBody ? JSON.parse(rawBody) : {};
-      } catch (_) {
-        req.body = {};
-      }
-      diabotHandler(req, res);
-    });
+  // Despacho a Endpoints del Backend Hexagonal (/api/*)
+  if (API_ROUTES[reqPath]) {
+    dispatchApiHandler(API_ROUTES[reqPath], req, res);
     return;
+  }
+
+  // Descarga directa de la APK Android
+  if (reqPath === '/descargar-apk') {
+    const apkAssets = path.join(ROOT, 'assets', 'DiaMon-GPS.apk');
+    const apkDebug = path.join(ROOT, 'android-studio-app', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk');
+    const targetApk = fs.existsSync(apkAssets) ? apkAssets : apkDebug;
+    if (fs.existsSync(targetApk)) {
+      const stat = fs.statSync(targetApk);
+      res.writeHead(200, {
+        'Content-Type': 'application/vnd.android.package-archive',
+        'Content-Disposition': 'attachment; filename="DiaMon-GPS.apk"',
+        'Content-Length': stat.size
+      });
+      fs.createReadStream(targetApk).pipe(res);
+      return;
+    }
   }
 
   if (reqPath === '/' || reqPath === '') {
@@ -89,7 +126,6 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`DiaMon servidor web y API IA corriendo en http://localhost:${PORT}/pages/index.html`);
+server.listen(PORT, () => {
+  console.log(`DiaMon servidor web y Backend Hexagonal corriendo en http://localhost:${PORT}/pages/index.html (API salud: http://localhost:${PORT}/api/salud)`);
 });
-

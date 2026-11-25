@@ -10,9 +10,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.diamon.salud.gps.application.usecases.GestionarRegistroClinicoUseCase;
-import co.diamon.salud.gps.dao.DaoRegistroClinico;
 import co.diamon.salud.gps.domain.entities.RegistroClinico;
-import co.diamon.salud.gps.infrastructure.adapters.supabase.SupabaseRestAdapter;
+import co.diamon.salud.gps.infrastructure.di.AndroidHexagonalContainer;
 
 public class ActividadCrudClinico extends Activity {
 
@@ -39,9 +38,7 @@ public class ActividadCrudClinico extends Activity {
         campoUbicacion = (EditText) findViewById(R.id.campoUbicacion);
 
         try {
-            DaoRegistroClinico sqliteAdapter = new DaoRegistroClinico(this, "diamon_clinico_v1", 1);
-            SupabaseRestAdapter supabaseAdapter = new SupabaseRestAdapter();
-            casoDeUso = new GestionarRegistroClinicoUseCase(sqliteAdapter, supabaseAdapter);
+            casoDeUso = AndroidHexagonalContainer.crearCasoDeUsoRegistrosClinicos(this);
             int proximo = casoDeUso.obtenerProximoId();
             campoId.setText("" + proximo);
         } catch (Exception e) {

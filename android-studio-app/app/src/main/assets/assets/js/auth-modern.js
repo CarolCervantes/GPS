@@ -70,8 +70,26 @@
     return palabras.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 
+  function conTimeout(promesa, ms = 3500) {
+    return Promise.race([
+      promesa,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+  }
+
   let currentTab = 'login';
   let currentRole = 'usuario';
+
+  window.DiaMonAuthHelpers = {
+    CODIGO_ADMIN_SISTEMA,
+    PACIENTE_CASO_ESTUDIO,
+    obtenerBasePacientes,
+    guardarPacienteEnBase,
+    generarCodigoPacienteUnico,
+    buscarPacientePorEmail,
+    formatearNombreLimpio,
+    getCurrentRole: () => currentRole
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
     initTabs();
@@ -253,18 +271,28 @@
           }
         }
 
-        activarBotonCarga(loginSubmitBtn, 'Autenticando en Supabase...');
+        activarBotonCarga(loginSubmitBtn, 'Autenticando...');
 
-        // Intentar login con Supabase Auth
+        // Intentar login con Supabase Auth (con timeout de 3.5s para no congelar en móvil)
         if (window.supabaseClient && window.supabaseClient.auth) {
           try {
-            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await conTimeout(
+              window.supabaseClient.auth.signInWithPassword({ email, password }),
+              3500
+            );
             if (!error && data && data.user) {
-              const { data: profile } = await window.supabaseClient
-                .from('profiles')
-                .select('nombre, rol')
-                .eq('id', data.user.id)
-                .single();
+              let profile = null;
+              try {
+                const respProf = await conTimeout(
+                  window.supabaseClient
+                    .from('profiles')
+                    .select('nombre, rol')
+                    .eq('id', data.user.id)
+                    .single(),
+                  2500
+                );
+                profile = respProf?.data || null;
+              } catch (_) {}
 
               const nombreFinal = profile?.nombre || data.user.user_metadata?.nombre || (currentRole === 'usuario' ? pacienteSeleccionado.nombre : formatearNombreLimpio(email));
               if (currentRole === 'usuario') {
@@ -363,20 +391,23 @@
 
         const rolSupabase = currentRole === 'cuidador' ? 'cuidador' : (currentRole === 'usuario' ? 'monitoreado' : 'admin');
 
-        activarBotonCarga(regSubmitBtn, 'Registrando en Supabase...');
+        activarBotonCarga(regSubmitBtn, 'Creando cuenta...');
 
         if (window.supabaseClient && window.supabaseClient.auth) {
           try {
-            const { data, error } = await window.supabaseClient.auth.signUp({
-              email,
-              password,
-              options: {
-                data: {
-                  nombre: nombreLimpio,
-                  rol: rolSupabase
+            const { data, error } = await conTimeout(
+              window.supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: {
+                    nombre: nombreLimpio,
+                    rol: rolSupabase
+                  }
                 }
-              }
-            });
+              }),
+              3500
+            );
 
             if (!error && data && data.user) {
               const sessionObj = {

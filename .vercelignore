@@ -1,0 +1,12 @@
+android-studio-app/
+database/
+docs/
+tests/
+.git/
+.github/
+.vscode/
+.idea/
+.env
+.env.*
+node_modules/
+*.log

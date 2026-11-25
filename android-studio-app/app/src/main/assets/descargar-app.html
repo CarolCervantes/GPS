@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiaMon — Descargar App Móvil (Android &amp; iOS)</title>
-    <meta name="theme-color" content="#0d9488">
+    <title>DiaMon — Descargar App Móvil con QR (Android &amp; iOS)</title>
+    <meta name="theme-color" content="#061b2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="../manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="../assets/icon-diamon.svg">
+    <link rel="apple-touch-icon" href="../assets/icon-diamon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #0d9488;
             --primary-dark: #0f766e;
-            --bg-dark: #082032;
-            --card-bg: #112b3c;
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
+            --accent: #0284c7;
+            --bg-dark: #061b2e;
+            --card-bg: rgba(11, 37, 58, 0.88);
+            --text-light: #ffffff;
+            --text-muted: #cbd5e1;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: radial-gradient(circle at top, #0f3443 0%, #082032 100%);
+            background: linear-gradient(155deg, #061b2e 0%, #082f49 55%, #042f2e 100%);
             color: var(--text-light);
             min-height: 100vh;
-            padding: 28px 18px;
+            padding: 22px 16px 36px;
         }
         .wrap {
             max-width: 1040px;
@@ -35,7 +37,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             flex-wrap: wrap;
             gap: 12px;
         }
@@ -44,94 +46,182 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: #fff;
+            color: #ffffff;
         }
         .brand-icon {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             background: linear-gradient(135deg, #0d9488, #0284c7);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
+            box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
+        }
+        .topbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .btn-back {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
+            padding: 9px 15px;
+            border-radius: 11px;
+            font-weight: 700;
+            font-size: 13px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.18);
         }
         .hero-grid {
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 28px;
+            grid-template-columns: 1.08fr 1fr;
+            gap: 24px;
             align-items: stretch;
         }
-        @media (max-width: 820px) {
+        @media (max-width: 840px) {
             .hero-grid { grid-template-columns: 1fr; }
         }
         .qr-poster-card {
             background: #ffffff;
             color: #0f172a;
             border-radius: 24px;
-            padding: 28px;
+            padding: 26px 22px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+        .qr-mode-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            width: 100%;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+        .qr-mode-btn {
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 9px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .qr-mode-btn.active {
+            background: linear-gradient(135deg, #0d9488, #0284c7);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.28);
+        }
         .qr-badge {
             background: #f0fdfa;
-            color: #0d9488;
+            color: #0f766e;
             border: 1px solid #99f6e4;
-            padding: 5px 14px;
+            padding: 5px 13px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 800;
             text-transform: uppercase;
-            margin-bottom: 12px;
+            letter-spacing: 0.03em;
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .qr-frame {
-            padding: 18px;
+            padding: 16px;
             background: #ffffff;
             border: 3px solid #0d9488;
             border-radius: 20px;
-            margin: 14px 0;
-            box-shadow: 0 10px 25px rgba(13,148,136,0.15);
+            margin: 14px 0 10px;
+            box-shadow: 0 12px 28px rgba(13, 148, 136, 0.16);
+        }
+        .qr-url-pill {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f766e;
+            background: #f0fdfa;
+            border: 1px solid #ccfbf1;
+            padding: 6px 12px;
+            border-radius: 10px;
+            word-break: break-all;
+            max-width: 100%;
+            margin-bottom: 12px;
+        }
+        .qr-share-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .qr-share-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-family: inherit;
+        }
+        .qr-share-btn.copy {
+            background: #061b2e;
+            color: #ffffff;
+        }
+        .qr-share-btn.wa {
+            background: #16a34a;
+            color: #ffffff;
         }
         .url-input-row {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             width: 100%;
-            margin-top: 12px;
         }
         .url-input-row input {
             flex: 1;
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
+            padding: 8px 11px;
+            border: 1.5px solid #cbd5e1;
             border-radius: 10px;
-            font-size: 12.5px;
-            color: #334155;
+            font-size: 12px;
+            color: #0f172a;
+            font-family: inherit;
         }
         .url-input-row button {
             background: #0d9488;
-            color: #fff;
+            color: #ffffff;
             border: none;
             border-radius: 10px;
-            padding: 9px 14px;
+            padding: 8px 13px;
+            font-size: 12px;
             font-weight: 700;
-            font-size: 12.5px;
             cursor: pointer;
+            font-family: inherit;
         }
         .platforms-col {
             display: flex;
@@ -139,34 +229,40 @@
             gap: 16px;
         }
         .platform-card {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.14);
+            background: var(--card-bg);
+            border: 1px solid rgba(94, 234, 212, 0.22);
             border-radius: 20px;
             padding: 20px;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
         }
         .platform-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .platform-icon {
             width: 44px;
             height: 44px;
-            border-radius: 12px;
+            min-width: 44px;
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
+            color: #ffffff;
         }
-        .platform-icon.android { background: rgba(34,197,94,0.18); color: #4ade80; }
-        .platform-icon.apple { background: rgba(56,189,248,0.18); color: #38bdf8; }
-        .platform-icon.senior { background: rgba(168,85,247,0.18); color: #c084fc; }
+        .platform-icon.android { background: linear-gradient(135deg, #16a34a, #0d9488); }
+        .platform-icon.apple { background: linear-gradient(135deg, #0284c7, #082f49); }
+        .platform-icon.senior { background: linear-gradient(135deg, #0d9488, #0284c7); }
         .steps-list {
-            margin: 8px 0 14px 18px;
-            font-size: 13.5px;
-            color: #cbd5e1;
-            line-height: 1.6;
+            margin: 0 0 14px 18px;
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.55;
+        }
+        .steps-list li {
+            margin-bottom: 5px;
         }
         .btn-action {
             display: inline-flex;
@@ -174,16 +270,41 @@
             justify-content: center;
             gap: 8px;
             width: 100%;
-            padding: 12px 16px;
+            padding: 11px 14px;
             border-radius: 12px;
-            border: none;
+            font-size: 13px;
             font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
             text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
         }
-        .btn-primary { background: #0d9488; color: #ffffff; }
-        .btn-dark { background: #ffffff; color: #0f172a; }
+        .btn-primary {
+            background: linear-gradient(135deg, #0d9488, #0284c7);
+            color: #ffffff;
+        }
+        .btn-dark {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            color: #ffffff;
+        }
+        .copy-toast {
+            display: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: #15803d;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            padding: 5px 12px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+        }
+        @media print {
+            body { background: #ffffff; color: #0f172a; padding: 0; }
+            .topbar, .platforms-col, .url-input-row, .qr-share-row, .qr-mode-tabs { display: none !important; }
+            .hero-grid { grid-template-columns: 1fr; }
+            .qr-poster-card { box-shadow: none; border: 2px solid #0d9488; }
+        }
     </style>
 </head>
 <body>
@@ -192,79 +313,80 @@
         <a href="index.html" class="brand">
             <div class="brand-icon"><i class="fas fa-tint"></i></div>
             <div>
-                <h1 style="font-size:20px; font-weight:800;">DiaMon Mobile · Android &amp; iOS</h1>
-                <span style="font-size:12px; color:#99f6e4;">Caso de Estudio: Monitoreo de Diabetes Tipo 2 e Hipertensión</span>
+                <div style="font-size:18px; font-weight:800;">DiaMon GPS Salud</div>
+                <div style="font-size:12px; color:#5eead4;">Descarga directa por Código QR · v1.2.1</div>
             </div>
         </a>
-        <div style="display:flex; gap:10px;">
-            <button onclick="window.print()" class="btn-back" style="cursor:pointer;">
-                <i class="fas fa-print"></i> Imprimir QR para Tablero
+        <div class="topbar-actions">
+            <button type="button" onclick="window.print()" class="btn-back">
+                <i class="fas fa-print"></i> Imprimir QR
             </button>
             <a href="index.html" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                <i class="fas fa-arrow-left"></i> Volver al Panel
             </a>
         </div>
     </header>
 
     <div class="hero-grid">
-        <!-- PÓSTER QR PARA PROYECTAR O PEGAR EN EL TABLERO -->
+        <!-- TARJETA PÓSTER QR DE DESCARGA DIRECTA -->
         <div class="qr-poster-card">
-            <span class="qr-badge"><i class="fas fa-qrcode"></i> Escanea con la cámara de tu celular</span>
-            <h2 style="font-size:22px; font-weight:800; color:#0f172a;">Prueba DiaMon en Vivo</h2>
-            <p style="font-size:13.5px; color:#475569; margin-top:4px; max-width:360px;">
-                Compatible con <strong>iPhone (iOS)</strong> y <strong>Android</strong>. Permite ver el mapa GPS del paciente, signos vitales y modo adulto mayor.
+            <div class="qr-mode-tabs" role="tablist" aria-label="Tipo de código QR">
+                <button type="button" id="btnQrModeApk" class="qr-mode-btn active" onclick="window.seleccionarModoQR('apk')">
+                    <i class="fab fa-android"></i> Descargar APK Android
+                </button>
+                <button type="button" id="btnQrModeWeb" class="qr-mode-btn" onclick="window.seleccionarModoQR('web')">
+                    <i class="fas fa-globe"></i> App Web / iPhone
+                </button>
+            </div>
+
+            <span class="qr-badge" id="qrBadgeTexto">
+                <i class="fas fa-qrcode"></i> Escanea para descargar DiaMon-GPS.apk
+            </span>
+            <h2 id="qrHeading" style="font-size:21px; font-weight:800; color:#0f172a;">Instala DiaMon en tu Android</h2>
+            <p id="qrSubheading" style="font-size:13px; color:#475569; margin-top:4px; max-width:360px; line-height:1.45;">
+                Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.2.1 · 6 MB)</strong> al instante.
             </p>
 
             <div class="qr-frame">
                 <div id="qrDownloadCanvas"></div>
             </div>
 
-            <div style="font-size:12px; font-weight:700; color:#0d9488; margin-bottom:6px;" id="qrCurrentUrlLabel">
-                https://diamon-salud.vercel.app
-            </div>
+            <div class="qr-url-pill" id="qrCurrentUrlLabel">https://diamon-salud.vercel.app/descargar-apk</div>
+            <div id="copyFeedback" class="copy-toast"><i class="fas fa-check-circle"></i> Enlace copiado al portapapeles</div>
 
-            <div class="url-input-row">
-                <input type="text" id="customQrUrlInput" placeholder="URL del proyecto o IP local (ej. https://diamon-salud.vercel.app)">
-                <button type="button" onclick="window.actualizarQRDescarga()">Actualizar QR</button>
-            </div>
-        </div>
-
-        <!-- INSTRUCCIONES POR PLATAFORMA -->
-        <div class="platforms-col">
-            <!-- iPhone / iOS -->
-            <div class="platform-card">
-                <div class="platform-header">
-                    <div class="platform-icon apple"><i class="fab fa-apple"></i></div>
-                    <div>
-                        <h3 style="font-size:16px; font-weight:700;">Instalar en iPhone / iPad (iOS PWA)</h3>
-                        <span style="font-size:12px; color:#99f6e4;">Funciona como App nativa a pantalla completa sin App Store</span>
-                    </div>
-                </div>
-                <ol class="steps-list">
-                    <li>Escanea el código QR con la cámara de tu iPhone para abrir DiaMon en <strong>Safari</strong>.</li>
-                    <li>Toca el botón <strong>Compartir</strong> <i class="fas fa-share-square"></i> en la barra inferior de Safari.</li>
-                    <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong>. Se creará el ícono oficial de DiaMon.</li>
-                </ol>
-                <a href="index.html" class="btn-action btn-dark">
-                    <i class="fas fa-external-link-alt"></i> Abrir App Web Interactiva Ahora
+            <div class="qr-share-row">
+                <button type="button" class="qr-share-btn copy" onclick="window.copiarEnlaceQR()">
+                    <i class="fas fa-copy"></i> Copiar enlace
+                </button>
+                <a id="btnCompartirWaQR" href="#" target="_blank" rel="noopener" class="qr-share-btn wa">
+                    <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
                 </a>
             </div>
 
-            <!-- Android Studio & APK -->
+            <div class="url-input-row">
+                <input type="text" id="customQrUrlInput" placeholder="URL personalizada para el QR">
+                <button type="button" onclick="window.actualizarQRDescarga(true)">Actualizar</button>
+            </div>
+        </div>
+
+        <!-- GUÍA RÁPIDA ANDROID, IPHONE Y MODO ABUELO -->
+        <div class="platforms-col">
+            <!-- Android APK -->
             <div class="platform-card">
                 <div class="platform-header">
                     <div class="platform-icon android"><i class="fab fa-android"></i></div>
                     <div>
-                        <h3 style="font-size:16px; font-weight:700;">App Nativa Android (Android Studio + WebAPK)</h3>
-                        <span style="font-size:12px; color:#86efac;">Incluye proyecto nativo en carpeta <code>/android-studio-app</code></span>
+                        <h3 style="font-size:16px; font-weight:800;">App Nativa Android (APK v1.2.1)</h3>
+                        <span style="font-size:12px; color:#86efac;">GPS en vivo · Reloj Bluetooth BLE · SOS 123 · SQLite Offline</span>
                     </div>
                 </div>
                 <ol class="steps-list">
-                    <li><strong>Instalación directa desde el QR:</strong> Al abrir en Chrome Android, pulsa el botón inferior o <em>"Instalar aplicación"</em>.</li>
-                    <li><strong>En Android Studio:</strong> El proyecto incluye el módulo nativo con permisos <code>ACCESS_FINE_LOCATION</code> y <code>WebView</code> con geolocalización en tiempo real.</li>
+                    <li>Escanea el <strong>QR de la izquierda</strong> (o pulsa <em>Descargar APK</em> abajo).</li>
+                    <li>Abre el archivo <strong>DiaMon-GPS.apk</strong> y activa <em>"Permitir instalar desde esta fuente"</em>.</li>
+                    <li>Si aparece Google Play Protect, toca <strong>"Más detalles → Instalar de todas formas"</strong>.</li>
                 </ol>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <a href="../assets/DiaMon-GPS.apk" download="DiaMon-GPS.apk" class="btn-action btn-primary">
+                    <a id="btnDirectApkLink" href="../assets/DiaMon-GPS.apk" download="DiaMon-GPS.apk" class="btn-action btn-primary">
                         <i class="fab fa-android"></i> Descargar APK (6 MB)
                     </a>
                     <button type="button" id="btnInstallPWA" onclick="window.instalarAppMovil()" class="btn-action btn-dark">
@@ -273,20 +395,39 @@
                 </div>
             </div>
 
-            <!-- Vista Abuelo -->
+            <!-- iPhone / iOS -->
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon apple"><i class="fab fa-apple"></i></div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:800;">Instalar en iPhone / iPad (iOS PWA)</h3>
+                        <span style="font-size:12px; color:#bae6fd;">Funciona a pantalla completa directo desde Safari</span>
+                    </div>
+                </div>
+                <ol class="steps-list">
+                    <li>Cambia el QR a la pestaña <strong>App Web / iPhone</strong> y escanéalo con tu cámara.</li>
+                    <li>En <strong>Safari</strong>, toca el botón <strong>Compartir</strong> <i class="fas fa-share-square"></i>.</li>
+                    <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong> para crear el ícono de DiaMon.</li>
+                </ol>
+                <a href="login.html" class="btn-action btn-dark">
+                    <i class="fas fa-external-link-alt"></i> Abrir App Web Interactiva
+                </a>
+            </div>
+
+            <!-- Modo Abuelo -->
             <div class="platform-card">
                 <div class="platform-header">
                     <div class="platform-icon senior"><i class="fas fa-universal-access"></i></div>
                     <div>
-                        <h3 style="font-size:16px; font-weight:700;">Probar Vista Simplificada del Abuelo</h3>
-                        <span style="font-size:12px; color:#e9d5ff;">Diseñada con alto contraste y 4 botones gigantes</span>
+                        <h3 style="font-size:16px; font-weight:800;">Vista Simplificada (Modo Abuelo)</h3>
+                        <span style="font-size:12px; color:#5eead4;">Botones grandes, SOS con escalamiento al 123 y control de dosis</span>
                     </div>
                 </div>
-                <p style="font-size:13px; color:#cbd5e1; margin-bottom:12px;">
-                    Permite mostrar al jurado cómo interactúa el adulto mayor (Botón SOS, Confirmar Pastilla, Anotar Glucosa y Presión).
+                <p style="font-size:13px; color:#cbd5e1; margin-bottom:12px; line-height:1.45;">
+                    Interfaz simplificada de alto contraste para adultos mayores: aviso de emergencia SOS, confirmación de medicamentos, registro de azúcar/presión y reloj biométrico.
                 </p>
-                <a href="index.html#modo-abuelo" onclick="localStorage.setItem('diamon_abrir_abuelo','1')" class="btn-action btn-primary" style="background:#7c3aed;">
-                    <i class="fas fa-user-check"></i> Abrir Directamente en Modo Abuelo
+                <a href="index.html#modo-abuelo" onclick="localStorage.setItem('diamon_abrir_abuelo','1')" class="btn-action btn-primary">
+                    <i class="fas fa-user-check"></i> Abrir Vista Simplificada
                 </a>
             </div>
         </div>
@@ -296,6 +437,8 @@
 <script src="../assets/js/vendor/qrcode.min.js"></script>
 <script>
     let deferredPrompt = null;
+    let modoQRActual = 'apk';
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -311,36 +454,102 @@
         }
     };
 
-    window.actualizarQRDescarga = function () {
+    function obtenerBasePublica() {
+        const origin = window.location.origin;
+        if (!origin || origin === 'null' || origin.startsWith('file:')) {
+            return 'https://diamon-salud.vercel.app';
+        }
+        return origin.replace(/\/$/, '');
+    }
+
+    window.seleccionarModoQR = function (modo) {
+        modoQRActual = modo === 'web' ? 'web' : 'apk';
+        const btnApk = document.getElementById('btnQrModeApk');
+        const btnWeb = document.getElementById('btnQrModeWeb');
+        const badge = document.getElementById('qrBadgeTexto');
+        const heading = document.getElementById('qrHeading');
+        const sub = document.getElementById('qrSubheading');
+
+        if (btnApk) btnApk.classList.toggle('active', modoQRActual === 'apk');
+        if (btnWeb) btnWeb.classList.toggle('active', modoQRActual === 'web');
+
+        if (modoQRActual === 'apk') {
+            if (badge) badge.innerHTML = '<i class="fas fa-qrcode"></i> Escanea para descargar DiaMon-GPS.apk';
+            if (heading) heading.textContent = 'Instala DiaMon en tu Android';
+            if (sub) sub.innerHTML = 'Apunta la cámara de cualquier teléfono Android a este código QR para descargar el instalador <strong>DiaMon-GPS.apk (v1.2.1 · 6 MB)</strong> al instante.';
+        } else {
+            if (badge) badge.innerHTML = '<i class="fas fa-qrcode"></i> Escanea para abrir la App Web / iPhone';
+            if (heading) heading.textContent = 'Abre DiaMon en cualquier celular';
+            if (sub) sub.innerHTML = 'Compatible con <strong>iPhone (Safari)</strong> y <strong>Android (Chrome)</strong>. Ideal para acceder en vivo o instalar como WebApp.';
+        }
+
+        const input = document.getElementById('customQrUrlInput');
+        if (input) input.value = '';
+        window.actualizarQRDescarga(false);
+    };
+
+    window.actualizarQRDescarga = function (usarInputPersonalizado) {
         const container = document.getElementById('qrDownloadCanvas');
         const input = document.getElementById('customQrUrlInput');
         const label = document.getElementById('qrCurrentUrlLabel');
+        const waBtn = document.getElementById('btnCompartirWaQR');
+        const apkBtn = document.getElementById('btnDirectApkLink');
         if (!container) return;
 
-        let targetUrl = (input && input.value.trim()) ? input.value.trim() : window.location.origin + '/pages/index.html';
-        if (targetUrl.startsWith('file://')) {
-            targetUrl = 'https://diamon-salud.vercel.app/pages/index.html';
-        }
-        if (input && !input.value) input.value = targetUrl;
+        const base = obtenerBasePublica();
+        const defaultUrl = modoQRActual === 'apk'
+            ? `${base}/descargar-apk`
+            : `${base}/pages/login.html`;
+
+        const targetUrl = (usarInputPersonalizado && input && input.value.trim())
+            ? input.value.trim()
+            : defaultUrl;
+
+        if (input) input.value = targetUrl;
         if (label) label.textContent = targetUrl;
+
+        if (apkBtn && !window.location.protocol.startsWith('file:')) {
+            apkBtn.href = `${base}/descargar-apk`;
+        }
+
+        if (waBtn) {
+            const textoWa = modoQRActual === 'apk'
+                ? `Descarga la app móvil de DiaMon GPS Salud (Android APK v1.2.1) desde este enlace: ${targetUrl}`
+                : `Abre DiaMon GPS Salud en tu celular desde este enlace: ${targetUrl}`;
+            waBtn.href = `https://wa.me/?text=${encodeURIComponent(textoWa)}`;
+        }
 
         container.innerHTML = '';
         if (typeof QRCode !== 'undefined') {
             new QRCode(container, {
                 text: targetUrl,
-                width: 220,
-                height: 220,
-                colorDark: '#082032',
+                width: 224,
+                height: 224,
+                colorDark: '#061b2e',
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.M
             });
         }
     };
 
+    window.copiarEnlaceQR = function () {
+        const url = document.getElementById('qrCurrentUrlLabel')?.textContent || '';
+        const fb = document.getElementById('copyFeedback');
+        if (!url) return;
+        const ok = () => {
+            if (fb) {
+                fb.style.display = 'inline-block';
+                setTimeout(() => { fb.style.display = 'none'; }, 2600);
+            }
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(ok).catch(() => {});
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
-        window.actualizarQRDescarga();
+        window.seleccionarModoQR('apk');
     });
 </script>
 </body>
 </html>
-

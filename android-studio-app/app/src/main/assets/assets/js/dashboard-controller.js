@@ -2,14 +2,187 @@
 (function () {
   'use strict';
 
+  // ============================================================
+  // SISTEMA GLOBAL DE NOTIFICACIONES TOAST (VISIBLE SOBRE TODA VISTA)
+  // ============================================================
+  if (typeof window.mostrarNotificacion !== 'function') {
+    window.mostrarNotificacion = function (mensaje, tipo = 'info') {
+      try {
+        let stack = document.getElementById('dcToastStack');
+        if (!stack) {
+          stack = document.createElement('div');
+          stack.id = 'dcToastStack';
+          stack.className = 'dc-toast-stack';
+          stack.setAttribute('aria-live', 'polite');
+          stack.setAttribute('aria-atomic', 'false');
+          document.body.appendChild(stack);
+        }
+
+        const iconMap = {
+          success: 'fa-check-circle',
+          warn: 'fa-exclamation-triangle',
+          error: 'fa-times-circle',
+          info: 'fa-info-circle'
+        };
+        const cls = ['success', 'warn', 'error', 'info'].includes(tipo) ? tipo : 'info';
+
+        const toast = document.createElement('div');
+        toast.className = `dc-toast dc-toast-${cls}`;
+        toast.setAttribute('role', 'status');
+
+        const icon = document.createElement('i');
+        icon.className = `fas ${iconMap[cls]}`;
+        icon.setAttribute('aria-hidden', 'true');
+
+        const txt = document.createElement('span');
+        txt.className = 'dc-toast-text';
+        txt.textContent = String(mensaje || '');
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'dc-toast-close';
+        closeBtn.setAttribute('aria-label', 'Cerrar notificación');
+        closeBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+
+        const removeToast = () => {
+          toast.classList.remove('visible');
+          setTimeout(() => toast.remove(), 220);
+        };
+        closeBtn.addEventListener('click', removeToast);
+
+        toast.appendChild(icon);
+        toast.appendChild(txt);
+        toast.appendChild(closeBtn);
+        stack.appendChild(toast);
+
+        // Mantener máximo 4 toasts visibles a la vez
+        while (stack.children.length > 4) {
+          stack.firstElementChild.remove();
+        }
+
+        requestAnimationFrame(() => toast.classList.add('visible'));
+        setTimeout(removeToast, 4200);
+      } catch (_) {}
+    };
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initLiveClock();
+    initSidebarToggle();
     initTabNavigation();
     initKPISync();
     initSessionState();
+    initAndroidNativeShortcuts();
     initCookieConsent();
     initAccessibleModals();
   });
+
+  function initAndroidNativeShortcuts() {
+    if (window.DiaMonAndroid && typeof window.DiaMonAndroid.esAppAndroid === 'function') {
+      document.body.classList.add('dm-android-app');
+      const btnNav = document.getElementById('btnNavSqliteAndroid');
+      const btnCfg = document.getElementById('btnCfgSqliteAndroid');
+      if (btnNav) btnNav.style.display = 'flex';
+      if (btnCfg) btnCfg.style.display = 'flex';
+    }
+  }
+
+  // ============================================================
+  // 0. PANEL IZQUIERDO EXPANDIBLE / RECOGIBLE (DESKTOP & MÓVIL)
+  // ============================================================
+  function initSidebarToggle() {
+    const STORAGE_KEY = 'diamon_sidebar_collapsed';
+    const shell = document.getElementById('dcAppShell') || document.querySelector('.dc-shell');
+    const btnTop = document.getElementById('btnToggleSidebar');
+    const btnSide = document.getElementById('btnSidebarCollapse');
+    if (!shell) return;
+
+    const esMovil = () => window.innerWidth <= 768;
+
+    const refrescarMapasTrasAnimacion = () => {
+      const invalidar = () => {
+        if (window.mapInstance && typeof window.mapInstance.invalidateSize === 'function') {
+          window.mapInstance.invalidateSize();
+        }
+        if (window.historyMapInstance && typeof window.historyMapInstance.invalidateSize === 'function') {
+          window.historyMapInstance.invalidateSize();
+        }
+        if (document.getElementById('view-mapa')?.classList.contains('active') && window.DiaMonRutasHistoricas && typeof window.DiaMonRutasHistoricas.refrescarMapaVista === 'function') {
+          window.DiaMonRutasHistoricas.refrescarMapaVista();
+        }
+        window.dispatchEvent(new Event('resize'));
+      };
+      setTimeout(invalidar, 120);
+      setTimeout(invalidar, 320);
+    };
+
+    const actualizarAccesibilidad = () => {
+      const expandido = esMovil()
+        ? shell.classList.contains('sidebar-mobile-open')
+        : !shell.classList.contains('sidebar-collapsed');
+
+      if (btnTop) {
+        btnTop.setAttribute('aria-expanded', String(expandido));
+        btnTop.title = expandido ? 'Recoger menú lateral (Ctrl+B)' : 'Expandir menú lateral (Ctrl+B)';
+      }
+      if (btnSide) {
+        btnSide.setAttribute('aria-expanded', String(expandido));
+        btnSide.title = expandido ? 'Recoger panel izquierdo' : 'Expandir panel izquierdo';
+      }
+    };
+
+    // Restaurar preferencia guardada en escritorio
+    try {
+      if (!esMovil() && localStorage.getItem(STORAGE_KEY) === '1') {
+        shell.classList.add('sidebar-collapsed');
+      }
+    } catch (_) {}
+    actualizarAccesibilidad();
+
+    window.toggleSidebarDiaMon = function (forzarAbierto) {
+      if (esMovil()) {
+        const abrir = typeof forzarAbierto === 'boolean'
+          ? forzarAbierto
+          : !shell.classList.contains('sidebar-mobile-open');
+        shell.classList.toggle('sidebar-mobile-open', abrir);
+      } else {
+        const colapsar = typeof forzarAbierto === 'boolean'
+          ? !forzarAbierto
+          : !shell.classList.contains('sidebar-collapsed');
+        shell.classList.toggle('sidebar-collapsed', colapsar);
+        try {
+          localStorage.setItem(STORAGE_KEY, colapsar ? '1' : '0');
+        } catch (_) {}
+        const cfgSidebarChk = document.getElementById('cfgToggleSidebarCompacto');
+        if (cfgSidebarChk) cfgSidebarChk.checked = colapsar;
+        refrescarMapasTrasAnimacion();
+      }
+      actualizarAccesibilidad();
+    };
+
+    // Cerrar drawer móvil automáticamente al seleccionar una pestaña
+    document.querySelectorAll('.dc-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (esMovil()) {
+          shell.classList.remove('sidebar-mobile-open');
+          actualizarAccesibilidad();
+        }
+      });
+    });
+
+    // Atajo de teclado Ctrl+B para recoger/expandir rápidamente
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        window.toggleSidebarDiaMon();
+      } else if (e.key === 'Escape' && shell.classList.contains('sidebar-mobile-open')) {
+        shell.classList.remove('sidebar-mobile-open');
+        actualizarAccesibilidad();
+      }
+    });
+
+    window.addEventListener('resize', actualizarAccesibilidad);
+  }
 
   // ============================================================
   // 1. RELOJ Y FECHA EN TIEMPO REAL
@@ -78,6 +251,13 @@
         }
       });
 
+      if (targetTab === 'configuracion' && window.DiaMonConfiguracion && typeof window.DiaMonConfiguracion.sincronizarUI === 'function') {
+        window.DiaMonConfiguracion.sincronizarUI();
+      }
+      if (targetTab === 'reportes' && window.saludDiariaInstance && typeof window.saludDiariaInstance.renderHistorialEnReportes === 'function') {
+        window.saludDiariaInstance.renderHistorialEnReportes();
+      }
+
       // CORRECCIÓN CRÍTICA DE MAPAS EN VISTAS OCULTAS
       // Forzar recálculo dimensional de Leaflet para evitar recuadros negros/grises
       const invalidarMapas = () => {
@@ -86,6 +266,9 @@
         }
         if (window.historyMapInstance && typeof window.historyMapInstance.invalidateSize === 'function') {
           window.historyMapInstance.invalidateSize();
+        }
+        if (targetTab === 'mapa' && window.DiaMonRutasHistoricas && typeof window.DiaMonRutasHistoricas.refrescarMapaVista === 'function') {
+          window.DiaMonRutasHistoricas.refrescarMapaVista();
         }
         window.dispatchEvent(new Event('resize'));
       };
@@ -214,7 +397,7 @@
     if (!currentUser) {
       // Estado invitado en la web
       if (greetingTitle) {
-        greetingTitle.innerHTML = 'Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span> 👋';
+        greetingTitle.innerHTML = 'Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span>';
       }
       if (greetingSubtitle) {
         greetingSubtitle.innerHTML = 'Modo Invitado · Inicia sesión o crea tu cuenta como Paciente, Cuidador o Admin.';

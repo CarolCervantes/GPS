@@ -3,6 +3,7 @@
   "name": "diamon-salud",
   "rewrites": [
     { "source": "/", "destination": "/pages/index.html" },
+    { "source": "/descargar-apk", "destination": "/assets/DiaMon-GPS.apk" },
     { "source": "/login.html", "destination": "/pages/login.html" },
     { "source": "/index.html", "destination": "/pages/index.html" },
     { "source": "/descargar-app.html", "destination": "/pages/descargar-app.html" },
@@ -18,13 +19,21 @@
   ],
   "headers": [
     {
+      "source": "/assets/DiaMon-GPS.apk",
+      "headers": [
+        { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
+        { "key": "Content-Disposition", "value": "attachment; filename=\"DiaMon-GPS.apk\"" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=(self)" }
+        { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=(self), bluetooth=(self)" }
       ]
     }
   ]

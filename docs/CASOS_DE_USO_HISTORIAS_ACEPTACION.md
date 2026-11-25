@@ -20,6 +20,7 @@ A continuación se muestra cómo cada **Caso de Uso (CU)** del sistema se transf
 | **CU-06** | Activación de Alerta SOS y Ficha Médica QR | Paciente | **HU-06** | **Como** paciente en situación de mareo o emergencia, **quiero** activar un botón SOS de alto contraste o mostrar mi código QR médico (*PulseCard*), **para** enviar mis coordenadas GPS a mi cuidador y mostrar mi tratamiento a paramédicos. |
 | **CU-07** | Vista Simplificada del Paciente (*Vista Simple*) | Paciente / Adulto Mayor | **HU-07** | **Como** paciente monitoreado o adulto mayor, **quiero** contar con una vista simplificada con botones grandes y lectura clara de mi glucosa, presión y pastillas, **para** usar la aplicación sin complejidad técnica. |
 | **CU-08** | Gestión Administrativa de Usuarios, Roles y Vinculaciones | Administrador | **HU-08** | **Como** administrador del sistema, **quiero** gestionar las cuentas registradas, cambiar roles, vincular cuidadores con pacientes y auditar el mapa global, **para** garantizar la seguridad y administración de la plataforma. |
+| **CU-09** | Monitoreo Preventivo Sin Parche (Wearable: Pulso + Temperatura) con Alarma Simultánea 60s | Paciente / Cuidador | **HU-09** | **Como** paciente con diabetes y cuidador, **quiero** conectar un reloj inteligente, anillo o banda para detectar alteraciones de ritmo cardíaco y temperatura corporal asociadas a bajadas o subidas de azúcar, **para** disparar una alarma simultánea y enviar automáticamente la ubicación GPS y los síntomas al cuidador si el paciente no confirma estar bien en 1 minuto. |
 
 ---
 
@@ -71,6 +72,15 @@ A continuación se muestra cómo cada **Caso de Uso (CU)** del sistema se transf
   - **Cuando** ingresa a `pages/admin.html`,
   - **Entonces** puede buscar usuarios por nombre o correo, crear nuevos perfiles, cambiar su rol (`monitoreado`, `cuidador`, `admin`), vincular un cuidador con el paciente del caso de estudio y consultar los KPIs globales de la base de datos Supabase.
 
+### HU-09: Detección Preventiva Sin Parche (Ritmo Cardíaco + Temperatura) y Escalamiento en 1 Minuto
+- **Escenario 1 (Confirmación a tiempo — «Estoy bien»):**
+  - **Dado** que el paciente tiene conectado un reloj inteligente, anillo o simulador biométrico con línea base de `72 BPM` y `36.5 °C`,
+  - **Cuando** se detecta alteración compatible con posible bajada de azúcar (`114 BPM` y `35.5 °C`) o subida de azúcar (`108 BPM` y `38.2 °C`),
+  - **Entonces** el sistema dispara una **alarma en simultáneo** al paciente y al cuidador con cuenta regresiva de **60 segundos**; si el paciente pulsa **«ESTOY BIEN»** antes del minuto, el escalamiento se cancela y el cuidador recibe la confirmación inmediata.
+- **Escenario 2 (Sin respuesta tras 1 minuto — Escalamiento automático con GPS y síntomas):**
+  - **Dado** que se activó la alarma preventiva simultánea y el temporizador de **1 minuto (60s)** llega a `00:00` sin respuesta del paciente,
+  - **Entonces** el cuidador recibe automáticamente la **ubicación GPS exacta** (barrio, coordenadas, botón de mapa y Google Maps) junto con el **reporte completo de síntomas biométricos** detectados por el wearable.
+
 ---
 
 ## 3. Matriz Aplicación vs. Casos de Uso (Demostración en Vivo)
@@ -86,3 +96,4 @@ Esta tabla sirve como guía durante la sustentación para mostrarle al profesor 
 | **CU-06: Emergencia SOS y Ficha Médica QR** | `pages/index.html` (Botón QR en barra superior / Botón SOS) y `pages/ficha-emergencia.html` | `assets/js/medical-qr.js`, `assets/js/voz-sos.js` | Abrir el icono de **Código QR** en la barra superior para escanear la ficha de emergencia con el celular, o activar el botón rojo SOS. |
 | **CU-07: Interfaz Simplificada del Paciente** | `pages/index.html` (Al entrar como **Paciente** + botón *"Vista Simple"*) | `assets/js/dashboard-controller.js`, `assets/js/caso-estudio.js` | Iniciar sesión como **Paciente** para ver el panel limpio sin controles complejos de geocercas/admin, y pulsar *"Vista Simple"* para abrir la botonera grande de 4 acciones. |
 | **CU-08: Gestión de Usuarios y Roles (Exclusivo Admin)** | `pages/admin.html` y `pages/mapa-admin.html` | `assets/js/admin.js` | Iniciar sesión como **Admin**, abrir *"Gestión de Usuarios (Admin)"*, buscar o crear un usuario, cambiar su rol y vincularlo a un paciente. |
+| **CU-09: Monitor Preventivo Sin Parche (Wearable BLE / API) + Alarma 60s** | `pages/index.html` (Pestaña *"Monitor Wearable"* y tarjeta en Inicio) | `src/domain/services/DetectorGlucemicoPreventivoService.js`, `src/application/usecases/MonitorearBiometriaPreventivaUseCase.js`, `src/infrastructure/adapters/WebBluetoothWearableAdapter.js`, `assets/js/monitoreo-preventivo-wearable.js`, `api/wearable.js` | Entrar a **Monitor Wearable**, pulsar *"Posible Bajada de Azúcar"* (`114 BPM · 35.5 °C`) o enviar `POST /api/wearable`, mostrar la alarma simultánea de 60 segundos, probar *"Estoy bien"* y luego el vencimiento de 1 minuto donde el cuidador recibe GPS + síntomas. |

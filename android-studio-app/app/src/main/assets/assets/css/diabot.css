@@ -10,6 +10,36 @@
   font-family: var(--font-sans, 'Inter', sans-serif);
 }
 
+@media (max-width: 768px) {
+  /* Quitar por completo la burbuja flotante inferior en teléfono para que nunca obstruya nada;
+     DiaBot se abre limpiamente desde el botón del robot en la barra superior */
+  .diabot-widget-container {
+    top: 62px !important;
+    bottom: auto !important;
+    right: 12px !important;
+    left: 12px !important;
+    z-index: 1050 !important;
+    pointer-events: none;
+  }
+
+  .diabot-toggle-btn {
+    display: none !important;
+  }
+
+  .diabot-chat-window {
+    pointer-events: auto;
+    position: relative !important;
+    top: 0 !important;
+    bottom: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 70vh !important;
+    max-height: calc(100vh - 150px) !important;
+    border-radius: 20px !important;
+  }
+}
+
 .diabot-toggle-btn {
   background: linear-gradient(135deg, #1e3a52 0%, #0f172a 100%);
   border: 1px solid rgba(60, 180, 201, 0.4);

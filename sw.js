@@ -4,7 +4,7 @@
  * y Notificaciones Push en segundo plano.
  */
 
-const CACHE_NAME = 'diamon-cache-v4';
+const CACHE_NAME = 'diamon-cache-v7';
 const STATIC_ASSETS = [
   '/',
   '/pages/index.html',
@@ -13,9 +13,21 @@ const STATIC_ASSETS = [
   '/pages/descargar-app.html',
   '/assets/css/dashboard-modern.css',
   '/assets/css/alertas-sistema.css',
+  '/assets/css/monitoreo-preventivo-wearable.css',
   '/assets/js/caso-estudio.js',
   '/assets/js/alertas-sistema.js',
-  '/assets/js/telemetria-dispositivo.js'
+  '/assets/js/telemetria-dispositivo.js',
+  '/assets/js/monitoreo-preventivo-wearable.js',
+  '/assets/js/configuracion-sistema.js',
+  '/assets/js/hexagonal-client-adapter.js',
+  '/src/domain/entities/PacienteEntity.js',
+  '/src/domain/entities/LecturaBiometricaEntity.js',
+  '/src/domain/entities/RegistroClinicoEntity.js',
+  '/src/domain/entities/AlertaEmergenciaEntity.js',
+  '/src/domain/ports/WearableSensorPort.js',
+  '/src/domain/services/DetectorGlucemicoPreventivoService.js',
+  '/src/application/usecases/MonitorearBiometriaPreventivaUseCase.js',
+  '/src/infrastructure/adapters/WebBluetoothWearableAdapter.js'
 ];
 
 self.addEventListener('install', (event) => {

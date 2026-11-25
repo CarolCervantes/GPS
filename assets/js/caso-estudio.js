@@ -393,11 +393,19 @@
           this.gpsLiveWatchId = null;
         }
         if (btn) {
-          btn.style.background = '#0d9488';
-          btn.innerHTML = '<i class="fas fa-satellite"></i> Activar GPS Real de este Dispositivo';
+          btn.style.background = 'linear-gradient(135deg, #0d9488, #0284c7)';
+          btn.innerHTML = '<i class="fas fa-satellite"></i> Transmitir GPS Real';
         }
-        if (window.mostrarNotificacion) {
-          window.mostrarNotificacion('🛰️ Transmisión GPS continua pausada.', 'info');
+        if (Array.isArray(this.puntosTransmisionGPS) && this.puntosTransmisionGPS.length >= 2 && window.DiaMonRutasHistoricas?.guardarNuevaRuta) {
+          const ptsGuardar = [...this.puntosTransmisionGPS];
+          this.puntosTransmisionGPS = [];
+          window.DiaMonRutasHistoricas.guardarNuevaRuta({
+            nombre: `Transmisión GPS Real · ${new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
+            puntos: ptsGuardar,
+            origen: 'gps_en_vivo'
+          });
+        } else if (window.mostrarNotificacion) {
+          window.mostrarNotificacion('Transmisión GPS continua pausada.', 'info');
         }
         return;
       }
@@ -408,12 +416,13 @@
       }
 
       this.transmitiendoGPSReal = true;
+      this.puntosTransmisionGPS = [];
       if (btn) {
         btn.style.background = '#16a34a';
         btn.innerHTML = '<i class="fas fa-satellite-dish fa-fade"></i> Transmitiendo GPS Real en Vivo...';
       }
       if (window.mostrarNotificacion) {
-        window.mostrarNotificacion('📡 Emisor GPS real activado: transmitiendo coordenadas reales al mapa y a Supabase.', 'success');
+        window.mostrarNotificacion('Emisor GPS real activado: transmitiendo y grabando recorrido real.', 'success');
       }
 
       this.gpsLiveWatchId = navigator.geolocation.watchPosition(
@@ -422,6 +431,10 @@
           const lng = pos.coords.longitude;
           const acc = Math.round(pos.coords.accuracy || 8);
           const etiqueta = `GPS Satelital en Vivo (±${acc}m)`;
+
+          if (Array.isArray(this.puntosTransmisionGPS)) {
+            this.puntosTransmisionGPS.push({ lat, lng, ts: Date.now() });
+          }
 
           this.aplicarCoordenadaRecibida(lat, lng, etiqueta, acc);
           this.emitirPorCanales('GPS_EN_VIVO', {
@@ -577,6 +590,15 @@
 
       this.actualizarTodaLaUI();
       this.emitirPorCanales('GLUCOSA_ACTUALIZADA', { glucosa: nuevaLectura });
+      if (window.DiaMonBackendAdapter && typeof window.DiaMonBackendAdapter.sincronizarRegistroClinico === 'function') {
+        window.DiaMonBackendAdapter.sincronizarRegistroClinico({
+          tipo: 'glucosa',
+          glucosaMgDl: v,
+          contexto: nuevaLectura.ContextoLabel,
+          notas: nuevaLectura.notas,
+          metas: this.metas
+        }).catch(() => {});
+      }
       return nuevaLectura;
     }
 
@@ -623,6 +645,16 @@
 
       this.actualizarTodaLaUI();
       this.emitirPorCanales('PRESION_ACTUALIZADA', { presion: nuevaPA });
+      if (window.DiaMonBackendAdapter && typeof window.DiaMonBackendAdapter.sincronizarRegistroClinico === 'function') {
+        window.DiaMonBackendAdapter.sincronizarRegistroClinico({
+          tipo: 'presion',
+          sistolica: sis,
+          diastolica: dia,
+          pulsoBpm: bpm,
+          notas: nuevaPA.notas,
+          metas: this.metas
+        }).catch(() => {});
+      }
       return nuevaPA;
     }
 
@@ -795,6 +827,10 @@
       const bannerProf = document.getElementById('casoProfesionalGuia');
 
       if (bannerNombre) bannerNombre.textContent = `${res.paciente.nombre} · ${res.paciente.barrioResidencia}`;
+      const mobHeroName = document.getElementById('mobHeroPacienteNombre');
+      const mobHeroSub = document.getElementById('mobHeroSub');
+      if (mobHeroName) mobHeroName.textContent = res.paciente.nombre;
+      if (mobHeroSub) mobHeroSub.textContent = `${res.paciente.barrioResidencia} · Meta ${res.metas.glucosaMin}–${res.metas.glucosaMaxPost} mg/dL`;
       if (bannerDiag) bannerDiag.textContent = res.paciente.diagnosticoPrincipal;
       if (bannerMetaG) bannerMetaG.textContent = `${res.metas.glucosaMin}–${res.metas.glucosaMaxPost} mg/dL`;
       if (bannerMetaPA) bannerMetaPA.textContent = `< ${res.metas.sistolicaMax}/${res.metas.diastolicaMax} mmHg`;
@@ -809,13 +845,47 @@
       if (repPromG) repPromG.textContent = `${res.promedioG} mg/dL`;
       if (repPromPA) repPromPA.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg`;
       if (repTIR) repTIR.textContent = `${res.enRangoG}% en meta`;
+
+      const zonasAct = this.obtenerZonasSeguras();
+      const zonaPrin = (Array.isArray(zonasAct) && (zonasAct.find(z => z.activa !== false) || zonasAct[0])) || null;
+      const radioGeo = Number(zonaPrin?.radio_metros) || Number(res.paciente.radioSeguroMetros) || 400;
+      const repGeoNom = document.getElementById('repKpiGeocercaNombre');
+      const repGeoRad = document.getElementById('repKpiGeocercaRadio');
+      const homeGeoTxt = document.getElementById('homeGeocercaTexto');
+      if (repGeoNom) repGeoNom.textContent = `Geocerca ${res.paciente.barrioResidencia?.split(',')[0] || 'Chapacuá'}`;
+      if (repGeoRad) repGeoRad.textContent = `${radioGeo} m`;
+      if (homeGeoTxt) {
+        homeGeoTxt.innerHTML = `Monitoreo perimetral de <strong>${res.paciente.nombre}</strong> activo en ${res.paciente.barrioResidencia || 'Chapacuá'} (radio seguro de <strong>${radioGeo}m</strong>). Supervisión clínica: <strong>${res.paciente.profesionalGuia}</strong>.`;
+      }
     }
 
     renderHistorialRecienteDashboard() {
       const container = document.getElementById('listaBitacoraClinica');
       if (!container) return;
 
+      let estadosDiarios = [];
+      try {
+        const rawEst = localStorage.getItem('diamon_estado_diario_historial_v1');
+        if (rawEst) {
+          const parsed = JSON.parse(rawEst);
+          if (Array.isArray(parsed)) estadosDiarios = parsed;
+        }
+      } catch (_) {}
+
       const combinados = [
+        ...estadosDiarios.slice(0, 3).map(e => {
+          const sints = Array.isArray(e.sintomasLabels) && e.sintomasLabels.length > 0
+            ? e.sintomasLabels.join(', ')
+            : 'Sin síntomas reportados';
+          const clase = e.animo === 'descompensado' ? 'danger' : (e.animo === 'cansado' || (e.sintomas && e.sintomas.length >= 2) ? 'warn' : 'success');
+          return {
+            tipo: 'bienestar',
+            titulo: `Estado diario: ${e.animoLabel || e.animo}`,
+            sub: `Síntomas: ${sints}`,
+            evalObj: { clase, etiqueta: e.animo === 'descompensado' ? 'Atención' : 'Check-in' },
+            ts: e.ts || Date.now()
+          };
+        }),
         ...this.glucosas.slice(0, 4).map(g => ({
           tipo: 'glucosa',
           titulo: `Glucosa: ${g.valor} mg/dL`,
@@ -830,13 +900,13 @@
           evalObj: this.evaluarPresion(p.sistolica, p.diastolica),
           ts: p.ts
         }))
-      ].sort((a, b) => b.ts - a.ts).slice(0, 6);
+      ].sort((a, b) => b.ts - a.ts).slice(0, 7);
 
       container.innerHTML = combinados.map(item => {
         const hora = new Date(item.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         const fecha = new Date(item.ts).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
-        const icon = item.tipo === 'glucosa' ? 'fa-tint' : 'fa-heartbeat';
-        const dotColor = item.evalObj.clase === 'danger' ? 'amber' : (item.tipo === 'glucosa' ? 'green' : 'purple');
+        const icon = item.tipo === 'glucosa' ? 'fa-tint' : (item.tipo === 'bienestar' ? 'fa-user-check' : 'fa-heartbeat');
+        const dotColor = item.evalObj.clase === 'danger' ? 'amber' : (item.tipo === 'glucosa' || item.tipo === 'bienestar' ? 'green' : 'purple');
         return `
           <div class="dc-timeline-step">
             <div class="dc-timeline-dot ${dotColor}"><i class="fas ${icon}" aria-hidden="true"></i></div>
@@ -1088,6 +1158,70 @@
       }
     }
 
+    obtenerClaveMedsHoy() {
+      const d = new Date();
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return 'diamon_meds_cumplimiento_' + iso;
+    }
+
+    obtenerEstadoMedsHoy() {
+      const key = this.obtenerClaveMedsHoy();
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      return {};
+    }
+
+    obtenerBloquesMedsSimplificada() {
+      return [
+        { id: 'med-1', horario: '08:00 AM', titulo: '8:00 AM', detalle: 'Pantoprazol, Metformina, Firialta y Nifedipina' },
+        { id: 'med-2', horario: '02:00 PM', titulo: '2:00 PM', detalle: 'Valsartán (Presión Arterial)' },
+        { id: 'med-3', horario: '08:00 PM', titulo: '8:00 PM', detalle: 'Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino' },
+        { id: 'med-4', horario: '09:00 PM', titulo: '9:00 PM', detalle: 'Insulina Basal (24 Unidades)' },
+        { id: 'med-5', horario: 'Sábados', titulo: 'Sábados', detalle: 'Ozempic (Dosis semanal)' }
+      ];
+    }
+
+    renderListaHorariosAdultoMayor() {
+      const cont = document.getElementById('amListaHorariosMeds');
+      const btn = document.getElementById('amBtnConfirmarMed');
+      if (!cont) return;
+
+      const estado = this.obtenerEstadoMedsHoy();
+      const bloques = this.obtenerBloquesMedsSimplificada();
+      const tomadas = bloques.filter(b => estado[b.id]?.tomada).length;
+
+      cont.innerHTML = bloques.map(b => {
+        const st = estado[b.id] || { tomada: false, hora: null };
+        const bg = st.tomada ? 'rgba(22, 163, 74, 0.22)' : 'rgba(255, 255, 255, 0.05)';
+        const border = st.tomada ? 'rgba(74, 222, 128, 0.55)' : 'rgba(255, 255, 255, 0.12)';
+        const badge = st.tomada
+          ? `<span style="background:#16a34a; color:#ffffff; font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap;"><i class="fas fa-check"></i> Tomada ${st.hora || ''}</span>`
+          : `<span style="background:rgba(255,255,255,0.12); color:#e2e8f0; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap;">Pendiente</span>`;
+
+        return `
+          <div onclick="window.casoEstudio.confirmarPastillaRapidaAbuelo('${b.id}')" role="button" tabindex="0" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 11px; border-radius:11px; background:${bg}; border:1px solid ${border}; margin-top:7px; cursor:pointer;">
+            <div style="font-size:13.5px; line-height:1.35; color:#ffffff;">
+              <strong style="color:${st.tomada ? '#86efac' : '#5eead4'};">${b.titulo}:</strong> ${b.detalle}
+            </div>
+            ${badge}
+          </div>
+        `;
+      }).join('');
+
+      if (btn) {
+        if (tomadas >= bloques.length) {
+          btn.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+          btn.innerHTML = `<i class="fas fa-check-circle" style="font-size:26px;"></i> TODAS LAS DOSIS DE HOY CONFIRMADAS (${tomadas}/${bloques.length})`;
+        } else {
+          const siguiente = bloques.find(b => !estado[b.id]?.tomada);
+          btn.style.background = 'linear-gradient(135deg, #0d9488, #0284c7)';
+          btn.innerHTML = `<i class="fas fa-pills" style="font-size:26px;"></i> YA TOMÉ MI DOSIS (${siguiente.titulo}) · ${tomadas}/${bloques.length}`;
+        }
+      }
+    }
+
     // Vista simplificada de lectura grande para el paciente o adulto mayor
     toggleModoAdultoMayor(forzar) {
       this.modoAdultoMayor = forzar !== undefined ? forzar : !this.modoAdultoMayor;
@@ -1143,14 +1277,30 @@
             </div>
           </div>
 
-          <!-- Recordatorio claro de sus horarios de medicamentos -->
-          <div style="background:rgba(15, 42, 64, 0.85); border:1px solid rgba(94,234,212,0.35); border-radius:16px; padding:14px 16px; margin-bottom:16px; font-size:14px; line-height:1.5;">
-            <div style="font-weight:800; color:#5eead4; margin-bottom:6px; font-size:15px;"><i class="fas fa-clock"></i> Mis Horarios de Medicamentos:</div>
-            <div>• <strong>8:00 AM:</strong> Pantoprazol, Metformina, Firialta y Nifedipina</div>
-            <div>• <strong>2:00 PM:</strong> Valsartán</div>
-            <div>• <strong>8:00 PM:</strong> Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino</div>
-            <div>• <strong>9:00 PM:</strong> Insulina (24 Unidades) · <strong>Sábados:</strong> Ozempic</div>
+          <!-- Sensor Wearable Sin Parche (Pulso + Temperatura) -->
+          <div style="background:rgba(15, 42, 64, 0.85); border:1.5px solid rgba(94,234,212,0.35); border-radius:16px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:14.5px;">
+            <div id="amWearableBiometriaStrip" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span><i class="fas fa-heart-pulse" style="color:#f87171;"></i> Pulso: <strong>72 BPM</strong></span>
+              <span>·</span>
+              <span><i class="fas fa-thermometer-half" style="color:#38bdf8;"></i> Temp: <strong>36.5 °C</strong></span>
+              <span>·</span>
+              <span style="color:#86efac; font-weight:700;">Estable</span>
+            </div>
+            <button onclick="window.monitoreoWearable && window.monitoreoWearable.conectarBluetoothBLE()" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; border:none; border-radius:10px; padding:7px 12px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fab fa-bluetooth-b"></i> Conectar reloj
+            </button>
           </div>
+
+          <!-- Recordatorio interactivo de horarios de medicamentos -->
+          <div style="background:rgba(15, 42, 64, 0.85); border:1px solid rgba(94,234,212,0.35); border-radius:16px; padding:14px 16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <div style="font-weight:800; color:#5eead4; font-size:15px;"><i class="fas fa-clock"></i> Mis Horarios de Medicamentos (toca una dosis o pulsa el botón):</div>
+            </div>
+            <div id="amListaHorariosMeds"></div>
+          </div>
+
+          <!-- Banner de confirmación visible tras marcar medicamentos -->
+          <div id="amMedConfirmBanner" style="display:none; background:rgba(22, 163, 74, 0.24); border:2px solid #4ade80; border-radius:14px; padding:12px 15px; margin-bottom:14px; color:#ffffff; font-size:14.5px; font-weight:700; line-height:1.4;"></div>
 
           <!-- 4 BOTONES GIGANTES -->
           <div style="display:grid; grid-template-columns:1fr; gap:14px;">
@@ -1158,7 +1308,7 @@
               <i class="fas fa-bell" style="font-size:28px;"></i> ¡PEDIR AYUDA SOS A MI CUIDADOR!
             </button>
 
-            <button onclick="window.casoEstudio.confirmarPastillaRapidaAbuelo()" style="background:linear-gradient(135deg, #0d9488, #0284c7); border:none; border-radius:20px; padding:20px; color:#ffffff; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;">
+            <button id="amBtnConfirmarMed" onclick="window.casoEstudio.confirmarPastillaRapidaAbuelo()" style="background:linear-gradient(135deg, #0d9488, #0284c7); border:none; border-radius:20px; padding:20px; color:#ffffff; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;">
               <i class="fas fa-pills" style="font-size:26px;"></i> YA TOMÉ MIS MEDICAMENTOS / INSULINA
             </button>
 
@@ -1178,6 +1328,10 @@
       `;
 
       overlay.style.display = 'block';
+      this.renderListaHorariosAdultoMayor();
+      if (window.monitoreoWearable && typeof window.monitoreoWearable.renderizarModoAbueloStrip === 'function') {
+        window.monitoreoWearable.renderizarModoAbueloStrip();
+      }
     }
 
     actualizarVistaAdultoMayor(res) {
@@ -1187,24 +1341,81 @@
       if (pEl) pEl.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica}`;
     }
 
-    confirmarPastillaRapidaAbuelo() {
+    confirmarPastillaRapidaAbuelo(medIdEspecifico = null) {
       const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const key = this.obtenerClaveMedsHoy();
+      const estado = this.obtenerEstadoMedsHoy();
+      const bloques = this.obtenerBloquesMedsSimplificada();
+
+      let bloque = medIdEspecifico
+        ? bloques.find(b => b.id === medIdEspecifico)
+        : bloques.find(b => !estado[b.id]?.tomada);
+
+      const banner = document.getElementById('amMedConfirmBanner');
+      const nombrePac = this.paciente.nombre || 'Paciente';
+
+      if (!bloque) {
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = `<i class="fas fa-check-circle" style="color:#4ade80;"></i> Todas tus dosis de hoy ya están registradas y tu cuidador fue notificado.`;
+        }
+        if (window.mostrarNotificacion) {
+          window.mostrarNotificacion('Todas las dosis de hoy ya están confirmadas.', 'info');
+        }
+        return;
+      }
+
+      // Si tocó una dosis ya tomada, permitir desmarcarla; si no, marcarla tomada
+      const yaTomada = !!estado[bloque.id]?.tomada;
+      if (medIdEspecifico && yaTomada) {
+        estado[bloque.id] = { tomada: false, hora: null };
+        try { localStorage.setItem(key, JSON.stringify(estado)); } catch (_) {}
+        this.renderListaHorariosAdultoMayor();
+        if (window.saludDiariaInstance && typeof window.saludDiariaInstance.initMedicamentos === 'function') {
+          window.saludDiariaInstance.initMedicamentos();
+        }
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = `<i class="fas fa-undo" style="color:#fbbf24;"></i> Dosis de las <strong>${bloque.titulo}</strong> marcada nuevamente como pendiente.`;
+        }
+        return;
+      }
+
+      estado[bloque.id] = { tomada: true, hora };
+      try { localStorage.setItem(key, JSON.stringify(estado)); } catch (_) {}
+
+      this.renderListaHorariosAdultoMayor();
+
+      // Sincronizar checklist en Salud y Medicamentos
+      if (window.saludDiariaInstance && typeof window.saludDiariaInstance.initMedicamentos === 'function') {
+        window.saludDiariaInstance.initMedicamentos();
+      }
+
+      // Confirmación visual inmediata dentro de la Vista Simplificada
+      if (banner) {
+        banner.style.display = 'block';
+        banner.innerHTML = `<i class="fas fa-check-circle" style="color:#4ade80;"></i> ¡Listo! Confirmaste <strong>${bloque.titulo} (${bloque.detalle})</strong> a las <strong>${hora}</strong>. Se avisó a <strong>${this.paciente.cuidadorPrincipal || 'tu cuidador'}</strong> y quedó guardado en Salud y Medicamentos.`;
+      }
+
+      // Registrar aviso en Notificaciones para el cuidador
       if (window.emitirAlerta24Horas) {
         window.emitirAlerta24Horas({
-          titulo: 'Medicación confirmada por Damián Díaz Balseiro',
-          subtitulo: `Confirmó su toma correspondiente del esquema (8 AM / 2 PM / 8 PM / Insulina 24 UI) a las ${hora}.`,
+          titulo: `Dosis ${bloque.titulo} confirmada (${hora})`,
+          subtitulo: `${nombrePac} confirmó: ${bloque.detalle}.`,
           tipo: 'medicamento_tomado',
           color: 'green',
           icono: 'fas fa-check',
           badgeTexto: 'Confirmada',
           badgeClase: 'badge-confirmada',
+          estado: 'confirmada',
           coordenadas: this.paciente.coordenadasCasa,
           ubicacion: this.paciente.barrioResidencia,
-          descripcion: `El paciente Damián Díaz Balseiro confirmó la toma de su esquema prescrito desde su interfaz móvil en el barrio Chapacuá a las ${hora}.`
+          descripcion: `${nombrePac} confirmó desde la Vista Simplificada del Paciente la toma de las ${bloque.titulo} (${bloque.detalle}) a las ${hora}.`
         });
       }
+
       if (window.mostrarNotificacion) {
-        window.mostrarNotificacion('✓ ¡Excelente, Don Damián! Se avisó a tu familia que ya tomaste tu dosis.', 'success');
+        window.mostrarNotificacion(`Dosis de ${bloque.titulo} confirmada (${hora}). Cuidador notificado.`, 'success');
       }
     }
   }

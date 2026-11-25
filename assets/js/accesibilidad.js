@@ -151,6 +151,14 @@ class AccesibilidadManager {
     if (c1) c1.checked = !!this.config.textoGrande;
     if (c2) c2.checked = !!this.config.altoContraste;
     if (c3) c3.checked = !!this.config.botonesGrandes;
+
+    const cfg1 = document.getElementById('cfgAccessTextoGrande');
+    const cfg2 = document.getElementById('cfgAccessAltoContraste');
+    const cfg3 = document.getElementById('cfgAccessBotonesGrandes');
+
+    if (cfg1) cfg1.checked = !!this.config.textoGrande;
+    if (cfg2) cfg2.checked = !!this.config.altoContraste;
+    if (cfg3) cfg3.checked = !!this.config.botonesGrandes;
   }
 
   toggle(prop) {

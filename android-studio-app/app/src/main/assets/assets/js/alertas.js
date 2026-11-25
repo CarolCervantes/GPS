@@ -85,11 +85,15 @@ function renderAlertas(alertas) {
 
 function configAlerta(tipo) {
   return {
-    emergencia_manual: { clase: 'high-alert',    icono: 'fas fa-exclamation-circle', titulo: 'Emergencia manual (SOS)' },
-    zona_segura:       { clase: 'warning-alert',  icono: 'fas fa-map-marker-alt',    titulo: 'Salió de zona segura' },
-    glucosa_alta:      { clase: 'warning-alert',  icono: 'fas fa-arrow-up',          titulo: 'Glucosa alta' },
-    glucosa_baja:      { clase: 'high-alert',     icono: 'fas fa-arrow-down',        titulo: 'Glucosa baja' },
-    gps_perdido:       { clase: 'warning-alert',  icono: 'fas fa-satellite-dish',    titulo: 'Señal GPS perdida' },
+    emergencia_manual:        { clase: 'high-alert',    icono: 'fas fa-exclamation-circle', titulo: 'Emergencia manual (SOS)' },
+    zona_segura:              { clase: 'warning-alert', icono: 'fas fa-map-marker-alt',     titulo: 'Salió de zona segura' },
+    glucosa_alta:             { clase: 'warning-alert', icono: 'fas fa-arrow-up',           titulo: 'Glucosa alta' },
+    glucosa_baja:             { clase: 'high-alert',    icono: 'fas fa-arrow-down',         titulo: 'Glucosa baja' },
+    gps_perdido:              { clase: 'warning-alert', icono: 'fas fa-satellite-dish',     titulo: 'Señal GPS perdida' },
+    preventiva_hipoglucemia:  { clase: 'high-alert',    icono: 'fas fa-heart-pulse',        titulo: 'Preventiva: Posible bajada de azúcar' },
+    preventiva_hiperglucemia: { clase: 'warning-alert', icono: 'fas fa-thermometer-full',   titulo: 'Preventiva: Posible subida de azúcar' },
+    preventiva_biometrica:    { clase: 'high-alert',    icono: 'fas fa-heartbeat',          titulo: 'Alteración biométrica súbita' },
+    escalamiento_cuidador:    { clase: 'high-alert',    icono: 'fas fa-ambulance',          titulo: 'Escalamiento GPS + Síntomas (Sin respuesta 1 min)' },
   }[tipo] || { clase: '', icono: 'fas fa-bell', titulo: tipo };
 }
 

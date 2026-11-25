@@ -119,24 +119,9 @@ class TraficoCartagenaManager {
   }
 
   initBanner() {
-    if (document.getElementById('trafficAutoBanner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'trafficAutoBanner';
-    banner.className = 'traffic-live-banner';
-    banner.style.display = 'none';
-    banner.innerHTML = `
-      <div class="traffic-banner-content">
-        <div class="traffic-banner-icon"><i class="fas fa-satellite-dish fa-spin"></i></div>
-        <div class="traffic-banner-text">
-          <div class="traffic-banner-title" id="trafficBannerTitle">Detección Automática de Tráfico</div>
-          <div class="traffic-banner-sub" id="trafficBannerSub">Analizando telemetría GPS…</div>
-        </div>
-        <span class="traffic-speed-badge" id="trafficSpeedBadge">— km/h</span>
-      </div>
-    `;
-    const mapContainer = document.querySelector('.map-live-container') || document.body;
-    mapContainer.style.position = 'relative';
-    mapContainer.appendChild(banner);
+    // Banner superior de tráfico desactivado para mantener la interfaz limpia
+    const existente = document.getElementById('trafficAutoBanner');
+    if (existente) existente.remove();
   }
 
   renderCorredores() {

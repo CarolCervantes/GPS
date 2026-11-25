@@ -345,25 +345,40 @@ class CentrosMedicosCartagena {
     });
   }
 
-  trazarRutaHacia(destinoCoords) {
+  async trazarRutaHacia(destinoCoords, nombreDestino = 'Centro Médico') {
     if (!this.map) return;
 
     if (this.routePolyline) {
       this.map.removeLayer(this.routePolyline);
     }
 
-    const puntos = [this.patientCoords, destinoCoords];
-    this.routePolyline = L.polyline(puntos, {
-      color: '#38bdf8',
-      weight: 4,
-      dashArray: '8, 8',
-      opacity: 0.9
-    }).addTo(this.map);
+    const origen = { lat: Number(this.patientCoords[0]), lng: Number(this.patientCoords[1]) };
+    const destino = { lat: Number(destinoCoords[0]), lng: Number(destinoCoords[1]) };
 
-    this.map.fitBounds(this.routePolyline.getBounds(), { padding: [50, 50] });
+    let latlngs = [
+      [origen.lat, origen.lng],
+      [destino.lat, destino.lng]
+    ];
+
+    if (window.DiaMonRutasHistoricas && typeof window.DiaMonRutasHistoricas.obtenerRutaPorCallesOSRM === 'function') {
+      const rutaCalles = await window.DiaMonRutasHistoricas.obtenerRutaPorCallesOSRM([origen, destino], 'driving');
+      if (Array.isArray(rutaCalles) && rutaCalles.length >= 2) {
+        latlngs = rutaCalles.map(p => [p.lat, p.lng]);
+      }
+    }
+
+    this.routePolyline = L.polyline(latlngs, {
+      color: '#0284c7',
+      weight: 5,
+      opacity: 0.92,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).bindTooltip(`Ruta hacia ${nombreDestino}`, { sticky: true }).addTo(this.map);
+
+    this.map.fitBounds(this.routePolyline.getBounds(), { padding: [45, 45] });
 
     if (window.mostrarNotificacion) {
-      window.mostrarNotificacion('Ruta trazada hacia centro médico en Cartagena', 'info');
+      window.mostrarNotificacion(`Ruta por calles trazada hacia ${nombreDestino}.`, 'success');
     }
   }
 
