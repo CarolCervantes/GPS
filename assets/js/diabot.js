@@ -337,7 +337,7 @@ class DiaBotAssistant {
       return `<strong>📍 Telemetría GPS en el Barrio Chapacuá</strong><br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>Ubicación actual de ${ctx.nombre}:</strong> <code>${ctx.ubicacion}</code>.</li>` +
-        `<li><strong>Perímetro seguro:</strong> Geocerca de 650 metros alrededor de su casa en el <strong>Barrio Chapacuá</strong> (cubre su cuadra, parque y droguería local).</li>` +
+        `<li><strong>Perímetro seguro:</strong> Geocerca de 400 metros alrededor de su casa en el <strong>Barrio Chapacuá</strong> (cubre su cuadra, parque y droguería local).</li>` +
         `<li>Además, puedes pulsar <strong>"Activar GPS Real de este Dispositivo"</strong> en el banner superior para transmitir coordenadas satelitales reales desde cualquier celular.</li>` +
         `</ul>`;
     }
