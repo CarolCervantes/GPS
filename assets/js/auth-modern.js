@@ -229,11 +229,12 @@
 
         activarBotonCarga(loginSubmitBtn, 'Autenticando...');
 
-        if (window.supabaseClient && window.supabaseClient.auth) {
+        const sb = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+        if (sb && sb.auth) {
           try {
-            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
             if (!error && data && data.user) {
-              const { data: profile } = await window.supabaseClient
+              const { data: profile } = await sb
                 .from('profiles')
                 .select('nombre, rol')
                 .eq('id', data.user.id)
@@ -366,9 +367,10 @@
 
         activarBotonCarga(regSubmitBtn, 'Registrando...');
 
-        if (window.supabaseClient && window.supabaseClient.auth) {
+        const sb = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+        if (sb && sb.auth) {
           try {
-            const { data, error } = await window.supabaseClient.auth.signUp({
+            const { data, error } = await sb.auth.signUp({
               email,
               password,
               options: {
@@ -379,7 +381,31 @@
               }
             });
 
-            if (!error && data && data.user) {
+            if (error) {
+              console.error('[DiaMon Auth] Error en Supabase signUp:', error);
+              desactivarBotonCarga(regSubmitBtn, 'Crear Cuenta en DiaMon');
+              const msgLower = String(error.message || '').toLowerCase();
+              if (error.status === 429 || msgLower.includes('rate limit')) {
+                mostrarStatus('Límite de correos de Supabase alcanzado. Ve a Authentication -> Providers -> Email en Supabase y desactiva "Confirm email".', 'error');
+              } else if (msgLower.includes('database error')) {
+                mostrarStatus('Error en Supabase al crear perfil: ejecuta database/03_fixes_supabase.sql en el SQL Editor de Supabase.', 'error');
+              } else {
+                mostrarStatus(`No se pudo registrar en Supabase: ${error.message}`, 'error');
+              }
+              return;
+            }
+
+            if (data && data.user) {
+              if (data.session) {
+                try {
+                  await sb.from('profiles').upsert({
+                    id: data.user.id,
+                    nombre: nombreLimpio,
+                    rol: rolSupabase
+                  });
+                } catch (_) {}
+              }
+
               cuentaLocalData.id = data.user.id;
               guardarCuentaRegistrada(email, cuentaLocalData);
 
@@ -397,11 +423,20 @@
               sessionStorage.setItem('diamon_demo_user', JSON.stringify(sessionObj));
               localStorage.setItem('diamon_current_user', JSON.stringify(sessionObj));
               const msgExtra = currentRole === 'usuario' ? ` Tu código único es ${pacienteAsignado.codigoPaciente}.` : '';
-              mostrarStatus(`¡Cuenta creada!${msgExtra}`, 'success');
-              setTimeout(() => { window.location.href = 'index.html'; }, 700);
+              if (data.session) {
+                mostrarStatus(`¡Cuenta creada en Supabase!${msgExtra}`, 'success');
+              } else {
+                mostrarStatus(`Cuenta registrada en Supabase (auth.users y public.profiles), pendiente de confirmación de correo. Confirma tu email o desactiva "Confirm email" en Supabase Auth.${msgExtra}`, 'success');
+              }
+              setTimeout(() => { window.location.href = 'index.html'; }, data.session ? 700 : 1800);
               return;
             }
-          } catch (_) {}
+          } catch (err) {
+            console.error('[DiaMon Auth] Excepción conectando con Supabase signUp:', err);
+            desactivarBotonCarga(regSubmitBtn, 'Crear Cuenta en DiaMon');
+            mostrarStatus(`Error conectando con Supabase: ${err?.message || 'Verifica tu conexión a internet'}.`, 'error');
+            return;
+          }
         }
 
         const sessionLocal = {

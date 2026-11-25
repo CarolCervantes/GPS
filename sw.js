@@ -4,7 +4,7 @@
  * y Notificaciones Push en segundo plano.
  */
 
-const CACHE_NAME = 'diamon-cache-v4';
+const CACHE_NAME = 'diamon-cache-v6';
 const STATIC_ASSETS = [
   '/',
   '/pages/index.html',

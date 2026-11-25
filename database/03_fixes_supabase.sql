@@ -3,6 +3,69 @@
 -- Sistema Integral de Monitoreo GPS & Telemetría Clínica
 -- =====================================================
 
+-- 0. Reparar tabla profiles, constraint de roles y trigger de registro automático (auth.users -> public.profiles)
+create table if not exists public.profiles (
+  id         uuid references auth.users(id) on delete cascade primary key,
+  nombre     text not null default 'Usuario',
+  rol        text not null default 'usuario',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.profiles add column if not exists nombre text not null default 'Usuario';
+alter table public.profiles add column if not exists rol text not null default 'usuario';
+alter table public.profiles add column if not exists created_at timestamptz default now();
+alter table public.profiles add column if not exists updated_at timestamptz default now();
+
+alter table public.profiles drop constraint if exists profiles_rol_check;
+alter table public.profiles add constraint profiles_rol_check
+  check (rol in ('usuario', 'admin', 'cuidador', 'monitoreado'));
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  desired_rol text := 'usuario';
+  rol_meta text;
+begin
+  rol_meta := new.raw_user_meta_data->>'rol';
+  if rol_meta in ('cuidador', 'monitoreado', 'usuario', 'admin') then
+    desired_rol := rol_meta;
+  end if;
+
+  insert into public.profiles (id, nombre, rol)
+  values (
+    new.id,
+    coalesce(nullif(trim(new.raw_user_meta_data->>'nombre'), ''), split_part(new.email, '@', 1), 'Usuario'),
+    desired_rol
+  )
+  on conflict (id) do update
+    set nombre = excluded.nombre,
+        rol = excluded.rol,
+        updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Rellenar perfiles faltantes para usuarios ya creados en auth.users
+insert into public.profiles (id, nombre, rol)
+select u.id,
+       coalesce(nullif(trim(u.raw_user_meta_data->>'nombre'), ''), split_part(u.email, '@', 1), 'Usuario'),
+       case when (u.raw_user_meta_data->>'rol') in ('cuidador', 'monitoreado', 'usuario', 'admin')
+            then u.raw_user_meta_data->>'rol'
+            else 'usuario' end
+from auth.users u
+where not exists (select 1 from public.profiles p where p.id = u.id)
+on conflict (id) do nothing;
+
 -- 1. Permitir roles 'cuidador' y 'monitoreado' en admin_set_role
 create or replace function public.admin_set_role(target_user uuid, new_role text)
 returns void
