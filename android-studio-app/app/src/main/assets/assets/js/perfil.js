@@ -220,13 +220,22 @@ async function initVinculacionCuidador(userId) {
   // Ver si ya tiene una vinculación activa
   const { data: vincs } = await supabaseClient
     .from('vinculaciones')
-    .select('id, monitoreado_id, perfil_monitoreado:monitoreado_id(nombre)')
+    .select('id, monitoreado_id')
     .eq('cuidador_id', userId)
     .eq('estado', 'activa')
     .limit(1);
 
   if (vincs && vincs.length > 0) {
-    mostrarVinculacionActiva(vincs[0], userId);
+    let perfilMon = null;
+    try {
+      const { data: pData } = await supabaseClient
+        .from('profiles')
+        .select('id, nombre')
+        .eq('id', vincs[0].monitoreado_id)
+        .single();
+      perfilMon = pData;
+    } catch (_) {}
+    mostrarVinculacionActiva({ ...vincs[0], profiles: perfilMon }, userId);
   } else {
     mostrarBuscador();
   }
@@ -238,7 +247,7 @@ function mostrarVinculacionActiva(vinc, cuidadorId) {
   document.getElementById('vinculacionActiva').style.display = 'block';
   document.getElementById('buscarMonitoreado').style.display = 'none';
 
-  const nombre = vinc.profiles?.nombre || 'Persona monitoreada';
+  const nombre = vinc.profiles?.nombre || vinc.perfil_monitoreado?.nombre || 'Persona monitoreada';
   const card = document.getElementById('vinculacionActivaCard');
   if (card) {
     card.innerHTML = `

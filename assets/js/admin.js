@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tryStart = () => {
     const rol = document.body.dataset.rol;
     if (rol === 'admin') initAdmin();
-    else if (rol === 'usuario') mostrarSoloAdmin();
+    else if (rol && rol !== 'admin') mostrarSoloAdmin();
     // si aún no hay rol (auth.js todavía resolviendo), reintenta
   };
 

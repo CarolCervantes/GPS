@@ -40,7 +40,7 @@ public class ActividadCrudClinico extends Activity {
 
         try {
             DaoRegistroClinico sqliteAdapter = new DaoRegistroClinico(this, "diamon_clinico_v1", 1);
-            SupabaseRestAdapter supabaseAdapter = new SupabaseRestAdapter();
+            SupabaseRestAdapter supabaseAdapter = new SupabaseRestAdapter(this);
             casoDeUso = new GestionarRegistroClinicoUseCase(sqliteAdapter, supabaseAdapter);
             int proximo = casoDeUso.obtenerProximoId();
             campoId.setText("" + proximo);

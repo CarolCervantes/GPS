@@ -3,11 +3,13 @@ package co.diamon.salud.gps;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -17,6 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 // Actividad principal de DiaMon GPS
 // Inicia en la pantalla de Login / Registro (sin modo invitado bloqueado)
@@ -66,6 +70,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return false;
             }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                sincronizarSesionSupabaseEnPrefs(view);
+            }
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
@@ -90,6 +100,48 @@ public class MainActivity extends AppCompatActivity {
         if (webView != null) {
             webView.loadUrl(DIAMON_LOGIN_URL);
         }
+    }
+
+    private void sincronizarSesionSupabaseEnPrefs(WebView view) {
+        if (view == null) return;
+        String js = "(function(){try{"
+                + "var keys=Object.keys(localStorage);"
+                + "for(var i=0;i<keys.length;i++){"
+                + "var k=keys[i];"
+                + "if(k.indexOf('sb-')===0&&k.slice(-11)==='-auth-token'){"
+                + "var s=JSON.parse(localStorage.getItem(k)||'null');"
+                + "if(s&&s.access_token){"
+                + "return JSON.stringify({access_token:s.access_token,user_id:(s.user&&s.user.id)||''});"
+                + "}"
+                + "}"
+                + "}"
+                + "}catch(e){}return JSON.stringify({access_token:'',user_id:''});})();";
+
+        view.evaluateJavascript(js, new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                if (value == null || "null".equals(value)) return;
+                try {
+                    Object parsedVal = new JSONTokener(value).nextValue();
+                    String jsonStr = (parsedVal instanceof String) ? (String) parsedVal : value;
+                    JSONObject obj = new JSONObject(jsonStr);
+                    String token = obj.optString("access_token", "");
+                    String userId = obj.optString("user_id", "");
+
+                    SharedPreferences prefs = getSharedPreferences("diamon_supabase_auth", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    if (!token.isEmpty() && !userId.isEmpty()) {
+                        editor.putString("access_token", token);
+                        editor.putString("user_id", userId);
+                    } else {
+                        editor.remove("access_token");
+                        editor.remove("user_id");
+                    }
+                    editor.apply();
+                } catch (Exception ignored) {
+                }
+            }
+        });
     }
 
     private void solicitarPermisosUbicacion() {

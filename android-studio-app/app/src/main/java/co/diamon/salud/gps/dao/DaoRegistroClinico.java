@@ -70,11 +70,16 @@ public class DaoRegistroClinico implements RegistroClinicoRepositoryPort {
     public RegistroClinico consultarUnRegistro(String id) throws Exception {
         String[] args = {id};
         Cursor resultado = bd.consultar("SELECT * FROM RegistrosClinicos WHERE id=?", args);
-
-        if (resultado.moveToFirst()) {
-            return getRegistro(resultado);
-        } else {
-            throw new Exception("El registro clinico " + id + " no existe");
+        try {
+            if (resultado != null && resultado.moveToFirst()) {
+                return getRegistro(resultado);
+            } else {
+                throw new Exception("El registro clinico " + id + " no existe");
+            }
+        } finally {
+            if (resultado != null) {
+                resultado.close();
+            }
         }
     }
 
