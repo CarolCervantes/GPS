@@ -49,11 +49,11 @@
 <div class="dc-shell">
 
     <!-- Sidebar lateral -->
-    <aside class="dc-sidebar" aria-label="Menú principal de navegación">
+    <aside class="dc-sidebar" id="dcSidebar" aria-label="Menú principal de navegación">
         <!-- Logo y Marca Oficial DiaMon -->
         <a href="#" class="dc-brand" onclick="window.switchView('inicio'); return false;" aria-label="DiaMon - Ir al Inicio">
             <div class="dc-brand-icon">
-                <i class="fas fa-tint" aria-hidden="true"></i>
+                <i class="fas fa-heart-pulse" aria-hidden="true"></i>
             </div>
             <div class="dc-brand-text">
                 <h1>DiaMon</h1>
@@ -127,11 +127,16 @@
         </div>
     </aside>
 
+    <!-- Fondo oscuro detras del menu abierto (web del celular) -->
+    <div class="dc-menu-velo" id="dcMenuVelo"></div>
+
     <!-- Contenido principal -->
     <main class="dc-main">
 
         <!-- Topbar Superior -->
         <header class="dc-topbar">
+            <!-- Boton de 3 rayitas: abre el menu lateral en la web del celular -->
+            <button type="button" class="dc-menu-btn" id="dcMenuBtn" aria-label="Abrir menú" aria-controls="dcSidebar" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
             <!-- Buscador Accesible -->
             <div class="dc-search">
                 <label for="dcSearchInput" class="sr-only">Buscar información</label>
@@ -745,6 +750,15 @@
                 </div>
 
                 <div class="dc-security-options-grid">
+                    <!-- Solo en la app Android: pantalla nativa de registros guardados en el celular (SQLite) -->
+                    <div class="dc-security-opt-card dm-solo-app" onclick="window.DiaMonNativo && window.DiaMonNativo.abrirRegistrosSinConexion()" role="button" tabindex="0">
+                        <div class="dc-security-opt-icon"><i class="fas fa-database" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Registros sin conexión</h4>
+                            <p>Guardar, buscar, modificar y eliminar registros en el celular (SQLite).</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </div>
                     <div class="dc-security-opt-card dm-solo-con-paciente" onclick="window.medicalQRManager.abrirModalQR()" role="button" tabindex="0" aria-label="Abrir Ficha Médica QR">
                         <div class="dc-security-opt-icon"><i class="fas fa-qrcode" aria-hidden="true"></i></div>
                         <div class="dc-security-opt-text">

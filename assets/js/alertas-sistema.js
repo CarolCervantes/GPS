@@ -46,7 +46,9 @@
         ctx.resume();
       }
 
-      if (tipo === 'geocerca' || tipo === 'critica') {
+      // Tono urgente para lo que requiere actuar ya: SOS, salida de zona y lecturas criticas
+      const URGENTES = ['geocerca', 'critica', 'sos', 'emergencia_manual', 'zona_segura', 'glucosa_baja', 'glucosa', 'presion', 'presion_baja'];
+      if (URGENTES.includes(tipo)) {
         // Alarma urgente de emergencia: dos pulsos en tono agudo (880Hz -> 440Hz)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -195,20 +197,30 @@
 
   // Crear alertas y revisar cada 20 segundos (batería)
 
+  // Texto de "hace cuanto" calculado con la hora real de la alerta (no se guarda fijo)
+  function tiempoDe(alerta) {
+    const ts = Number(alerta.ts) || 0;
+    if (!ts) return '';
+    const min = Math.floor((Date.now() - ts) / 60000);
+    if (min < 1) return 'Hace un momento';
+    if (min < 60) return `Hace ${min} min`;
+    if (min < 24 * 60) return `Hace ${Math.floor(min / 60)} h`;
+    return new Date(ts).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  }
+  window.tiempoAlertaDiaMon = tiempoDe;
+
   window.emitirAlerta24Horas = function (alertaData) {
     const alertas = obtenerAlertas();
     const nuevaAlerta = {
       id: 'alt-' + Date.now(),
       titulo: alertaData.titulo || 'Alerta del Sistema',
       subtitulo: alertaData.subtitulo || 'Incidencia detectada por telemetría.',
-      tiempoTexto: 'Hace un momento',
       tipo: alertaData.tipo || 'geocerca',
       color: alertaData.color || 'red',
       icono: alertaData.icono || 'fas fa-exclamation-triangle',
       badgeTexto: alertaData.badgeTexto || 'Pendiente',
       badgeClase: alertaData.badgeClase || 'badge-pendiente',
       estado: alertaData.estado || 'pendiente',
-      rango: '24h',
       ts: Date.now(),
       coordenadas: alertaData.coordenadas || null,
       ubicacion: alertaData.ubicacion || 'Cartagena de Indias',
@@ -272,7 +284,7 @@
     let filtradas = alertas;
 
     if (filtroRangoActual === '24h') {
-      filtradas = alertas.filter(a => a.rango === '24h' || (Date.now() - (a.ts || 0)) <= 24 * 3600000);
+      filtradas = alertas.filter(a => (Date.now() - (a.ts || 0)) <= 24 * 3600000);
     }
 
     let rowsHtml = '';
@@ -299,7 +311,7 @@
             </div>
 
             <div class="dm-alert-right">
-              <div class="dm-alert-time">${alerta.tiempoTexto}</div>
+              <div class="dm-alert-time">${tiempoDe(alerta)}</div>
               <div class="dm-alert-badge ${alerta.badgeClase}">${alerta.badgeTexto}</div>
             </div>
           </div>
@@ -389,7 +401,7 @@
           <p>${alerta.descripcion}</p>
 
           <div class="dm-alert-modal-meta">
-            <div><i class="far fa-clock"></i> <strong>Momento:</strong> ${alerta.tiempoTexto}</div>
+            <div><i class="far fa-clock"></i> <strong>Momento:</strong> ${tiempoDe(alerta)}</div>
             ${alerta.ubicacion ? `<div><i class="fas fa-map-marker-alt"></i> <strong>Lugar:</strong> ${alerta.ubicacion}</div>` : ''}
             <div><i class="fas fa-satellite"></i> <strong>Protocolo 24/7:</strong> Satélites GPS & Sensor Biomédico</div>
           </div>

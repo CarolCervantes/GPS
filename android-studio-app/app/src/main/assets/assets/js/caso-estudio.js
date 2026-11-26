@@ -1232,7 +1232,7 @@
       const medId = h < 12 ? 'med-1' : h < 17 ? 'med-2' : h < 20.75 ? 'med-3' : 'med-4';
       const med = (window.MEDICAMENTOS_DIARIOS || []).find(m => m.id === medId) || { nombre: 'Esquema del día', horario: hora };
       await window.DiaMonDatos.guardarToma({
-        medicamentoId: medId, nombre: med.nombre, horario: med.horario,
+        medicamentoId: medId, nombre: med.nombre, horario: med.horario, dosis: med.dosis,
         fecha: window.DiaMonDatos.hoyISO(), tomada: true, quien: 'paciente'
       });
 

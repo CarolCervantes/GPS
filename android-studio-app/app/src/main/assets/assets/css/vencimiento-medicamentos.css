@@ -39,10 +39,10 @@
   font-size: 13px;
   font-weight: 700;
   color: #f8fafc;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  line-height: 1.35;
 }
+.venc-name i { margin-right: 6px; }
+.venc-sub { white-space: normal; }
 
 .venc-sub {
   font-size: 11px;

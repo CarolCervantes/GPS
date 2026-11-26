@@ -50,11 +50,24 @@
     const navItems = document.querySelectorAll('[data-dc-tab]');
     const views = document.querySelectorAll('.dc-view');
 
+    // Menu lateral en la web del celular: se abre con las 3 rayitas y se cierra al elegir una seccion
+    const btnMenu = document.getElementById('dcMenuBtn');
+    const veloMenu = document.getElementById('dcMenuVelo');
+    function menuLateral(abrir) {
+      document.body.classList.toggle('dc-menu-abierto', abrir);
+      if (btnMenu) btnMenu.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+    }
+    if (btnMenu) btnMenu.addEventListener('click', () => menuLateral(!document.body.classList.contains('dc-menu-abierto')));
+    if (veloMenu) veloMenu.addEventListener('click', () => menuLateral(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menuLateral(false); });
+
     window.switchView = function (targetTab) {
+      menuLateral(false);
       // Normalizar tab: si se solicita 'medicamentos', redirigir a la vista 'salud'
       if (targetTab === 'medicamentos') targetTab = 'salud';
       targetTab = vistaPermitida(targetTab);
       cargarPaginaEmbebida(targetTab);
+      window.scrollTo(0, 0);  // cada seccion se abre desde arriba
       // Activar botón del sidebar
       // Actualizar estado en sidebar desktop y en barra móvil
       navItems.forEach(item => {
@@ -500,6 +513,8 @@
     const banner = document.getElementById('dcCookieBanner');
     if (!banner) return;
 
+    // En la app Android no hay cookies de terceros ni rastreo: no se muestra el aviso
+    if (document.documentElement.classList.contains('dm-en-app')) return;
     const consent = localStorage.getItem('diamon_cookie_consent');
     if (!consent) {
       setTimeout(() => {

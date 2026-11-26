@@ -12,7 +12,7 @@ const { crearValidarAdminController } = require('./adapters/in/http/ValidarAdmin
 function crearContenedor(env = process.env) {
   const consultarDiaBot = new ConsultarDiaBotUseCase([
     new ClaudeAsistenteAdapter(env.ANTHROPIC_API_KEY, env.ANTHROPIC_MODEL),
-    new GeminiAsistenteAdapter(env.GEMINI_API_KEY)
+    new GeminiAsistenteAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL)
   ]);
   // Si no se configuro la variable se usa el codigo del proyecto (solo para pruebas en local)
   const validarCodigoAdmin = new ValidarCodigoAdminUseCase(

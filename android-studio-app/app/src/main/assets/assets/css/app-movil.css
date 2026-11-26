@@ -54,3 +54,31 @@ html.dm-en-app #medicamentosWidget { order: 1; }
 html.dm-en-app #estadoDiarioWidget { order: 2; }
 html.dm-en-app #consejoDiarioWidget { order: 3; margin-top: 0 !important; }
 html.dm-en-app #vencimientoMedsWidget { order: 4; margin-top: 0 !important; }
+
+/* Lo marcado dm-solo-app solo se ve dentro de la app */
+html:not(.dm-en-app) .dm-solo-app { display: none !important; }
+
+/* ---------- App mas limpia: lo que en la web ayuda pero en el celular sobra ---------- */
+/* El menu de abajo ya sirve para volver, y los subtitulos largos ocupan media pantalla */
+html.dm-en-app .dc-back-btn,
+html.dm-en-app .dc-welcome-subtitle,
+html.dm-en-app .dc-footer-legal-links,
+html.dm-en-app .dc-cookie-banner,
+html.dm-en-app .dm-alerts-banner,
+html.dm-en-app .dm-247-status,
+html.dm-en-app #btnNotif24h,
+html.dm-en-app .consejo-fecha,
+html.dm-en-app .consejo-nota { display: none !important; }
+html.dm-en-app .dc-view-header { margin-bottom: 12px !important; }
+html.dm-en-app .dc-welcome-title { font-size: 22px !important; line-height: 1.25; }
+html.dm-en-app .dm-alerts-247-bar { padding: 8px 12px !important; justify-content: flex-end; }
+
+/* Textos que se salian o se cortaban con "..." */
+html.dm-en-app .dc-view *:not(i):not(.leaflet-container *) { text-overflow: clip !important; }
+html.dm-en-app .dc-kpi-card *,
+html.dm-en-app .dc-stat-card * { white-space: normal !important; overflow-wrap: anywhere; }
+html.dm-en-app .venc-item-header { flex-wrap: wrap; }
+html.dm-en-app .venc-badge { order: -1; }
+html.dm-en-app .meds-header,
+html.dm-en-app .checkin-header,
+html.dm-en-app .consejo-header { flex-wrap: wrap; gap: 6px; }

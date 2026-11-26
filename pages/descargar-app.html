@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiaMon — Descargar App Móvil (Android &amp; iOS)</title>
+    <title>DiaMon — Descargar la app</title>
     <meta name="theme-color" content="#0d9488">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -190,103 +190,96 @@
 <div class="wrap">
     <header class="topbar">
         <a href="index.html" class="brand">
-            <div class="brand-icon"><i class="fas fa-tint"></i></div>
+            <div class="brand-icon"><i class="fas fa-heart-pulse"></i></div>
             <div>
-                <h1 style="font-size:20px; font-weight:800;">DiaMon Mobile · Android &amp; iOS</h1>
-                <span style="font-size:12px; color:#99f6e4;">Caso de Estudio: Monitoreo de Diabetes Tipo 2 e Hipertensión</span>
+                <h1 style="font-size:20px; font-weight:800;">DiaMon · Descarga la app</h1>
+                <span style="font-size:12px; color:#99f6e4;">Proyecto de aula Unicolombo · Monitoreo de diabetes tipo 2, hipertensión y GPS</span>
             </div>
         </a>
         <div style="display:flex; gap:10px;">
             <button onclick="window.print()" class="btn-back" style="cursor:pointer;">
-                <i class="fas fa-print"></i> Imprimir QR para Tablero
+                <i class="fas fa-print"></i> Imprimir QR
             </button>
             <a href="index.html" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                <i class="fas fa-arrow-left"></i> Ir al panel
             </a>
         </div>
     </header>
 
     <div class="hero-grid">
-        <!-- PÓSTER QR PARA PROYECTAR O PEGAR EN EL TABLERO -->
+        <!-- QR que abre esta misma pagina en el celular -->
         <div class="qr-poster-card">
             <span class="qr-badge"><i class="fas fa-qrcode"></i> Escanea con la cámara de tu celular</span>
-            <h2 style="font-size:22px; font-weight:800; color:#0f172a;">Prueba DiaMon en Vivo</h2>
+            <h2 style="font-size:22px; font-weight:800; color:#0f172a;">Instala DiaMon</h2>
             <p style="font-size:13.5px; color:#475569; margin-top:4px; max-width:360px;">
-                Compatible con <strong>iPhone (iOS)</strong> y <strong>Android</strong>. Permite ver el mapa GPS del paciente, signos vitales y modo adulto mayor.
+                El código abre esta página en el celular. Desde ahí descargas la app Android o entras a la versión web.
             </p>
 
             <div class="qr-frame">
                 <div id="qrDownloadCanvas"></div>
             </div>
 
-            <div style="font-size:12px; font-weight:700; color:#0d9488; margin-bottom:6px;" id="qrCurrentUrlLabel">
-                https://diamon-salud.vercel.app
-            </div>
+            <div style="font-size:12px; font-weight:700; color:#0d9488; margin-bottom:6px;" id="qrCurrentUrlLabel"></div>
 
             <div class="url-input-row">
-                <input type="text" id="customQrUrlInput" placeholder="URL del proyecto o IP local (ej. https://diamon-salud.vercel.app)">
+                <input type="text" id="customQrUrlInput" placeholder="Otra dirección para el QR (opcional)">
                 <button type="button" onclick="window.actualizarQRDescarga()">Actualizar QR</button>
             </div>
         </div>
 
-        <!-- INSTRUCCIONES POR PLATAFORMA -->
         <div class="platforms-col">
-            <!-- iPhone / iOS -->
-            <div class="platform-card">
-                <div class="platform-header">
-                    <div class="platform-icon apple"><i class="fab fa-apple"></i></div>
-                    <div>
-                        <h3 style="font-size:16px; font-weight:700;">Instalar en iPhone / iPad (iOS PWA)</h3>
-                        <span style="font-size:12px; color:#99f6e4;">Funciona como App nativa a pantalla completa sin App Store</span>
-                    </div>
-                </div>
-                <ol class="steps-list">
-                    <li>Escanea el código QR con la cámara de tu iPhone para abrir DiaMon en <strong>Safari</strong>.</li>
-                    <li>Toca el botón <strong>Compartir</strong> <i class="fas fa-share-square"></i> en la barra inferior de Safari.</li>
-                    <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong>. Se creará el ícono oficial de DiaMon.</li>
-                </ol>
-                <a href="index.html" class="btn-action btn-dark">
-                    <i class="fas fa-external-link-alt"></i> Abrir App Web Interactiva Ahora
-                </a>
-            </div>
-
-            <!-- Android Studio & APK -->
+            <!-- Android -->
             <div class="platform-card">
                 <div class="platform-header">
                     <div class="platform-icon android"><i class="fab fa-android"></i></div>
                     <div>
-                        <h3 style="font-size:16px; font-weight:700;">App Nativa Android (Android Studio + WebAPK)</h3>
-                        <span style="font-size:12px; color:#86efac;">Incluye proyecto nativo en carpeta <code>/android-studio-app</code></span>
+                        <h3 style="font-size:16px; font-weight:700;">App Android (APK)</h3>
+                        <span style="font-size:12px; color:#86efac;">Versión 1.1.0 · Android 7.0 o superior · 5 MB</span>
                     </div>
                 </div>
                 <ol class="steps-list">
-                    <li><strong>Instalación directa desde el QR:</strong> Al abrir en Chrome Android, pulsa el botón inferior o <em>"Instalar aplicación"</em>.</li>
-                    <li><strong>En Android Studio:</strong> El proyecto incluye el módulo nativo con permisos <code>ACCESS_FINE_LOCATION</code> y <code>WebView</code> con geolocalización en tiempo real.</li>
+                    <li>Toca <strong>Descargar APK</strong> y abre el archivo cuando termine.</li>
+                    <li>Si el celular lo pide, permite <strong>"Instalar apps desconocidas"</strong> para Chrome o para Archivos.</li>
+                    <li>Si ya tenías una versión anterior de DiaMon, <strong>desinstálala primero</strong>.</li>
+                    <li>Inicia sesión. Si eres paciente, acepta la ubicación con <strong>"Permitir todo el tiempo"</strong>.</li>
                 </ol>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <a href="../assets/DiaMon-GPS.apk" download="DiaMon-GPS.apk" class="btn-action btn-primary">
-                        <i class="fab fa-android"></i> Descargar APK (6 MB)
-                    </a>
-                    <button type="button" id="btnInstallPWA" onclick="window.instalarAppMovil()" class="btn-action btn-dark">
-                        <i class="fas fa-download"></i> Instalar WebApp
-                    </button>
-                </div>
+                <a href="../assets/DiaMon-GPS.apk" download="DiaMon-GPS.apk" class="btn-action btn-primary">
+                    <i class="fab fa-android"></i> Descargar APK (5 MB)
+                </a>
             </div>
 
-            <!-- Vista Abuelo -->
+            <!-- iPhone y computador -->
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon apple"><i class="fas fa-globe"></i></div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:700;">iPhone o computador (versión web)</h3>
+                        <span style="font-size:12px; color:#99f6e4;">Mismas funciones, sin instalar nada</span>
+                    </div>
+                </div>
+                <ol class="steps-list">
+                    <li>Toca <strong>Abrir versión web</strong> e inicia sesión con tu cuenta.</li>
+                    <li>En iPhone puedes dejarla como ícono: Safari → <strong>Compartir</strong> <i class="fas fa-share-square"></i> → <strong>"Agregar a pantalla de inicio"</strong>.</li>
+                </ol>
+                <a href="index.html" class="btn-action btn-dark">
+                    <i class="fas fa-external-link-alt"></i> Abrir versión web
+                </a>
+            </div>
+
+            <!-- Vista simplificada -->
             <div class="platform-card">
                 <div class="platform-header">
                     <div class="platform-icon senior"><i class="fas fa-universal-access"></i></div>
                     <div>
-                        <h3 style="font-size:16px; font-weight:700;">Probar Vista Simplificada del Abuelo</h3>
-                        <span style="font-size:12px; color:#e9d5ff;">Diseñada con alto contraste y 4 botones gigantes</span>
+                        <h3 style="font-size:16px; font-weight:700;">Vista simplificada para el paciente</h3>
+                        <span style="font-size:12px; color:#e9d5ff;">Botones grandes y alto contraste</span>
                     </div>
                 </div>
                 <p style="font-size:13px; color:#cbd5e1; margin-bottom:12px;">
-                    Permite mostrar al jurado cómo interactúa el adulto mayor (Botón SOS, Confirmar Pastilla, Anotar Glucosa y Presión).
+                    SOS, confirmar medicamento, anotar glucosa y presión. Hay que iniciar sesión como paciente.
                 </p>
                 <a href="index.html#modo-abuelo" onclick="localStorage.setItem('diamon_abrir_abuelo','1')" class="btn-action btn-primary" style="background:#7c3aed;">
-                    <i class="fas fa-user-check"></i> Abrir Directamente en Modo Abuelo
+                    <i class="fas fa-user-check"></i> Abrir vista simplificada
                 </a>
             </div>
         </div>
@@ -295,31 +288,15 @@
 
 <script src="../assets/js/vendor/qrcode.min.js"></script>
 <script>
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    window.instalarAppMovil = async function () {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
-            deferredPrompt = null;
-        } else {
-            alert('Para instalar en iPhone: abre en Safari -> Compartir -> "Agregar a pantalla de inicio". En Android Chrome: menú superior (⋮) -> "Instalar aplicación".');
-        }
-    };
-
     window.actualizarQRDescarga = function () {
         const container = document.getElementById('qrDownloadCanvas');
         const input = document.getElementById('customQrUrlInput');
         const label = document.getElementById('qrCurrentUrlLabel');
         if (!container) return;
 
-        let targetUrl = (input && input.value.trim()) ? input.value.trim() : window.location.origin + '/pages/index.html';
+        let targetUrl = (input && input.value.trim()) ? input.value.trim() : window.location.origin + '/pages/descargar-app.html';
         if (targetUrl.startsWith('file://')) {
-            targetUrl = 'https://diamon-salud.vercel.app/pages/index.html';
+            targetUrl = 'https://diamon-gps-salud.vercel.app/pages/descargar-app.html';
         }
         if (input && !input.value) input.value = targetUrl;
         if (label) label.textContent = targetUrl;

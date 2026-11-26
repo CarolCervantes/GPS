@@ -351,7 +351,7 @@ class SaludDiariaManager {
         const medObj = MEDICAMENTOS_PREDETERMINADOS.find(m => m.id === id);
         const rol = window.DiaMonSesion ? window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) : 'usuario';
         window.DiaMonDatos.guardarToma({
-          medicamentoId: id, nombre: medObj?.nombre || id, horario: medObj?.horario || horaActual,
+          medicamentoId: id, nombre: medObj?.nombre || id, horario: medObj?.horario || horaActual, dosis: medObj?.dosis,
           fecha: this.fechaHoy, tomada: isChecked, quien: rol === 'usuario' ? 'paciente' : rol
         }).catch(() => {
           if (window.mostrarNotificacion) window.mostrarNotificacion('No se pudo guardar la toma. Revisa tu conexión.', 'warn');

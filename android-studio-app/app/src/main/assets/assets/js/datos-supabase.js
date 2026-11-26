@@ -47,7 +47,8 @@
   const TIPO_EQUIVALENTE = { sos: 'emergencia_manual', presion: 'presion_alta', recordatorio: 'sistema' };
   const aAlerta = (r) => {
     const d = r.datos || {};
-    const base = { ...d, id: r.id, titulo: r.titulo || r.descripcion, subtitulo: r.descripcion,
+    const { tiempoTexto, rango, ...d2 } = d;  // alertas viejas traian estos textos fijos
+    const base = { ...d2, id: r.id, titulo: r.titulo || r.descripcion, subtitulo: r.descripcion,
       tipo: d.tipoOriginal || r.tipo, estado: r.estado === 'activa' ? (d.estadoOriginal || 'pendiente') : 'confirmada',
       ts: new Date(r.ts).getTime() };
     if (r.estado !== 'activa') {
@@ -137,8 +138,10 @@
   }
 
   async function guardarAlerta(a) {
-    const { titulo, subtitulo, tipo, estado, id, ts, ...resto } = a;
-    const tipoBD = TIPOS_BD.includes(tipo) ? tipo : (TIPO_EQUIVALENTE[tipo] || 'sistema');
+    // tiempoTexto y rango no se guardan: se calculan con la hora real al mostrar la alerta
+    const { titulo, subtitulo, tipo, estado, id, ts, tiempoTexto, rango, ...resto } = a;
+    let tipoBD = TIPOS_BD.includes(tipo) ? tipo : (TIPO_EQUIVALENTE[tipo] || 'sistema');
+    if (tipo === 'presion' && /hipotensi/i.test(titulo || '')) tipoBD = 'presion_baja';
     const { data, error } = await sb().from('alertas').insert({
       user_id: pacienteId(), titulo, descripcion: subtitulo || titulo, tipo: tipoBD, estado: 'activa',
       datos: { ...resto, tipoOriginal: tipo, estadoOriginal: estado || 'pendiente' }, ts: new Date().toISOString()
@@ -154,11 +157,13 @@
   }
 
   // Marca o desmarca un medicamento de un dia (una fila por medicamento y fecha)
-  async function guardarToma({ medicamentoId, nombre, horario, fecha, tomada, quien }) {
+  async function guardarToma({ medicamentoId, nombre, horario, fecha, tomada, quien, dosis }) {
     const id = pacienteId();
     const { data: existente } = await sb().from('tomas_medicamento').select('id')
       .eq('user_id', id).eq('medicamento_id', medicamentoId).eq('fecha', fecha).maybeSingle();
+    // La columna dosis es obligatoria en la tabla; si no llega se usa la pauta de la enfermera
     const fila = { user_id: id, medicamento_id: medicamentoId, medicamento_nombre: nombre, horario_programado: horario,
+      dosis: dosis || 'Según la pauta de la enfermera',
       fecha, tomada, confirmado_por: quien, ts: new Date().toISOString() };
     const { error } = existente
       ? await sb().from('tomas_medicamento').update(fila).eq('id', existente.id)

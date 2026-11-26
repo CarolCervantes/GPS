@@ -128,16 +128,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // abre la actividad nativa de CRUD SQLite (Guardar, Buscar, Limpiar, Modificar, Eliminar)
-    public void mostrarCrudClinico(View component) {
-        Intent intento = new Intent(this, ActividadCrudClinico.class);
-        startActivity(intento);
-    }
-
-    // lleva directamente a la pantalla de Login y Registro
-    public void irALogin(View component) {
-        if (webView != null) {
-            webView.loadUrl(DIAMON_LOGIN_URL);
-        }
+    private void mostrarCrudClinico() {
+        startActivity(new Intent(this, ActividadCrudClinico.class));
     }
 
     private void sincronizarSesionSupabaseEnPrefs(WebView view) {
@@ -230,6 +222,12 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void detenerUbicacion() {
             runOnUiThread(() -> stopService(new Intent(MainActivity.this, ServicioUbicacion.class)));
+        }
+
+        // Desde Configuracion > Registros sin conexion (la web no tiene botones nativos arriba)
+        @JavascriptInterface
+        public void abrirRegistrosSinConexion() {
+            runOnUiThread(MainActivity.this::mostrarCrudClinico);
         }
 
         @JavascriptInterface
