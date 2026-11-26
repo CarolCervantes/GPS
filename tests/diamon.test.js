@@ -118,3 +118,26 @@ test('7. PWA: manifiesto y caché usan rutas consistentes', () => {
   assert.ok(sw.includes("addEventListener('fetch'"), 'el service worker debe mantener soporte offline');
 });
 
+
+test('9. Backend hexagonal: casos de uso con adaptadores intercambiables', async () => {
+  const { ConsultarDiaBotUseCase } = require('../src/application/usecases/ConsultarDiaBotUseCase');
+  const { ValidarCodigoAdminUseCase } = require('../src/application/usecases/ValidarCodigoAdminUseCase');
+  const { CodigoAdminEnvAdapter } = require('../src/infrastructure/adapters/out/config/CodigoAdminEnvAdapter');
+
+  // Adaptadores falsos: el caso de uso no sabe si detras hay Claude, Gemini o nada
+  const apagado = { nombre: 'apagado', disponible: () => false, responder: async () => 'no deberia usarse' };
+  const falla = { nombre: 'falla', disponible: () => true, responder: async () => { throw new Error('caido'); } };
+  const bueno = { nombre: 'falso', disponible: () => true, responder: async (inst, msg) => (inst.includes('Damián') ? 'ok: ' + msg : null) };
+
+  const diabot = new ConsultarDiaBotUseCase([apagado, falla, bueno]);
+  const r = await diabot.ejecutar({ mensaje: 'hola', contexto: { nombre: 'Damián' } });
+  assert.equal(r.reply, 'ok: hola');
+  assert.equal(r.engine, 'falso');
+  assert.ok((await diabot.ejecutar({ mensaje: '   ' })).error, 'un mensaje vacio no llega a la IA');
+  assert.equal((await new ConsultarDiaBotUseCase([]).ejecutar({ mensaje: 'x' })).reply, null);
+
+  const admin = new ValidarCodigoAdminUseCase(new CodigoAdminEnvAdapter('CLAVE-1'));
+  assert.equal(admin.ejecutar('clave-1').valido, true);
+  assert.equal(admin.ejecutar('otra').valido, false);
+  assert.equal(admin.ejecutar('').valido, false);
+});

@@ -47,29 +47,13 @@ const server = http.createServer((req, res) => {
 
   let reqPath = req.url.split('?')[0].split('#')[0];
 
-  // Validacion del codigo de administrador (el codigo ya no esta en el navegador)
+  // API: cada ruta va a su controlador (adaptador de entrada de la arquitectura hexagonal)
   if (reqPath === '/api/validar-admin') {
-    let rawBody = '';
-    req.on('data', chunk => { rawBody += chunk.toString(); });
-    req.on('end', () => {
-      req.body = rawBody;
-      validarAdminHandler(req, res);
-    });
+    validarAdminHandler(req, res);
     return;
   }
-
-  // Endpoint de IA Real para DiaBot (/api/diabot)
   if (reqPath === '/api/diabot') {
-    let rawBody = '';
-    req.on('data', chunk => { rawBody += chunk.toString(); });
-    req.on('end', () => {
-      try {
-        req.body = rawBody ? JSON.parse(rawBody) : {};
-      } catch (_) {
-        req.body = {};
-      }
-      diabotHandler(req, res);
-    });
+    diabotHandler(req, res);
     return;
   }
 
