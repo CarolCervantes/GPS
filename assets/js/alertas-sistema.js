@@ -1,4 +1,4 @@
-// Sistema Autónomo de Alertas e Incidencias Clínicas 24/7
+// Alertas del paciente: lista, sonido y notificaciones del navegador
 // - Monitoreo continuo 24/7 de Geocercas GPS (Salida de zona segura en Cartagena)
 // - Notificaciones push nativas del sistema operativo en segundo plano (Service Worker)
 // - Alarma sonora clínica de emergencia (Web Audio API)
@@ -112,7 +112,6 @@
       navigator.serviceWorker.register(swPath)
         .then((reg) => {
           swRegistration = reg;
-          console.log('[DiaMon 24/7] Service Worker registrado correctamente.');
         })
         .catch((err) => {
           console.warn('[DiaMon 24/7] Service worker registro omitido:', err);

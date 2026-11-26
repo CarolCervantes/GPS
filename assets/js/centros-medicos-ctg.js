@@ -1,4 +1,4 @@
-// DiaMon — Directorio y Capa de Centros Médicos en Cartagena de Indias
+// Hospitales, clinicas y farmacias de Cartagena en el mapa y los mas cercanos al paciente
 // Clínicas de urgencias, hospitales y farmacias 24h
 
 const CENTROS_MEDICOS_CARTAGENA = [

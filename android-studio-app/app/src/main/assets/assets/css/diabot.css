@@ -317,3 +317,6 @@
 .diabot-input-bar button:hover {
   opacity: 0.9;
 }
+
+/* Las sugerencias rapidas hablan del caso de Damian: solo se muestran en su caso */
+html:not(.dm-caso-damian) .diabot-chips-container { display: none !important; }

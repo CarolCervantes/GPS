@@ -1,4 +1,4 @@
-// DiaMon — Control de Vencimiento de Medicamentos e Insulinas
+// Control de vencimiento de medicamentos e insulinas (28 dias despues de abrir la pluma)
 // Regla clínica de 28 días para insulinas en uso a temperatura ambiente
 
 const INVENTARIO_MEDICAMENTOS_DEFECTO = [

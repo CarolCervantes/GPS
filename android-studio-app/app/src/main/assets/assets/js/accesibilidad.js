@@ -1,4 +1,4 @@
-// DiaMon — Modo de Accesibilidad Clínica
+// Accesibilidad: letra grande, alto contraste y lectura en voz alta
 // Diseñado para personas con baja visión, retinopatía diabética o temblor motor
 
 class AccesibilidadManager {

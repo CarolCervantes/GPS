@@ -1,4 +1,4 @@
-// ============ zonas seguras ============
+// Zonas seguras: crear, editar y borrar las areas donde el paciente puede estar
 let mapaZonas = null;
 let marcadorActual = null;
 let circuloActual = null;

@@ -291,7 +291,7 @@
                                 <div class="dc-kpi-label">Ubicación GPS (En Vivo)</div>
                                 <button type="button" class="btn-refresh-gps" onclick="event.stopPropagation(); if(window.actualizarUbicacionGPSManual) window.actualizarUbicacionGPSManual();" title="Actualizar ubicación ahora" style="background:none; border:none; color:var(--dc-primary); cursor:pointer; font-size:12px; padding:0 2px;"><i class="fas fa-sync-alt" id="gpsSyncIcon"></i></button>
                             </div>
-                            <div class="dc-kpi-val" id="kpiUbicacionVal" style="font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Ubicación en tiempo real">Obteniendo GPS...</div>
+                            <div class="dc-kpi-val" id="kpiUbicacionVal" style="font-size:15px; font-weight:600; line-height:1.3;" title="Ubicación en tiempo real">Obteniendo GPS...</div>
                             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
                                 <span class="dc-kpi-badge info" id="kpiUbicacionBadge"><i class="fas fa-spinner fa-spin" style="font-size:8px;"></i> Buscando señal...</span>
                                 <span class="dc-kpi-badge info" id="casoGeocercaEstado" style="font-size:10px;"><i class="fas fa-satellite"></i> Esperando ubicación</span>

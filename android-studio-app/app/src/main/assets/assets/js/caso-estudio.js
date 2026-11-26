@@ -11,7 +11,9 @@
     return (pac && pac.codigoPaciente) || CODIGO_CASO;
   }
   const CODIGO_ACTIVO = codigoPacienteActivo();
-  const ES_CASO_DAMIAN = CODIGO_ACTIVO === CODIGO_CASO;
+  // Solo se usan los datos de Damian si el paciente de la sesion es el (no para el admin ni para otros pacientes)
+  const pacSesion = window.DiaMonSesion ? window.DiaMonSesion.pacienteActivo(window.DiaMonSesion.leerUsuario()) : null;
+  const ES_CASO_DAMIAN = !!(pacSesion && pacSesion.codigoPaciente === CODIGO_CASO);
   document.documentElement.classList.toggle('dm-caso-damian', ES_CASO_DAMIAN);
 
   // Canales para sincronizar entre pestañas y entre dispositivos
@@ -129,27 +131,6 @@
     };
   }
 
-  // Recorridos reales de Damián Díaz Balseiro desde su casa en Chapacuá (10.39991, -75.47886)
-  const RECORRIDOS_CHAPACUA = {
-    parque: {
-      nombre: 'Recorrido en Chapacuá: Casa (10.39991, -75.47886) → Parque → Droguería',
-      puntos: [
-        { lat: 10.39991, lng: -75.47886, etiqueta: 'Casa Damián Díaz — Barrio Chapacuá' },
-        { lat: 10.40045, lng: -75.47830, etiqueta: 'Calle Residencial Chapacuá (85m de casa)' },
-        { lat: 10.40110, lng: -75.47775, etiqueta: 'Parque / Cancha de Chapacuá (180m de casa)' },
-        { lat: 10.40160, lng: -75.47710, etiqueta: 'Droguería & Tienda Chapacuá (270m)' }
-      ]
-    },
-    salida_geocerca: {
-      nombre: 'Salida del perímetro de Chapacuá (> 400m)',
-      puntos: [
-        { lat: 10.39991, lng: -75.47886, etiqueta: 'Casa en Chapacuá (Inicio)' },
-        { lat: 10.40190, lng: -75.48090, etiqueta: 'Salida de Chapacuá (315m)' },
-        { lat: 10.40410, lng: -75.48380, etiqueta: 'Av. La Cordialidad / Transversal 54 (715m — Fuera de zona)' }
-      ]
-    }
-  };
-
   // Gestor central del caso de estudio + emisor GPS real
   class CasoEstudioManager {
     constructor() {
@@ -160,7 +141,6 @@
       this.presiones = [];
       this.zonas = [];
       this.tomas = [];
-      this.simulacionTimer = null;
       this.gpsLiveWatchId = null;
       this.transmitiendoGPSReal = false;
       this.modoAdultoMayor = false;
@@ -172,14 +152,6 @@
 
     obtenerZonasSeguras() {
       return this.zonas;
-    }
-
-    guardarZonasSeguras(nuevasZonas) {
-      this.zonas = nuevasZonas;
-      if (typeof window.dibujarZonasSegurasEnMapaPrincipal === 'function') {
-        window.dibujarZonasSegurasEnMapaPrincipal();
-      }
-      this.emitirPorCanales('ZONAS_ACTUALIZADAS');
     }
 
     evaluarPosicionEnZonas(lat, lng, dispararAlertaSiSale = false) {
@@ -299,7 +271,7 @@
           if (ubicBadge) { ubicBadge.className = 'dc-kpi-badge info'; ubicBadge.innerHTML = '<i class="fas fa-home"></i> Mostrando su casa en el mapa'; }
         }
         if (d.ultimoGPS && !this.transmitiendoGPSReal) {
-          const hora = new Date(d.ultimoGPS.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+          const hora = new Date(d.ultimoGPS.ts).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
           this.aplicarCoordenadaRecibida(d.ultimoGPS.lat, d.ultimoGPS.lng, `Última ubicación (${hora})`, 10, false);
         }
         this.sincronizarFichaQROficial();
@@ -365,7 +337,8 @@
           // Ubicacion guardada por el celular del paciente (por ejemplo desde el servicio en segundo plano)
           if (tabla === 'gps_lecturas') {
             if (fila && fila.lat && !this.transmitiendoGPSReal) {
-              this.aplicarCoordenadaRecibida(fila.lat, fila.lng, 'GPS del celular del paciente', 10, false);
+              const horaGPS = new Date(fila.ts || Date.now()).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+              this.aplicarCoordenadaRecibida(fila.lat, fila.lng, `GPS del celular · ${horaGPS}`, 10, false);
             }
             return;
           }
@@ -652,101 +625,6 @@
       });
       this.sincronizarFichaQROficial();
       this.actualizarTodaLaUI();
-    }
-
-    // Escenarios de telemetría en Chapacuá (reales + demo jurado)
-    simularEscenarioSustentacion(escenario) {
-      if (this.simulacionTimer) {
-        clearInterval(this.simulacionTimer);
-        this.simulacionTimer = null;
-      }
-
-      if (escenario === 'hipoglucemia') {
-        this.registrarGlucosaManual({
-          valor: 64,
-          contexto: 'rescate',
-          notas: 'Alerta clínica en Chapacuá: Damián Díaz reporta sudoración fría y mareo. Se activa Regla 15-15.'
-        });
-        return;
-      }
-
-      if (escenario === 'crisis_hta') {
-        this.registrarPresionManual({
-          sistolica: 164,
-          diastolica: 96,
-          pulso: 86,
-          brazo: 'izquierdo',
-          postura: 'sentado',
-          notas: 'Pico hipertensivo detectado en control vespertino. Verificar toma de Valsartán (2:00 PM) y Nifedipino.'
-        });
-        return;
-      }
-
-      if (escenario === 'dosis_omitida') {
-        if (window.emitirAlerta24Horas) {
-          window.emitirAlerta24Horas({
-            titulo: 'Retraso en Insulina 24 UI (9:00 PM)',
-            subtitulo: `${this.paciente.nombre} aún no ha confirmado su aplicación de 24 unidades de Insulina de las 9:00 PM.`,
-            tipo: 'medicamento',
-            color: 'amber',
-            icono: 'fas fa-syringe',
-            badgeTexto: 'Por confirmar',
-            badgeClase: 'badge-aviso',
-            coordenadas: this.paciente.coordenadasCasa,
-            ubicacion: this.paciente.barrioResidencia,
-            descripcion: `El monitor de adherencia farmacológica detectó que pasaron 30 minutos desde la hora programada para las 24 unidades de Insulina (9:00 PM) tras la toma nocturna de Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino (8:00 PM).`
-          });
-        }
-        return;
-      }
-
-      if (escenario === 'recorrido_seguro' || escenario === 'salida_geocerca') {
-        const cfg = escenario === 'salida_geocerca' ? RECORRIDOS_CHAPACUA.salida_geocerca : RECORRIDOS_CHAPACUA.parque;
-        let idx = 0;
-        if (window.mostrarNotificacion) {
-          window.mostrarNotificacion(`🛰️ Reproduciendo telemetría GPS en Chapacuá: ${cfg.nombre}`, 'info');
-        }
-
-        const emitirPaso = () => {
-          if (idx >= cfg.puntos.length) {
-            clearInterval(this.simulacionTimer);
-            this.simulacionTimer = null;
-            return;
-          }
-          const pt = cfg.puntos[idx];
-          idx++;
-
-          this.aplicarCoordenadaRecibida(pt.lat, pt.lng, pt.etiqueta, 5);
-          this.emitirPorCanales('GPS_EN_VIVO', {
-            lat: pt.lat, lng: pt.lng, precision: 5, etiqueta: pt.etiqueta,
-            coords: { lat: pt.lat, lng: pt.lng, precision: 5, etiqueta: pt.etiqueta }
-          });
-
-          const dist = this.calcularDistanciaMetros(
-            pt.lat, pt.lng,
-            this.paciente.coordenadasCasa.lat,
-            this.paciente.coordenadasCasa.lng
-          );
-
-          if (dist > this.paciente.radioSeguroMetros && idx === cfg.puntos.length && window.emitirAlerta24Horas) {
-            window.emitirAlerta24Horas({
-              titulo: 'Salida de Geocerca — Barrio Chapacuá',
-              subtitulo: `${this.paciente.nombre} superó el perímetro de Chapacuá (${(dist / 1000).toFixed(2)} km · ${pt.etiqueta}).`,
-              tipo: 'geocerca',
-              color: 'red',
-              icono: 'fas fa-map-marker-alt',
-              badgeTexto: 'Fuera de Zona',
-              badgeClase: 'badge-pendiente',
-              coordenadas: { lat: pt.lat, lng: pt.lng },
-              ubicacion: pt.etiqueta,
-              descripcion: `El GPS detectó que ${this.paciente.nombre} salió del radio seguro de ${this.paciente.radioSeguroMetros} metros configurado alrededor de su casa en el barrio Chapacuá, Cartagena.`
-            });
-          }
-        };
-
-        emitirPaso();
-        this.simulacionTimer = setInterval(emitirPaso, 2000);
-      }
     }
 
     calcularDistanciaMetros(lat1, lon1, lat2, lon2) {

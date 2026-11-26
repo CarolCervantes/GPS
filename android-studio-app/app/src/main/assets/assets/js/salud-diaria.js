@@ -1,4 +1,4 @@
-// DiaMon — Módulo Clínico Diario
+// Salud del dia: medicamentos, como te sientes y consejo diario
 // 1. Estado Diario del Paciente (Check-in de bienestar)
 // 2. Control y Cumplimiento de Medicamentos
 // 3. Consejo Educativo Diario (Rotación automática cada 24 horas)

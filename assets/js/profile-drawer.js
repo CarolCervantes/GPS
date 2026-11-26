@@ -1,4 +1,4 @@
-// Drawer y Modal de Perfil Flotante (100% Sin Prompts Nativos)
+// Panel lateral del perfil: datos de la cuenta, pacientes vinculados y cerrar sesion
 // Incluye carga de fotos desde Galería/Cámara móvil, edición integrada y gestión de familiares.
 (function () {
   'use strict';
@@ -320,63 +320,6 @@
       mostrarToastPerfil('✓ Foto de perfil actualizada desde tu galería');
     };
     reader.readAsDataURL(file);
-  };
-
-  // Sub-vista: editar perfil (in-drawer sin prompts)
-  window.mostrarVistaEditarPerfil = function () {
-    const container = document.getElementById('profileDrawerContent');
-    const headerTitle = document.getElementById('profileDrawerHeaderTitle');
-    if (!container) return;
-
-    if (headerTitle) headerTitle.textContent = 'Editar Perfil';
-
-    const user = obtenerUsuarioActual() || {};
-    const nombreActual = formatearNombre(user);
-    const telActual = user.telefono || '';
-    const contactoSOSActual = user.contactoSOS || '';
-
-    container.innerHTML = `
-      <div class="dc-profile-subview">
-        <div class="dc-profile-subview-header">
-          <p class="dc-profile-subview-desc">Actualiza tus datos para la telemetría clínica y alertas SOS en Cartagena.</p>
-        </div>
-
-        <form onsubmit="window.guardarCambiosPerfil(event)" class="dc-profile-edit-form">
-          <div class="dc-form-group">
-            <label for="editNombreInput">Nombre Completo</label>
-            <div class="dc-input-pill-wrapper">
-              <i class="fas fa-user"></i>
-              <input type="text" id="editNombreInput" value="${nombreActual}" required placeholder="Tu Nombre Completo">
-            </div>
-          </div>
-
-          <div class="dc-form-group">
-            <label for="editTelInput">Teléfono Móvil (GPS)</label>
-            <div class="dc-input-pill-wrapper">
-              <i class="fas fa-phone-alt"></i>
-              <input type="tel" id="editTelInput" value="${telActual}" placeholder="+57 300 000 0000">
-            </div>
-          </div>
-
-          <div class="dc-form-group">
-            <label for="editSOSInput">Contacto Familiar de Emergencia SOS</label>
-            <div class="dc-input-pill-wrapper">
-              <i class="fas fa-heartbeat" style="color:#ef4444;"></i>
-              <input type="text" id="editSOSInput" value="${contactoSOSActual}" placeholder="Nombre y Teléfono">
-            </div>
-          </div>
-
-          <div class="dc-profile-subview-actions">
-            <button type="button" class="dc-btn-subview-secondary" onclick="window.renderizarVistaPrincipalPerfil()">
-              Volver
-            </button>
-            <button type="submit" class="dc-btn-subview-primary">
-              <i class="fas fa-save"></i> Guardar Cambios
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
   };
 
   window.guardarCambiosPerfil = function (e) {

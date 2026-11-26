@@ -46,8 +46,8 @@
           return;
         }
         const hora = new Date(disp.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-        if (batEl) batEl.textContent = (disp.bateria != null ? disp.bateria + '%' : '—');
-        if (pasosEl) pasosEl.textContent = Number(disp.pasos || 0).toLocaleString();
+        if (batEl) batEl.textContent = (disp.bateria != null ? disp.bateria + '%' + (disp.cargando ? ' ⚡' : '') : '—');
+        if (pasosEl) pasosEl.textContent = disp.pasos != null ? Number(disp.pasos).toLocaleString() : '—';
         if (badge) { badge.className = 'dc-kpi-badge info'; badge.textContent = 'Celular del paciente · ' + hora; }
       });
     }
@@ -388,7 +388,6 @@
         localStorage.setItem('diamon_pasos_fecha', hoy);
         localStorage.setItem('diamon_pasos_hoy', '0');
 
-        console.log(`[DiaMon Podómetro] Ciclo de 24h cumplido. Pasos reiniciados a 0 para el día ${hoy}.`);
       } else {
         // Mismo día: recuperar pasos acumulados de hoy (base 0)
         let guardados = parseInt(localStorage.getItem('diamon_pasos_hoy') || '0', 10);
@@ -470,18 +469,6 @@
       Telemetria.pasos += cantidad;
       localStorage.setItem('diamon_pasos_hoy', Telemetria.pasos);
       renderPasos();
-    };
-
-    window.reiniciarPasosManual24h = function () {
-      const hoy = obtenerFechaHoy();
-      Telemetria.pasos = 0;
-      Telemetria.pasosFecha = hoy;
-      localStorage.setItem('diamon_pasos_fecha', hoy);
-      localStorage.setItem('diamon_pasos_hoy', '0');
-      renderPasos();
-      if (window.mostrarNotificacion) {
-        window.mostrarNotificacion('🔄 Podómetro reiniciado manualmente a 0 pasos.', 'info');
-      }
     };
   }
 

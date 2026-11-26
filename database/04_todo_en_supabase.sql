@@ -204,3 +204,8 @@ language sql security definer stable set search_path = public as $$
   where p.ficha_token = p_token and p.rol in ('monitoreado', 'usuario');
 $$;
 grant execute on function public.ficha_publica(uuid) to anon, authenticated;
+
+-- La tabla registros tambien guarda la bateria del celular (dispositivo) y el "como te sientes hoy" (estado_diario)
+alter table public.registros drop constraint if exists registros_tipo_check;
+alter table public.registros add constraint registros_tipo_check
+  check (tipo in ('glucosa', 'presion', 'actividad', 'alimentacion', 'medicacion', 'nota', 'alerta', 'dispositivo', 'estado_diario'));

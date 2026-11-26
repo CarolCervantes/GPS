@@ -2055,3 +2055,17 @@ body {
   html:not(.dm-en-app) .diabot-btn-label { display: none !important; }
   html:not(.dm-en-app) .diabot-toggle-btn { padding: 6px !important; }
 }
+
+
+/* Administrador: solo ve su panel, su perfil y la ayuda (no supervisa pacientes) */
+body.dm-rol-admin [data-dc-tab="mapa"],
+body.dm-rol-admin [data-dc-tab="salud"],
+body.dm-rol-admin [data-dc-tab="reportes"],
+body.dm-rol-admin [data-dc-tab="alertas"],
+body.dm-rol-admin [data-dc-tab="seguridad"],
+body.dm-rol-admin #view-inicio,
+body.dm-rol-admin .diabot-widget-container,
+body.dm-rol-admin .dc-sidebar-card { display: none !important; }
+
+/* Para el admin "inicio" ya es el panel: no hace falta el boton de volver */
+body.dm-rol-admin #view-admin .dc-back-btn { display: none !important; }

@@ -1,4 +1,4 @@
-// ============ perfil de usuario ============
+// Pagina de perfil: ver y cambiar nombre, telefono y contrasena
 
 document.addEventListener('dashboardListo', async (e) => {
   const user = e.detail?.user;

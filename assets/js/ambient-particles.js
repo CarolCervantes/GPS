@@ -1,4 +1,4 @@
-// Partículas de Luz Ambiental y Polvo Clínico en Canvas
+// Fondo animado de la pantalla de login (puntos de luz en un canvas)
 // Partículas suaves en suspensión con profundidad y movimiento browniano orgánico
 (function () {
   'use strict';

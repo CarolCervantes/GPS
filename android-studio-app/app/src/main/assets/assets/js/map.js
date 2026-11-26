@@ -1,5 +1,5 @@
 
-// Confirmación Automática de Llegada por Geocerca
+// Mapa principal (Leaflet): ubicacion del paciente, zonas seguras y hospitales
 let _ultimaLlegadaId = null;
 function verificarLlegadaGeocerca(lat, lng) {
   const destinos = window.DESTINOS_PREDETERMINADOS_CTG || [

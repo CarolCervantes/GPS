@@ -1,4 +1,4 @@
-// DiaMon — Módulo de Solicitud y Permisos de Ubicación GPS
+// Ventana para pedir el permiso de ubicacion y empezar a compartir el GPS
 // Notificación inicial clínica para monitoreo continuo del paciente
 
 class PermisosUbicacionManager {

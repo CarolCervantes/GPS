@@ -1,4 +1,4 @@
-// APP.JS — Dashboard principal
+// Lecturas recientes y grafica del panel principal
 // Gestiona el historyMap (conectado a Supabase) y el guardado periódico de glucosa.
 
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -137,7 +137,6 @@ async function cargarLecturasRecientes(userId) {
   // Actualizar lecturas recientes (primeras 3)
   const readingsList = document.getElementById('readingsList');
   if (!readingsList) return;
-  const labels = ['ahora', 'hace 1h', 'hace 2h'];
   const items = readingsList.querySelectorAll('.reading');
   data.slice(0, 3).forEach((lec, i) => {
     if (!items[i]) return;

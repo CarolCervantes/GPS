@@ -211,7 +211,7 @@
       titulo.textContent = rol === 'admin' ? 'Aún no supervisas a ningún paciente' : 'Aún no tienes un paciente vinculado';
       texto.textContent = 'Pídele al paciente su código (DM-XXXX) y vincúlalo para ver su glucosa, presión y ubicación.';
       botones.innerHTML = `<button type="button" style="${estiloBtn}" onclick="window.abrirModalPerfil(); setTimeout(() => window.mostrarVistaFamiliares(), 200);"><i class="fas fa-user-plus"></i> Vincular paciente</button>` +
-        (rol === 'admin' ? ` <a href="admin.html" style="${estiloBtn} background:#0f172a;"><i class="fas fa-user-shield"></i> Panel de administración</a>` : '');
+        (rol === 'admin' ? ` <button type="button" style="${estiloBtn} background:#0f172a;" onclick="window.switchView('admin')"><i class="fas fa-user-shield"></i> Panel de administración</button>` : '');
     }
   }
 
@@ -225,6 +225,8 @@
     if (rol === 'invitado' && ['seguridad', 'perfil', 'zonas', 'admin'].includes(tab)) return 'inicio';
     if (sinPaciente && VISTAS_CON_DATOS_PACIENTE.includes(tab)) return 'inicio';
     if (tab === 'admin' && rol !== 'admin') return 'inicio';
+    // El administrador no supervisa pacientes: su inicio es el panel de administracion
+    if (rol === 'admin' && !['admin', 'configuracion', 'perfil', 'ayuda'].includes(tab)) return 'admin';
     if (tab === 'zonas' && rol !== 'admin' && rol !== 'cuidador') return 'inicio';
     return tab;
   }
@@ -282,6 +284,8 @@
     // Clase del rol en el body para mostrar u ocultar opciones con CSS
     const rolBody = window.DiaMonSesion.rolDe(currentUser);
     ['invitado', 'usuario', 'cuidador', 'admin'].forEach(r => document.body.classList.toggle('dm-rol-' + r, r === rolBody));
+    // El administrador entra directo a su panel (sin mostrar antes el inicio de un paciente)
+    if (rolBody === 'admin' && window.switchView) window.switchView('admin');
 
     const btnMetasMedicoHeader = document.getElementById('btnMetasMedicoHeader');
     const btnConfigGeocercaBanner = document.getElementById('btnConfigGeocercaBanner');
@@ -467,26 +471,6 @@
       if (!legalModal) return;
       legalModal.style.display = 'none';
       legalModal.setAttribute('aria-hidden', 'true');
-    };
-
-    // Pestañas de Auth
-    window.switchAuthTab = function (tab) {
-      const loginTabBtn = document.getElementById('tabBtnLogin');
-      const regTabBtn = document.getElementById('tabBtnRegister');
-      const formLogin = document.getElementById('modalFormLogin');
-      const formReg = document.getElementById('modalFormRegister');
-
-      if (tab === 'login') {
-        loginTabBtn?.classList.add('active');
-        regTabBtn?.classList.remove('active');
-        if (formLogin) formLogin.style.display = 'block';
-        if (formReg) formReg.style.display = 'none';
-      } else {
-        regTabBtn?.classList.add('active');
-        loginTabBtn?.classList.remove('active');
-        if (formLogin) formLogin.style.display = 'none';
-        if (formReg) formReg.style.display = 'block';
-      }
     };
 
     // Pestañas Legales

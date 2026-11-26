@@ -13,6 +13,7 @@ import android.content.pm.ServiceInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,6 +48,8 @@ public class ServicioUbicacion extends Service implements LocationListener {
     private LocationManager gps;
     private long ultimoEnvio = 0;
     private Location ultima;   // ultima posicion conocida
+    private long ultimaBateria = 0;   // la bateria se manda cada minuto
+    private static final long BATERIA_CADA_MS = 60000;
 
     // Latido: cada 30 s se envia la ultima posicion aunque Android no haya entregado una nueva
     private final Handler reloj = new Handler(Looper.getMainLooper());
@@ -138,12 +141,39 @@ public class ServicioUbicacion extends Service implements LocationListener {
             fila.put("lat", lat);
             fila.put("lng", lng);
             int codigo = post(SupabaseRestAdapter.SUPABASE_URL + "/gps_lecturas", fila.toString(), token);
+            if (codigo < 300 && System.currentTimeMillis() - ultimaBateria >= BATERIA_CADA_MS) {
+                enviarBateria(usuario, token);
+            }
             // 401 = la sesion vencio (dura 1 hora): se renueva con el refresh token y se reintenta una vez
             if (codigo == 401 && reintentar && renovarSesion(prefs)) {
                 enviar(lat, lng, false);
             }
         } catch (Exception e) {
             Log.w("DiaMonGPS", "No se pudo enviar la ubicacion: " + e.getMessage());
+        }
+    }
+
+    // La bateria va a la tabla registros (tipo "dispositivo"), que es donde la lee el panel del cuidador
+    private void enviarBateria(String usuario, String token) {
+        try {
+            // Se le pregunta directo al servicio de bateria (el aviso "sticky" de Android 15 llegaba con datos viejos)
+            BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
+            int nivel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+            boolean cargando = bm.isCharging();
+            if (nivel < 0 || nivel > 100) return;
+            JSONObject notas = new JSONObject();
+            notas.put("bateria", nivel);
+            notas.put("cargando", cargando);
+            JSONObject fila = new JSONObject();
+            fila.put("user_id", usuario);
+            fila.put("tipo", "dispositivo");
+            fila.put("valor", "0");
+            fila.put("notas", notas.toString());
+            if (post(SupabaseRestAdapter.SUPABASE_URL + "/registros", fila.toString(), token) < 300) {
+                ultimaBateria = System.currentTimeMillis();
+            }
+        } catch (Exception e) {
+            Log.w("DiaMonGPS", "No se pudo enviar la bateria: " + e.getMessage());
         }
     }
 

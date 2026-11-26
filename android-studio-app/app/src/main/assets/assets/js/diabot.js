@@ -1,4 +1,4 @@
-// DiaMon — DiaBot: Asistente Clínico con IA Real (Google Gemini API)
+// DiaBot: chat del asistente. Le pregunta a /api/diabot y si no hay IA responde con reglas locales
 // + Motor de Razonamiento Clínico Contextual en Vivo (Diabetes Tipo 2 + HTA)
 
 class DiaBotAssistant {
@@ -12,6 +12,10 @@ class DiaBotAssistant {
     this.injectWidgetHTML();
     this.bindEvents();
     const ctx = this.obtenerContextoEnVivo();
+    if (ctx.sinPaciente) {
+      this.addBotMessage('¡Hola! Soy <strong>DiaBot IA</strong>. Todavía no tienes un paciente vinculado, así que no tengo signos que mostrarte. Puedes preguntarme dudas generales sobre diabetes, presión arterial o qué hacer ante una hipoglucemia.');
+      return;
+    }
     this.addBotMessage(
       `¡Hola! Soy <strong>DiaBot IA</strong>. Estoy conectado en tiempo real a la telemetría de <strong>${ctx.nombre}</strong>:<br>` +
       `<div style="background:rgba(13,148,136,0.1); border-left:3px solid #0d9488; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:12px;">` +
@@ -19,11 +23,21 @@ class DiaBotAssistant {
       `• <strong>Presión Arterial:</strong> ${ctx.presion} (${ctx.estadoPresion})<br>` +
       `• <strong>Ubicación GPS:</strong> ${ctx.ubicacion}` +
       `</div>` +
-      `Pregúntame cualquier duda sobre sus signos actuales, medicamentos (Losartán/Metformina), hipertensión o qué hacer ante una alerta.`
+      `Pregúntame cualquier duda sobre sus signos actuales, medicamentos, hipertensión o qué hacer ante una alerta.`
     );
   }
 
   obtenerContextoEnVivo() {
+    // Sin paciente vinculado no hay datos clinicos que mostrar
+    const sinPaciente = !window.DiaMonSesion || !window.DiaMonSesion.pacienteActivo(window.DiaMonSesion.leerUsuario());
+    if (sinPaciente) {
+      return {
+        nombre: 'tu paciente', edad: '', diagnostico: '', profesional: 'su médico o enfermera',
+        glucosa: 'sin datos', glucosaNum: 0, contextoGlucosa: '—', estadoGlucosa: 'sin registro', protocoloGlucosa: '',
+        presion: 'sin datos', sistolicaNum: 0, diastolicaNum: 0, pulso: '—', estadoPresion: 'sin registro', protocoloPresion: '',
+        metaGlucosa: 'la que indique su médico', metaPresion: '< 140/90 mmHg', ubicacion: 'sin datos', sinPaciente: true
+      };
+    }
     if (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function') {
       const r = window.casoEstudio.obtenerResumenClinicoActual();
       const ubic = window.TelemetriaDiaMon?.ubicacion?.zona || r.paciente.barrioResidencia;
@@ -298,7 +312,7 @@ class DiaBotAssistant {
     // 3. Hipoglucemia / Bajón de azúcar / Mareo
     if (lower.includes('hipo') || lower.includes('baja') || lower.includes('bajon') || lower.includes('bajón') || lower.includes('mareo') || lower.includes('sudor') || lower.includes('temblor') || lower.includes('60') || lower.includes('70')) {
       return `<strong>🚨 Protocolo de Hipoglucemia para ${ctx.nombre} (Regla 15-15)</strong><br>` +
-        `Última glucosa registrada: <strong>${ctx.glucosa}</strong>. Como Don Damián se aplica <strong>24 unidades de Insulina a las 9:00 PM</strong>, Metformina (8 AM y 8 PM) y Ozempic los sábados, su meta mínima segura es <strong>80 mg/dL</strong>:<br>` +
+        `Última glucosa registrada: <strong>${ctx.glucosa}</strong>. ${document.documentElement.classList.contains('dm-caso-damian') ? 'Como Don Damián se aplica <strong>24 unidades de Insulina a las 9:00 PM</strong>, Metformina (8 AM y 8 PM) y Ozempic los sábados, su' : 'Su'} meta mínima segura es <strong>80 mg/dL</strong>:<br>` +
         `<ol style="margin:6px 0 6px 18px; padding:0;">` +
         `<li><strong>15 gramos de azúcar rápida:</strong> Dale medio vaso de jugo natural dulce o 3 cucharaditas de azúcar disueltas en agua.</li>` +
         `<li><strong>15 minutos de reposo sentado:</strong> Evita que camine solo para prevenir caídas.</li>` +

@@ -91,7 +91,7 @@ function renderUsuarios() {
   if (!tbody) return;
 
   const filtered = estadoUsuarios.filter(u => {
-    if (filtroRol && u.rol !== filtroRol) return false;
+    if (filtroRol && rolVisible(u.rol) !== filtroRol) return false;
     if (filtroBusqueda) {
       const q = filtroBusqueda.toLowerCase();
       const hit = (u.nombre || '').toLowerCase().includes(q) ||
@@ -113,6 +113,14 @@ function renderUsuarios() {
   tbody.querySelectorAll('.btn-eliminar').forEach(btn => {
     btn.addEventListener('click', () => confirmarEliminar(btn));
   });
+  tbody.querySelectorAll('.btn-ver').forEach(btn => {
+    btn.addEventListener('click', () => verCuenta(btn.dataset.ver));
+  });
+}
+
+// En la base de datos el paciente puede estar como 'monitoreado' o 'usuario'; en pantalla siempre es "paciente"
+function rolVisible(rol) {
+  return (rol === 'monitoreado' || rol === 'usuario') ? 'paciente' : rol;
 }
 
 function filaUsuario(u) {
@@ -131,10 +139,11 @@ function filaUsuario(u) {
         </div>
       </td>
       <td>
-        <span class="role-pill ${u.rol}">${u.rol}</span>
+        <span class="role-pill ${rolVisible(u.rol) === 'paciente' ? 'monitoreado' : u.rol}">${rolVisible(u.rol)}</span>
       </td>
       <td class="date">${formatearFecha(u.created_at)}</td>
       <td style="text-align:right; display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+        <button class="btn-ver" data-ver="${u.id}" title="Ver la información de esta cuenta" style="border:1px solid #0d9488; color:#0d9488; background:#fff; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-eye"></i> VER</button>
         <button class="role-toggle" data-target="${u.id}" data-new-rol="${targetRol}">${action}</button>
         <button class="role-toggle btn-eliminar" data-target="${u.id}" data-nombre="${escapeHtml(u.nombre || u.email)}" title="Eliminar usuario">
           <i class="fas fa-trash-alt"></i>
@@ -249,7 +258,7 @@ async function confirmarEliminar(btn) {
   cargarKPIs();
 }
 
-// ============ vinculaciones cuidador <-> monitoreado ============
+// ============ vinculaciones cuidador <-> paciente ============
 
 async function initVinculaciones() {
   await cargarSelectores();
@@ -262,7 +271,7 @@ async function initVinculaciones() {
 async function cargarSelectores() {
   // Reutiliza la lista de usuarios ya cargada en estadoUsuarios
   const cuidadores   = estadoUsuarios.filter(u => u.rol === 'cuidador');
-  const monitoreados = estadoUsuarios.filter(u => u.rol === 'monitoreado');
+  const monitoreados = estadoUsuarios.filter(u => rolVisible(u.rol) === 'paciente');
 
   const selC = document.getElementById('selectCuidador');
   const selM = document.getElementById('selectMonitoreado');
@@ -271,7 +280,7 @@ async function cargarSelectores() {
   selC.innerHTML = '<option value="">— Seleccionar cuidador —</option>' +
     cuidadores.map(u => `<option value="${u.id}">${escapeHtml(u.nombre)} (${escapeHtml(u.email)})</option>`).join('');
 
-  selM.innerHTML = '<option value="">— Seleccionar monitoreado —</option>' +
+  selM.innerHTML = '<option value="">— Seleccionar paciente —</option>' +
     monitoreados.map(u => `<option value="${u.id}">${escapeHtml(u.nombre)} (${escapeHtml(u.email)})</option>`).join('');
 }
 
@@ -340,4 +349,73 @@ async function desvincular(cuidadorId, monitoreadoId) {
 
   toast('Vinculación desactivada.', 'exito');
   await cargarVinculaciones();
+}
+
+
+// ============ ver la informacion de una cuenta ============
+// El admin puede leer todas las tablas (reglas RLS "admin lee"), asi que aqui se arma un resumen de la cuenta.
+async function verCuenta(id) {
+  const u = estadoUsuarios.find(x => x.id === id);
+  if (!u) return;
+  const esPaciente = rolVisible(u.rol) === 'paciente';
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const hora = (ts) => ts ? new Date(ts).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '—';
+
+  const [perfil, vincs, glu, pre, gps, ale, tom, bat] = await Promise.all([
+    supabaseClient.from('profiles').select('codigo_paciente, diagnostico, barrio').eq('id', id).maybeSingle(),
+    supabaseClient.from('vinculaciones').select('cuidador_id, monitoreado_id, estado').or(`cuidador_id.eq.${id},monitoreado_id.eq.${id}`),
+    esPaciente ? supabaseClient.from('glucosa_lecturas').select('valor, ts').eq('user_id', id).order('ts', { ascending: false }).limit(1) : { data: [] },
+    esPaciente ? supabaseClient.from('presion_arterial').select('sistolica, diastolica, ts').eq('user_id', id).order('ts', { ascending: false }).limit(1) : { data: [] },
+    esPaciente ? supabaseClient.from('gps_lecturas').select('lat, lng, ts').eq('user_id', id).order('ts', { ascending: false }).limit(1) : { data: [] },
+    esPaciente ? supabaseClient.from('alertas').select('id', { count: 'exact', head: true }).eq('user_id', id).eq('estado', 'activa') : { count: 0 },
+    esPaciente ? supabaseClient.from('tomas_medicamento').select('id', { count: 'exact', head: true }).eq('user_id', id).gte('ts', hoy.toISOString()) : { count: 0 },
+    esPaciente ? supabaseClient.from('registros').select('notas, ts').eq('user_id', id).eq('tipo', 'dispositivo').order('ts', { ascending: false }).limit(1) : { data: [] }
+  ]);
+
+  const nombreDe = (uid) => (estadoUsuarios.find(x => x.id === uid) || {}).nombre || uid.slice(0, 8);
+  const lista = (vincs.data || []).filter(v => v.estado === 'activa')
+    .map(v => v.cuidador_id === id ? 'Cuida a ' + nombreDe(v.monitoreado_id) : 'Su cuidador: ' + nombreDe(v.cuidador_id));
+  const p = perfil.data || {};
+  const g = (glu.data || [])[0], pr = (pre.data || [])[0], ub = (gps.data || [])[0];
+  let bateria = '—';
+  try { const b = (bat.data || [])[0]; if (b) bateria = JSON.parse(b.notas).bateria + '% (' + hora(b.ts) + ')'; } catch (_) {}
+
+  const filas = [
+    ['Correo', escapeHtml(u.email || '')],
+    ['Rol', rolVisible(u.rol)],
+    ['Registrado', formatearFecha(u.created_at)],
+    ['Vinculaciones', lista.length ? lista.map(escapeHtml).join('<br>') : 'Ninguna']
+  ];
+  if (esPaciente) {
+    filas.push(
+      ['Código', escapeHtml(p.codigo_paciente || '—')],
+      ['Diagnóstico', escapeHtml(p.diagnostico || 'Sin registrar')],
+      ['Barrio', escapeHtml(p.barrio || 'Sin registrar')],
+      ['Última glucosa', g ? `${g.valor} mg/dL · ${hora(g.ts)}` : 'Sin lecturas'],
+      ['Última presión', pr ? `${pr.sistolica}/${pr.diastolica} mmHg · ${hora(pr.ts)}` : 'Sin lecturas'],
+      ['Última ubicación', ub ? `<a href="https://www.google.com/maps?q=${ub.lat},${ub.lng}" target="_blank" rel="noopener">Ver en el mapa</a> · ${hora(ub.ts)}` : 'Sin GPS'],
+      ['Batería del celular', bateria],
+      ['Alertas activas', String(ale.count || 0)],
+      ['Medicamentos marcados hoy', String(tom.count || 0)]
+    );
+  }
+
+  document.getElementById('modalVerCuenta')?.remove();
+  const m = document.createElement('div');
+  m.id = 'modalVerCuenta';
+  m.style.cssText = 'position:fixed; inset:0; background:rgba(2,6,23,0.55); display:flex; align-items:center; justify-content:center; z-index:9999; padding:16px;';
+  m.innerHTML = `
+    <div style="background:#fff; color:#0f172a; border-radius:14px; width:100%; max-width:460px; max-height:90vh; overflow:auto; padding:22px; font-family:inherit;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:18px;"><i class="fas fa-user" style="color:#0d9488;"></i> ${escapeHtml(u.nombre || 'Sin nombre')}</h3>
+        <button type="button" id="cerrarVerCuenta" style="border:0; background:#f1f5f9; border-radius:8px; width:32px; height:32px; cursor:pointer;">✕</button>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        ${filas.map(([k, v]) => `<tr><td style="padding:7px 8px 7px 0; color:#64748b; vertical-align:top; width:42%;">${k}</td><td style="padding:7px 0; font-weight:600;">${v}</td></tr>`).join('')}
+      </table>
+    </div>`;
+  document.body.appendChild(m);
+  const cerrar = () => m.remove();
+  m.addEventListener('click', (e) => { if (e.target === m) cerrar(); });
+  document.getElementById('cerrarVerCuenta').addEventListener('click', cerrar);
 }

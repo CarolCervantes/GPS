@@ -1,4 +1,4 @@
-// DiaMon — Módulo de Tráfico y Congestión Automática en Cartagena
+// Capa de trafico de Cartagena en el mapa (vias con mas congestion)
 // Detección automática por telemetría GPS, velocidad y geocercas
 
 const CORREDORES_TRAFICO_CARTAGENA = [
@@ -289,30 +289,6 @@ class TraficoCartagenaManager {
       }
     }
     return this.visible;
-  }
-
-  calcularRetrasoRuta(origen, destino, modoTransporte = 'transcaribe') {
-    if (modoTransporte === 'pie') {
-      return { minutosExtra: 0, motivo: 'Desplazamiento peatonal' };
-    }
-
-    let extra = 0;
-    const puntos = [];
-
-    if (destino.id === 'udc-san-agustin' || destino.id === 'mall-plaza' || destino.id === 'bocagrande') {
-      extra += 15;
-      puntos.push('Av. Pedro de Heredia / Bazurto');
-    }
-
-    if (destino.id === 'udc-zarzagocilla' || destino.id === 'casa') {
-      extra += 10;
-      puntos.push('Cuatro Vientos / Bomba El Amparo');
-    }
-
-    return {
-      minutosExtra: extra,
-      motivo: puntos.length > 0 ? puntos.join(' + ') : 'Tráfico regular'
-    };
   }
 
   bindEvents() {

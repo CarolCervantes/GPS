@@ -1,4 +1,4 @@
-// DiaMon — Activación de Emergencia por Voz ("SOS por Voz")
+// SOS por voz: si el paciente dice "ayuda" se abre la pantalla de emergencia
 // Muestra la ubicación actual en GRANDE con Barrio, Referencia y Llamada directa
 // Optimizado 100% para celulares y pantallas táctiles
 
@@ -49,7 +49,6 @@ class VozEmergenciaSOS {
 
       this.recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.toLowerCase();
-        console.log('[Voz SOS] Escuchado:', transcript);
         this.evaluarComandoVoz(transcript);
       };
 
