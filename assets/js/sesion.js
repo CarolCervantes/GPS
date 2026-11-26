@@ -20,7 +20,7 @@
 
   // Dentro de la app las paginas se abren como archivos (file://), asi que las llamadas
   // al servidor (/api/...) se mandan a la pagina publicada en Vercel.
-  const SERVIDOR_PUBLICADO = 'https://diamon-salud.vercel.app';
+  const SERVIDOR_PUBLICADO = 'https://diamon-gps-salud.vercel.app';
   function urlApi(ruta) {
     return window.location.protocol === 'file:' ? SERVIDOR_PUBLICADO + ruta : ruta;
   }

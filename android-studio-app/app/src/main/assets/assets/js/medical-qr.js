@@ -24,7 +24,7 @@ class MedicalQRManager {
   // La clave (fichaToken) es secreta: sin ella nadie puede ver la ficha del paciente.
   getTextoQR() {
     const local = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.protocol === 'file:';
-    const base = local ? 'https://diamon-salud.vercel.app' : window.location.origin;
+    const base = local ? 'https://diamon-gps-salud.vercel.app' : window.location.origin;
     return this.profile.fichaToken ? `${base}/pages/ficha-emergencia.html?t=${this.profile.fichaToken}` : base;
   }
 
