@@ -124,7 +124,7 @@ test('9. Backend hexagonal: casos de uso con adaptadores intercambiables', async
   const { ValidarCodigoAdminUseCase } = require('../src/application/usecases/ValidarCodigoAdminUseCase');
   const { CodigoAdminEnvAdapter } = require('../src/infrastructure/adapters/out/config/CodigoAdminEnvAdapter');
 
-  // Adaptadores falsos: el caso de uso no sabe si detras hay Claude, Gemini o nada
+  // Adaptadores falsos: el caso de uso no sabe si detras hay una IA real o nada
   const apagado = { nombre: 'apagado', disponible: () => false, responder: async () => 'no deberia usarse' };
   const falla = { nombre: 'falla', disponible: () => true, responder: async () => { throw new Error('caido'); } };
   const bueno = { nombre: 'falso', disponible: () => true, responder: async (inst, msg) => (inst.includes('Damián') ? 'ok: ' + msg : null) };
