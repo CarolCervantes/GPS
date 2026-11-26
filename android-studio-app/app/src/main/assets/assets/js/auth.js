@@ -141,9 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.currentUser = user;
   document.dispatchEvent(new CustomEvent('dashboardListo', { detail: { user } }));
 
-  // Notificar a mapa-admin.js que el contenido ya es visible y el mapa puede inicializarse.
-  document.dispatchEvent(new CustomEvent('mapaAdminListo'));
-
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -185,17 +182,6 @@ function inyectarAdminUI() {
     menu.appendChild(link);
   }
 
-  // 3) Nav link "Mapa GPS" — solo si no existe ya
-  if (menu && !menu.querySelector('.nav-mapa')) {
-    const mapaLink = document.createElement('a');
-    mapaLink.href = 'mapa-admin.html';
-    mapaLink.className = 'nav-link nav-admin nav-mapa';
-    mapaLink.textContent = 'Mapa GPS';
-    if (window.location.pathname.endsWith('mapa-admin.html')) {
-      mapaLink.classList.add('active');
-    }
-    menu.appendChild(mapaLink);
-  }
 }
 
 function cargarAdminCSS() {

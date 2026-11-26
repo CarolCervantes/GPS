@@ -13,7 +13,7 @@ Plataforma web progresiva (PWA) y aplicación móvil para el monitoreo en tiempo
 
 ## Estructura del Proyecto
 
-- `/pages`: Vistas HTML del sistema (`index.html`, `login.html`, `zonas-seguras.html`, `registros_usuario.html`, `reportes.html`, `perfil.html`, `ficha-emergencia.html`, `descargar-app.html`, `admin.html`).
+- `/pages`: Vistas HTML del sistema (`index.html`, `login.html`, `zonas-seguras.html`, `perfil.html`, `ficha-emergencia.html`, `descargar-app.html`, `admin.html`).
 - `/assets/css` y `/assets/js`: Hojas de estilo y módulos de lógica clínica, mapas con Leaflet y sincronización con Supabase Realtime.
 - `/api/diabot.js`: Endpoint Serverless para el asistente clínico DiaBot.
 - `/database`: Esquema SQL de Supabase con políticas RLS para Paciente, Cuidador y Administrador.

@@ -1,4 +1,14 @@
+# No se suben a Vercel (privado o no hace falta en la web)
+.env
+.env.*
+.vercel
+.git
+node_modules
 android-studio-app
-docs/diagramas_uml
+docs
 tests
 scripts
+database
+server.js
+*.docx
+*.md

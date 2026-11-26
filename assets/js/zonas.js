@@ -8,36 +8,6 @@ let usuarioId = null;       // ID del usuario logueado
 let zonaOwner = null;       // ID de quien "posee" las zonas (el monitoreado)
 let zonaOwnerNombre = null;
 
-const LOCAL_ZONAS_KEY = 'diamon_damian_zonas_v5';
-const ZONA_CASA_DAMIAN = [
-  {
-    id: 1,
-    nombre: 'Casa Damián Díaz — Barrio Chapacuá',
-    centro_lat: 10.39991,
-    centro_lng: -75.47886,
-    radio_metros: 400,
-    nivel_riesgo: 'bajo',
-    activa: true
-  }
-];
-
-function obtenerZonasLocal() {
-  try {
-    const raw = localStorage.getItem(LOCAL_ZONAS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (_) {}
-  localStorage.setItem(LOCAL_ZONAS_KEY, JSON.stringify(ZONA_CASA_DAMIAN));
-  return [...ZONA_CASA_DAMIAN];
-}
-
-function guardarZonasLocal(lista) {
-  try {
-    localStorage.setItem(LOCAL_ZONAS_KEY, JSON.stringify(lista));
-  } catch (_) {}
-}
 
 document.addEventListener('dashboardListo', async (e) => {
   usuarioId = e.detail?.user?.id;
@@ -62,6 +32,7 @@ document.addEventListener('dashboardListo', async (e) => {
 
   // Las zonas son del paciente: si entra el cuidador, se usan las del paciente que tiene vinculado
   zonaOwner = (pacienteSesion && pacienteSesion.id) || usuarioId;
+  zonaOwnerNombre = pacienteSesion ? pacienteSesion.nombre : null;
 
   await cargarZonas();
   wireFormulario();
@@ -107,21 +78,15 @@ function colocarMarcador(lat, lng) {
 // ============ cargar zonas ============
 async function cargarZonas() {
   const ownerId = zonaOwner || usuarioId;
-  let cargadasDeSupabase = null;
-  try {
-    const { data, error } = await supabaseClient
-      .from('zonas_seguras')
-      .select('*')
-      .eq('user_id', ownerId)
-      .eq('activa', true)
-      .order('created_at', { ascending: false });
-    if (!error && data && data.length > 0) {
-      cargadasDeSupabase = data;
-    }
-  } catch (_) {}
-
-  zonasData = cargadasDeSupabase || obtenerZonasLocal().filter(z => z.activa !== false);
-  guardarZonasLocal(zonasData);
+  // Las zonas solo vienen de Supabase
+  const { data, error } = await supabaseClient
+    .from('zonas_seguras')
+    .select('*')
+    .eq('user_id', ownerId)
+    .eq('activa', true)
+    .order('created_at', { ascending: false });
+  if (error) mostrarMsgZona('No se pudieron cargar las zonas: ' + error.message, 'error');
+  zonasData = data || [];
   renderLista();
   renderCirculosEnMapa();
 }
@@ -211,15 +176,11 @@ function editarZona(id) {
 async function eliminarZona(id) {
   if (!confirm('¿Eliminar esta zona segura?')) return;
 
-  const locales = obtenerZonasLocal().filter(z => Number(z.id) !== Number(id));
-  guardarZonasLocal(locales);
-
-  try {
-    await supabaseClient
-      .from('zonas_seguras')
-      .update({ activa: false })
-      .eq('id', id);
-  } catch (_) {}
+  const { error } = await supabaseClient
+    .from('zonas_seguras')
+    .update({ activa: false })
+    .eq('id', id);
+  if (error) mostrarMsgZona('No se pudo eliminar: ' + error.message, 'error');
 
   await cargarZonas();
 }
@@ -270,29 +231,15 @@ async function guardarZona() {
     activa: true,
   };
 
-  const locales = obtenerZonasLocal();
-  if (editId) {
-    const idx = locales.findIndex(z => Number(z.id) === Number(editId));
-    if (idx >= 0) {
-      locales[idx] = { ...locales[idx], ...payload, id: Number(editId) };
-    }
-  } else {
-    locales.unshift({ ...payload, id: Date.now() });
-  }
-  guardarZonasLocal(locales);
-
-  try {
-    if (editId) {
-      await supabaseClient.from('zonas_seguras').update(payload).eq('id', editId);
-    } else {
-      await supabaseClient.from('zonas_seguras').insert(payload);
-    }
-  } catch (_) {}
+  const { error } = editId
+    ? await supabaseClient.from('zonas_seguras').update(payload).eq('id', editId)
+    : await supabaseClient.from('zonas_seguras').insert(payload);
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-save"></i> Guardar zona';
 
-  mostrarMsgZona('Zona segura de Damián Díaz guardada y sincronizada con el mapa principal.', 'exito');
+  if (error) { mostrarMsgZona('No se pudo guardar: ' + error.message, 'error'); return; }
+  mostrarMsgZona('Zona segura guardada' + (zonaOwnerNombre ? ' para ' + zonaOwnerNombre : '') + ' y sincronizada con el mapa principal.', 'exito');
   setTimeout(ocultarFormulario, 900);
   await cargarZonas();
 }

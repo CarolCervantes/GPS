@@ -1,30 +1,70 @@
 {
   "version": 2,
-  "name": "diamon-salud",
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/", "destination": "/pages/index.html" },
-    { "source": "/login.html", "destination": "/pages/login.html" },
-    { "source": "/index.html", "destination": "/pages/index.html" },
-    { "source": "/descargar-app.html", "destination": "/pages/descargar-app.html" },
-    { "source": "/ficha-emergencia.html", "destination": "/pages/ficha-emergencia.html" },
-    { "source": "/historial.html", "destination": "/pages/historial.html" },
-    { "source": "/perfil.html", "destination": "/pages/perfil.html" },
-    { "source": "/registros_usuario.html", "destination": "/pages/registros_usuario.html" },
-    { "source": "/reportes.html", "destination": "/pages/reportes.html" },
-    { "source": "/zonas-seguras.html", "destination": "/pages/zonas-seguras.html" },
-    { "source": "/admin.html", "destination": "/pages/admin.html" },
-    { "source": "/mapa-admin.html", "destination": "/pages/mapa-admin.html" },
-    { "source": "/oauth-callback.html", "destination": "/pages/oauth-callback.html" }
+    {
+      "source": "/",
+      "destination": "/pages/index.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/pages/login.html"
+    },
+    {
+      "source": "/index.html",
+      "destination": "/pages/index.html"
+    },
+    {
+      "source": "/descargar-app.html",
+      "destination": "/pages/descargar-app.html"
+    },
+    {
+      "source": "/ficha-emergencia.html",
+      "destination": "/pages/ficha-emergencia.html"
+    },
+    {
+      "source": "/perfil.html",
+      "destination": "/pages/perfil.html"
+    },
+    {
+      "source": "/zonas-seguras.html",
+      "destination": "/pages/zonas-seguras.html"
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/pages/admin.html"
+    },
+    {
+      "source": "/oauth-callback.html",
+      "destination": "/pages/oauth-callback.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=(self)" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(self), microphone=(self)"
+        }
       ]
     }
   ]

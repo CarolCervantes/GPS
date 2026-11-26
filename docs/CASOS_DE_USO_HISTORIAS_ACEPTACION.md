@@ -37,7 +37,7 @@ A continuación se muestra cómo cada **Caso de Uso (CU)** del sistema se transf
 - **Escenario 3 (Acceso exclusivo de Administrador):**
   - **Dado** que un usuario selecciona el rol **`Admin`**,
   - **Cuando** ingresa el código de autorización `DIAMON-ADMIN-2026`,
-  - **Entonces** el sistema habilita el botón y acceso a `pages/admin.html` y `pages/mapa-admin.html`.
+  - **Entonces** el sistema habilita el botón y acceso a `pages/admin.html`.
 
 ### HU-02 y HU-03: Evaluación Clínica de Glucosa y Presión Arterial
 - **Escenario 1 (Glucosa en rango o fuera de meta):**
@@ -85,4 +85,4 @@ Esta tabla sirve como guía durante la sustentación para mostrarle al profesor 
 | **CU-05: Control de Medicamentos e Insulina 24 UI** | `pages/index.html` (Pestaña *"Medicamentos"*) | `assets/js/medicamentos.js`, `assets/js/caso-estudio.js` | Mostrar los 5 bloques horarios reales de Don Damián (8 AM, 2 PM, 8 PM, 9 PM Insulina 24 UI y Sábados Ozempic) y marcar una dosis como tomada. |
 | **CU-06: Emergencia SOS y Ficha Médica QR** | `pages/index.html` (Botón QR en barra superior / Botón SOS) y `pages/ficha-emergencia.html` | `assets/js/medical-qr.js`, `assets/js/voz-sos.js` | Abrir el icono de **Código QR** en la barra superior para escanear la ficha de emergencia con el celular, o activar el botón rojo SOS. |
 | **CU-07: Interfaz Simplificada del Paciente** | `pages/index.html` (Al entrar como **Paciente** + botón *"Vista Simple"*) | `assets/js/dashboard-controller.js`, `assets/js/caso-estudio.js` | Iniciar sesión como **Paciente** para ver el panel limpio sin controles complejos de geocercas/admin, y pulsar *"Vista Simple"* para abrir la botonera grande de 4 acciones. |
-| **CU-08: Gestión de Usuarios y Roles (Exclusivo Admin)** | `pages/admin.html` y `pages/mapa-admin.html` | `assets/js/admin.js` | Iniciar sesión como **Admin**, abrir *"Gestión de Usuarios (Admin)"*, buscar o crear un usuario, cambiar su rol y vincularlo a un paciente. |
+| **CU-08: Gestión de Usuarios y Roles (Exclusivo Admin)** | `pages/admin.html` | `assets/js/admin.js` | Iniciar sesión como **Admin**, abrir *"Gestión de Usuarios (Admin)"*, buscar o crear un usuario, cambiar su rol y vincularlo a un paciente. |
