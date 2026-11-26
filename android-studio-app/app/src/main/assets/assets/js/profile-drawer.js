@@ -1,7 +1,5 @@
-/**
- * DiaMon — Drawer y Modal de Perfil Flotante (100% Sin Prompts Nativos)
- * Incluye carga de fotos desde Galería/Cámara móvil, edición integrada y gestión de familiares.
- */
+// Drawer y Modal de Perfil Flotante (100% Sin Prompts Nativos)
+// Incluye carga de fotos desde Galería/Cámara móvil, edición integrada y gestión de familiares.
 (function () {
   'use strict';
 
@@ -67,9 +65,7 @@
     }, 300);
   };
 
-  // ============================================================
-  // VISTA PRINCIPAL: MI PERFIL (REGISTRADO VS INVITADO)
-  // ============================================================
+  // Vista principal: mi perfil (registrado vs invitado)
   window.renderizarVistaPrincipalPerfil = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
@@ -79,7 +75,7 @@
     const esInvitado = !user || user.esInvitado === true;
 
     if (!esInvitado) {
-      // USUARIO REGISTRADO
+      // Usuario registrado
       if (headerTitle) headerTitle.textContent = 'Mi Perfil';
 
       const nombre = formatearNombre(user);
@@ -119,9 +115,9 @@
           </div>
         </div>
 
-        <!-- 5 Menús de Navegación Oficiales (Tal cual Imagen 3) -->
+        <!-- Opciones del menu de perfil -->
         <div class="dc-profile-menu-list">
-          <button class="dc-profile-menu-item" onclick="window.mostrarVistaEditarPerfil()">
+          <button class="dc-profile-menu-item" onclick="window.cerrarModalPerfil(); window.switchView('perfil');">
             <div class="dc-profile-menu-left">
               <div class="dc-profile-menu-icon" style="background:#0f172a;">
                 <i class="fas fa-user-edit"></i>
@@ -196,7 +192,7 @@
         </div>
       `;
     } else {
-      // MODO INVITADO
+      // Modo invitado
       if (headerTitle) headerTitle.textContent = 'Mi Perfil (Invitado)';
 
       container.innerHTML = `
@@ -292,9 +288,7 @@
     }
   };
 
-  // ============================================================
-  // SELECCIÓN DE FOTO DESDE GALERÍA / ARCHIVOS (SIN PROMPTS)
-  // ============================================================
+  // Selección de foto desde galería / archivos (sin prompts)
   window.abrirSelectorGaleria = function () {
     const input = document.getElementById('dmProfilePhotoFileInput');
     if (input) {
@@ -328,9 +322,7 @@
     reader.readAsDataURL(file);
   };
 
-  // ============================================================
-  // SUB-VISTA: EDITAR PERFIL (IN-DRAWER SIN PROMPTS)
-  // ============================================================
+  // Sub-vista: editar perfil (in-drawer sin prompts)
   window.mostrarVistaEditarPerfil = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
@@ -340,8 +332,8 @@
 
     const user = obtenerUsuarioActual() || {};
     const nombreActual = formatearNombre(user);
-    const telActual = user.telefono || '+57 300 123 4567';
-    const contactoSOSActual = user.contactoSOS || 'Carol Cervantes (+57 310 987 6543)';
+    const telActual = user.telefono || '';
+    const contactoSOSActual = user.contactoSOS || '';
 
     container.innerHTML = `
       <div class="dc-profile-subview">
@@ -413,24 +405,19 @@
 
     const user = obtenerUsuarioActual() || {};
     const esSupervisor = user.rol === 'cuidador' || user.rol === 'admin';
-    const codigo = user.codigoPaciente || 'DM-8492';
+    const codigo = user.codigoPaciente || '—';
 
     if (esSupervisor) {
       if (headerTitle) headerTitle.textContent = 'Mis Pacientes Monitoreados';
 
-      const pacienteDefault = {
-        id: 'pac-damian-diaz-01',
-        nombre: 'Damián Díaz Balseiro',
-        codigoPaciente: 'DM-8492',
-        ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
-        glucosa: 114
-      };
-
+      // Solo se listan los pacientes que de verdad vinculo (nada por defecto)
+      const activo = window.DiaMonSesion.pacienteActivo(user);
       let listaVinculados = Array.isArray(user.pacientesVinculados) && user.pacientesVinculados.length > 0
         ? user.pacientesVinculados
-        : [user.pacienteVinculado || pacienteDefault];
+        : (activo ? [activo] : []);
+      listaVinculados = listaVinculados.filter(p => p && p.codigoPaciente && !(p.nombre === user.nombre && !p.email && user.rol === 'admin'));
 
-      const codActivo = (user.pacienteVinculado && user.pacienteVinculado.codigoPaciente) || codigo;
+      const codActivo = activo ? activo.codigoPaciente : null;
 
       const itemsHtml = listaVinculados.map(pac => {
         const esActivo = pac.codigoPaciente === codActivo;
@@ -467,7 +454,7 @@
           <h5 style="margin: 16px 0 8px 0; font-size:13.5px; font-weight:700; color:#0f172a;">Pacientes bajo tu cuidado (${listaVinculados.length})</h5>
 
           <div class="dc-family-linked-list">
-            ${itemsHtml}
+            ${itemsHtml || '<p style="font-size:13px; color:#64748b; margin:0;">Aún no has vinculado a ningún paciente.</p>'}
           </div>
 
           <div class="dc-profile-subview-actions" style="margin-top:16px;">
@@ -528,92 +515,38 @@
     `;
   };
 
-  window.vincularNuevoMonitoreado = function (e) {
+  // Vincula un paciente con su codigo DM-XXXX (lo valida y guarda Supabase)
+  window.vincularNuevoMonitoreado = async function (e) {
     e.preventDefault();
     const input = document.getElementById('inputNuevoCodigoMonitoreado');
     const msgEl = document.getElementById('msgVincularMonitoreado');
     const cod = (input?.value || '').trim().toUpperCase();
     if (!cod) return;
 
-    let dbPacientes = {
-      'DM-8492': {
-        id: 'pac-damian-diaz-01',
-        nombre: 'Damián Díaz Balseiro',
-        codigoPaciente: 'DM-8492',
-        glucosa: 114,
-        ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
-        pasos: 1240
-      }
+    const mostrarMsg = (texto, color) => {
+      if (!msgEl) return;
+      msgEl.style.display = 'block';
+      msgEl.style.color = color;
+      msgEl.textContent = texto;
     };
-    try {
-      const raw = localStorage.getItem('diamon_pacientes_db');
-      if (raw) dbPacientes = Object.assign(dbPacientes, JSON.parse(raw));
-    } catch (_) {}
 
-    const pacienteEncontrado = dbPacientes[cod];
-    if (!pacienteEncontrado) {
-      if (msgEl) {
-        msgEl.style.display = 'block';
-        msgEl.style.color = '#dc2626';
-        msgEl.textContent = `No existe ningún paciente registrado con el código "${cod}".`;
-      }
+    const { data, error } = await window.supabaseClient.rpc('vincular_con_codigo', { p_codigo: cod });
+    if (error || !data || !data.length) {
+      mostrarMsg(`No existe ningún paciente registrado con el código "${cod}".`, '#dc2626');
       return;
     }
 
-    const user = obtenerUsuarioActual() || {};
-    let lista = Array.isArray(user.pacientesVinculados) && user.pacientesVinculados.length > 0
-      ? user.pacientesVinculados
-      : (user.pacienteVinculado ? [user.pacienteVinculado] : []);
-
-    if (!lista.some(p => p.codigoPaciente === cod)) {
-      lista.push(pacienteEncontrado);
-    }
-
-    user.pacientesVinculados = lista;
-    user.pacienteVinculado = pacienteEncontrado;
-    user.codigoPaciente = pacienteEncontrado.codigoPaciente;
-
-    // Actualizar tambien en la base de cuentas para que se recuerde al volver a iniciar sesion
-    try {
-      if (user.email) {
-        const cuentas = JSON.parse(localStorage.getItem('diamon_cuentas_db') || '{}');
-        if (cuentas[user.email.toLowerCase()]) {
-          cuentas[user.email.toLowerCase()].pacientesVinculados = lista;
-          cuentas[user.email.toLowerCase()].pacienteVinculado = pacienteEncontrado;
-          cuentas[user.email.toLowerCase()].codigoPaciente = pacienteEncontrado.codigoPaciente;
-          localStorage.setItem('diamon_cuentas_db', JSON.stringify(cuentas));
-        }
-      }
-    } catch (_) {}
-
-    guardarUsuarioActual(user);
-    mostrarToastPerfil(`✓ Paciente ${pacienteEncontrado.nombre} vinculado correctamente`);
-    window.mostrarVistaFamiliares();
+    await window.DiaMonSesion.iniciarDesdeSupabase();
+    window.DiaMonSesion.elegirPaciente(data[0].codigo_paciente);
+    mostrarToastPerfil(`✓ Paciente ${data[0].nombre} vinculado correctamente`);
+    setTimeout(() => window.location.reload(), 700);
   };
 
+  // Cambia el paciente que se esta supervisando
   window.seleccionarMonitoreadoActivo = function (cod) {
-    const user = obtenerUsuarioActual();
-    if (!user || !Array.isArray(user.pacientesVinculados)) return;
-    const encontrado = user.pacientesVinculados.find(p => p.codigoPaciente === cod);
-    if (!encontrado) return;
-
-    user.pacienteVinculado = encontrado;
-    user.codigoPaciente = encontrado.codigoPaciente;
-
-    try {
-      if (user.email) {
-        const cuentas = JSON.parse(localStorage.getItem('diamon_cuentas_db') || '{}');
-        if (cuentas[user.email.toLowerCase()]) {
-          cuentas[user.email.toLowerCase()].pacienteVinculado = encontrado;
-          cuentas[user.email.toLowerCase()].codigoPaciente = encontrado.codigoPaciente;
-          localStorage.setItem('diamon_cuentas_db', JSON.stringify(cuentas));
-        }
-      }
-    } catch (_) {}
-
-    guardarUsuarioActual(user);
-    mostrarToastPerfil(`Supervisando ahora a: ${encontrado.nombre}`);
-    window.mostrarVistaFamiliares();
+    if (!window.DiaMonSesion.elegirPaciente(cod)) return;
+    mostrarToastPerfil('Cambiando de paciente...');
+    setTimeout(() => window.location.reload(), 500);
   };
 
   window.copiarCodigoPaciente = function (codigo) {
@@ -629,9 +562,7 @@
     });
   };
 
-  // ============================================================
-  // SUB-VISTA: INFORMACIÓN DE LA APP (SIN ALERTS)
-  // ============================================================
+  // Sub-vista: información de la app (sin alerts)
   window.mostrarVistaInfoApp = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
@@ -677,9 +608,7 @@
     `;
   };
 
-  // ============================================================
-  // SUB-VISTA: CONFIRMACIÓN CERRAR SESIÓN (SIN CONFIRM)
-  // ============================================================
+  // Sub-vista: confirmación cerrar sesión (sin confirm)
   window.mostrarConfirmacionCerrarSesion = function () {
     const container = document.getElementById('profileDrawerContent');
     const headerTitle = document.getElementById('profileDrawerHeaderTitle');
@@ -710,9 +639,12 @@
     `;
   };
 
-  window.ejecutarCierreSesion = function () {
-    sessionStorage.removeItem('diamon_demo_user');
-    localStorage.removeItem('diamon_current_user');
+  window.ejecutarCierreSesion = async function () {
+    window.DiaMonSesion.limpiarSesion();
+    // Tambien hay que cerrar la sesion de Supabase, si no al recargar vuelve a entrar
+    if (window.supabaseClient && window.supabaseClient.auth) {
+      try { await window.supabaseClient.auth.signOut(); } catch (_) {}
+    }
     window.cerrarModalPerfil();
     mostrarToastPerfil('Has cerrado sesión correctamente');
     setTimeout(() => {
@@ -720,9 +652,7 @@
     }, 600);
   };
 
-  // ============================================================
-  // NAVEGACIÓN DIRECTA
-  // ============================================================
+  // Navegación directa
   window.irANotificaciones = function () {
     window.cerrarModalPerfil();
     if (typeof window.switchView === 'function') {

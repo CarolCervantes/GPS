@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — Directorio y Capa de Centros Médicos en Cartagena de Indias
 // Clínicas de urgencias, hospitales y farmacias 24h
-// ============================================================
 
 const CENTROS_MEDICOS_CARTAGENA = [
   {
@@ -179,13 +177,42 @@ class CentrosMedicosCartagena {
     this.renderMarkers();
     this.bindEvents();
     window.centrosMedicosInstance = this;
+    // Mientras llega el GPS se usa la casa del paciente (su primera zona segura)
+    const zonas = window.casoEstudio ? window.casoEstudio.obtenerZonasSeguras() : [];
+    if (zonas.length) this.patientCoords = [Number(zonas[0].centro_lat), Number(zonas[0].centro_lng)];
+    this.renderListaCercanos();
   }
 
   setPatientCoords(coords) {
     if (coords && coords.length === 2) {
       this.patientCoords = coords;
       this.actualizarDistanciasEnPopups();
+      this.renderListaCercanos();
     }
+  }
+
+  // Lista de los 4 centros con urgencias mas cercanos a donde esta el paciente
+  renderListaCercanos() {
+    const cont = document.getElementById('listaHospitalesCercanos');
+    if (!cont) return;
+    const [lat, lng] = this.patientCoords;
+    const cercanos = CENTROS_MEDICOS_CARTAGENA
+      .filter(c => c.tipo !== 'farmacia')
+      .map(c => ({ ...c, km: Number(this.calcularDistanciaKm(lat, lng, c.coordenadas[0], c.coordenadas[1])) }))
+      .sort((a, b) => a.km - b.km)
+      .slice(0, 4);
+
+    cont.innerHTML = cercanos.map(c => `
+      <div class="dc-hospital-item">
+        <div class="dc-hospital-info">
+          <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+          <div>
+            <div class="dc-hospital-name">${c.nombre}</div>
+            <div class="dc-hospital-meta">A ${c.km.toFixed(1)} km · ${c.urgencias24h ? 'Urgencias 24h' : c.barrio}</div>
+          </div>
+        </div>
+        <a href="https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${c.coordenadas[0]},${c.coordenadas[1]}" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar a ${c.nombre}"><i class="fas fa-directions" aria-hidden="true"></i></a>
+      </div>`).join('');
   }
 
   calcularDistanciaKm(lat1, lon1, lat2, lon2) {

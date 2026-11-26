@@ -1,4 +1,4 @@
-// ============ PERFIL DE USUARIO ============
+// ============ perfil de usuario ============
 
 document.addEventListener('dashboardListo', async (e) => {
   const user = e.detail?.user;
@@ -11,21 +11,41 @@ document.addEventListener('dashboardListo', async (e) => {
   await initVinculacionCuidador(user.id);
 });
 
-// ============ CARGAR DATOS ============
+// ============ cargar datos ============
+
+// Los ids de Supabase son UUID. Las cuentas creadas solo en el navegador tienen otro formato.
+function esIdSupabase(id) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '');
+}
+
+// Datos de la sesion guardada al iniciar sesion (sirve cuando la cuenta no es de Supabase)
+function leerSesionLocal() {
+  try {
+    return JSON.parse(sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user') || 'null');
+  } catch (_) {
+    return null;
+  }
+}
 
 async function cargarPerfil(user) {
-  const { data: profile } = await supabaseClient
-    .from('profiles')
-    .select('nombre, rol, created_at')
-    .eq('id', user.id)
-    .single();
+  let profile = null;
+  if (esIdSupabase(user.id)) {
+    const { data } = await supabaseClient
+      .from('profiles')
+      .select('nombre, rol, created_at')
+      .eq('id', user.id)
+      .single();
+    profile = data;
+  }
+  const local = leerSesionLocal() || {};
 
-  const nombre = profile?.nombre || user.email;
-  const rol    = profile?.rol || 'usuario';
-  const fecha  = profile?.created_at
-    ? new Date(profile.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
+  const nombre = profile?.nombre || local.nombre || user.email;
+  const rol    = profile?.rol || local.rol || 'usuario';
+  const creado = profile?.created_at || local.creado_en || local.created_at;
+  const fecha  = creado
+    ? new Date(creado).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
     : '—';
-  const idCorto = user.id.slice(0, 8) + '…';
+  const idCorto = String(user.id || '').slice(0, 8) + '…';
 
   // Avatar con inicial
   const avatarEl = document.getElementById('perfilAvatar');
@@ -41,7 +61,7 @@ async function cargarPerfil(user) {
 
   // Input nombre
   const inputNombre = document.getElementById('inputNombre');
-  if (inputNombre) inputNombre.value = profile?.nombre || '';
+  if (inputNombre) inputNombre.value = nombre || '';
 
   // Input correo
   const inputCorreo = document.getElementById('inputCorreo');
@@ -95,7 +115,7 @@ function aplicarRolUI(rol) {
   if (desc)  { desc.textContent = config.descripcion; }
 }
 
-// ============ GUARDAR NOMBRE ============
+// ============ guardar nombre ============
 
 function wireGuardarNombre(userId) {
   const btn = document.getElementById('btnGuardarNombre');
@@ -113,10 +133,15 @@ function wireGuardarNombre(userId) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
 
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({ nombre, updated_at: new Date().toISOString() })
-      .eq('id', userId);
+    let error = null;
+    if (esIdSupabase(userId)) {
+      ({ error } = await supabaseClient
+        .from('profiles')
+        .update({ nombre, updated_at: new Date().toISOString() })
+        .eq('id', userId));
+    }
+    // Tambien se guarda en la sesion y en la cuenta del navegador
+    if (!error) guardarNombreLocal(nombre);
 
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-check"></i> Guardar';
@@ -146,7 +171,15 @@ function wireGuardarNombre(userId) {
   });
 }
 
-// ============ CAMBIAR CONTRASEÑA ============
+function guardarNombreLocal(nombre) {
+  const local = leerSesionLocal();
+  if (!local) return;
+  local.nombre = nombre;
+  sessionStorage.setItem('diamon_demo_user', JSON.stringify(local));
+  localStorage.setItem('diamon_current_user', JSON.stringify(local));
+}
+
+// ============ cambiar contraseña ============
 
 function wireCambiarClave() {
   const btn = document.getElementById('btnCambiarClave');
@@ -164,6 +197,13 @@ function wireCambiarClave() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cambiando…';
 
+    const { data: ses } = await supabaseClient.auth.getSession();
+    if (!ses || !ses.session) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-lock"></i> Cambiar';
+      mostrarMensaje('perfilClaveMsg', 'Tu cuenta no es de Supabase (entraste con Google o se creó solo en este navegador). La contraseña la maneja ese proveedor.', 'error');
+      return;
+    }
     const { error } = await supabaseClient.auth.updateUser({ password: clave });
 
     btn.disabled = false;
@@ -179,19 +219,22 @@ function wireCambiarClave() {
   });
 }
 
-// ============ CERRAR SESIÓN ============
+// ============ cerrar sesión ============
 
 function wireCerrarSesion() {
   const btn = document.getElementById('btnCerrarSesion');
   if (!btn) return;
 
   btn.addEventListener('click', async () => {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'login.html';
+    sessionStorage.removeItem('diamon_demo_user');
+    localStorage.removeItem('diamon_current_user');
+    try { await supabaseClient.auth.signOut(); } catch (_) {}
+    // window.top para salir del panel completo si el perfil esta dentro del dashboard
+    window.top.location.href = 'login.html';
   });
 }
 
-// ============ UTILS ============
+// ============ utils ============
 
 function set(id, val) {
   const el = document.getElementById(id);
@@ -206,14 +249,15 @@ function mostrarMensaje(id, texto, tipo) {
   setTimeout(() => { el.textContent = ''; el.className = 'perfil-mensaje'; }, 4000);
 }
 
-// ============ VINCULACIÓN CUIDADOR <-> MONITOREADO ============
+// ============ vinculación cuidador <-> monitoreado ============
 
 async function initVinculacionCuidador(userId) {
   const seccion = document.getElementById('seccionVinculacion');
   if (!seccion) return;
 
   const rol = document.body.dataset.rol;
-  if (rol !== 'cuidador') return;
+  // La busqueda por correo es de Supabase, con cuentas del navegador se vincula con el codigo
+  if (rol !== 'cuidador' || !esIdSupabase(userId)) return;
 
   seccion.style.display = 'block';
 
@@ -375,7 +419,7 @@ async function crearVinculacion(cuidadorId, monitoreadoId, nombre) {
   mostrarVinculacionActiva({ monitoreado_id: monitoreadoId, profiles: { nombre, id: monitoreadoId } }, cuidadorId);
 }
 
-// ---------- escHtml ----------
+// escHtml
 function escHtml(str) {
   const d = document.createElement('div');
   d.textContent = str ?? '';

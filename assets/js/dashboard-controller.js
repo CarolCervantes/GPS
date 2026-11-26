@@ -3,6 +3,12 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', () => {
+    // En la app el mapa en vivo se pasa a la seccion Mapa para que el inicio quede mas corto
+    if (document.documentElement.classList.contains('dm-en-app')) {
+      const tarjetaMapa = document.getElementById('map') && document.getElementById('map').closest('.dc-card');
+      const vistaMapa = document.querySelector('#view-mapa .dc-view-header');
+      if (tarjetaMapa && vistaMapa) vistaMapa.after(tarjetaMapa);
+    }
     initLiveClock();
     initTabNavigation();
     initKPISync();
@@ -11,9 +17,7 @@
     initAccessibleModals();
   });
 
-  // ============================================================
-  // 1. RELOJ Y FECHA EN TIEMPO REAL
-  // ============================================================
+  // Reloj y fecha en tiempo real
   function initLiveClock() {
     const clockEl = document.getElementById('dcLiveClock');
     const dateEl = document.getElementById('dcLiveDate');
@@ -41,9 +45,7 @@
     setInterval(update, 1000);
   }
 
-  // ============================================================
   // 2. NAVEGACIÓN SPA Y REDIBUJADO DE MAPAS (Leaflet InvalidateSize)
-  // ============================================================
   function initTabNavigation() {
     const navItems = document.querySelectorAll('[data-dc-tab]');
     const views = document.querySelectorAll('.dc-view');
@@ -51,6 +53,8 @@
     window.switchView = function (targetTab) {
       // Normalizar tab: si se solicita 'medicamentos', redirigir a la vista 'salud'
       if (targetTab === 'medicamentos') targetTab = 'salud';
+      targetTab = vistaPermitida(targetTab);
+      cargarPaginaEmbebida(targetTab);
       // Activar botón del sidebar
       // Actualizar estado en sidebar desktop y en barra móvil
       navItems.forEach(item => {
@@ -80,9 +84,10 @@
         }
       });
 
-      // CORRECCIÓN CRÍTICA DE MAPAS EN VISTAS OCULTAS
+      // Corrección crítica de mapas en vistas ocultas
       // Forzar recálculo dimensional de Leaflet para evitar recuadros negros/grises
       const invalidarMapas = () => {
+        if (window.liveMapInstance) window.liveMapInstance.invalidateSize();
         if (window.mapInstance && typeof window.mapInstance.invalidateSize === 'function') {
           window.mapInstance.invalidateSize();
         }
@@ -124,9 +129,7 @@
     });
   }
 
-  // ============================================================
-  // 3. SINCRONIZACIÓN DE KPIS EN TIEMPO REAL
-  // ============================================================
+  // Sincronización de KPIs en tiempo real
   function initKPISync() {
     const targetNode = document.getElementById('glucoseValue') || document.getElementById('liveGlucose');
     const kpiGlucVal = document.getElementById('kpiGlucoseVal');
@@ -142,22 +145,13 @@
     }
   }
 
-  // Formateador inteligente de nombres humanos
+  // Arma el nombre que se muestra a partir del nombre o del correo
   function formatearNombreHumano(nombreOEmail) {
     if (!nombreOEmail) return { primerNombre: 'Usuario', nombreCompleto: 'Usuario DiaMon', iniciales: 'DM' };
     
     let str = String(nombreOEmail).trim();
     if (str.includes('@')) {
       str = str.split('@')[0];
-    }
-
-    const lower = str.toLowerCase();
-    if (lower.includes('erickdejesustorres') || lower.includes('ericktorres') || lower.includes('erickdejesus')) {
-      return {
-        primerNombre: 'Erick',
-        nombreCompleto: 'Erick de Jesús Torres',
-        iniciales: 'ET'
-      };
     }
 
     // Limpiar dígitos al final (ej: erick02 -> erick)
@@ -178,9 +172,72 @@
     return { primerNombre, nombreCompleto, iniciales };
   }
 
-  // ============================================================
   // 4. ESTADO DE SESIÓN (Invitado vs Usuario Autenticado)
-  // ============================================================
+  // Muestra el aviso del inicio cuando no hay paciente (invitado o admin sin vincular)
+  // y esconde los datos clinicos para no mostrar a un paciente que no corresponde.
+  function mostrarAvisoSinPaciente(usuario, paciente) {
+    const sinPaciente = !paciente;
+    document.body.classList.toggle('dm-sin-paciente', sinPaciente);
+
+    const aviso = document.getElementById('dmAvisoSinPaciente');
+    if (!aviso) return;
+    aviso.style.display = sinPaciente ? 'block' : 'none';
+    if (!sinPaciente) return;
+
+    const titulo = document.getElementById('dmAvisoSinPacienteTitulo');
+    const texto = document.getElementById('dmAvisoSinPacienteTexto');
+    const botones = document.getElementById('dmAvisoSinPacienteBotones');
+    const rol = window.DiaMonSesion.rolDe(usuario);
+    const estiloBtn = 'border:none; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; text-decoration:none; color:#fff; background:linear-gradient(135deg, #0d9488, #0284c7);';
+
+    if (rol === 'invitado') {
+      titulo.textContent = 'Inicia sesión para ver el monitoreo';
+      texto.textContent = 'Los datos de salud y la ubicación solo los ven la persona monitoreada y su cuidador.';
+      botones.innerHTML = `<a href="login.html" style="${estiloBtn}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión o crear cuenta</a>`;
+    } else {
+      titulo.textContent = rol === 'admin' ? 'Aún no supervisas a ningún paciente' : 'Aún no tienes un paciente vinculado';
+      texto.textContent = 'Pídele al paciente su código (DM-XXXX) y vincúlalo para ver su glucosa, presión y ubicación.';
+      botones.innerHTML = `<button type="button" style="${estiloBtn}" onclick="window.abrirModalPerfil(); setTimeout(() => window.mostrarVistaFamiliares(), 200);"><i class="fas fa-user-plus"></i> Vincular paciente</button>` +
+        (rol === 'admin' ? ` <a href="admin.html" style="${estiloBtn} background:#0f172a;"><i class="fas fa-user-shield"></i> Panel de administración</a>` : '');
+    }
+  }
+
+  // Secciones que solo tienen sentido si hay un paciente activo
+  const VISTAS_CON_DATOS_PACIENTE = ['mapa', 'salud', 'reportes', 'alertas', 'zonas'];
+
+  // Revisa si el usuario puede ver la seccion pedida, si no lo manda al inicio
+  function vistaPermitida(tab) {
+    const rol = window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario());
+    const sinPaciente = document.body.classList.contains('dm-sin-paciente');
+    if (rol === 'invitado' && ['seguridad', 'perfil', 'zonas', 'admin'].includes(tab)) return 'inicio';
+    if (sinPaciente && VISTAS_CON_DATOS_PACIENTE.includes(tab)) return 'inicio';
+    if (tab === 'admin' && rol !== 'admin') return 'inicio';
+    if (tab === 'zonas' && rol !== 'admin' && rol !== 'cuidador') return 'inicio';
+    return tab;
+  }
+
+  // Perfil, zonas y admin son las paginas de antes cargadas dentro del panel.
+  // El iframe se carga la primera vez que se abre la seccion y se ajusta a su alto.
+  function cargarPaginaEmbebida(tab) {
+    const frame = document.querySelector(`#view-${tab} iframe.dm-pagina-embebida`);
+    if (!frame) return;
+    if (!frame.src) {
+      frame.src = frame.dataset.src;
+      const ajustarAlto = () => {
+        try {
+          const alto = frame.contentDocument.documentElement.scrollHeight;
+          if (alto > 0) frame.style.height = alto + 'px';
+        } catch (_) {}
+      };
+      frame.addEventListener('load', ajustarAlto);
+      // El contenido cambia despues de cargar (Supabase, mapa), por eso se revisa seguido
+      setInterval(ajustarAlto, 800);
+    } else {
+      // Al volver a abrirla se recarga para que muestre datos nuevos
+      try { frame.contentWindow.location.reload(); } catch (_) {}
+    }
+  }
+
   async function initSessionState() {
     const greetingTitle = document.getElementById('dcWelcomeGreeting');
     const greetingSubtitle = document.getElementById('dcWelcomeSubtitle');
@@ -190,22 +247,28 @@
     const guestNoticeMeds = document.getElementById('guestNoticeMeds');
     const guestNoticeReport = document.getElementById('guestNoticeReport');
 
+    // La sesion sale de Supabase. Si cambio el paciente que se mira (por ejemplo, el cuidador
+    // vinculo uno nuevo en otro equipo), se recarga para que todo muestre al paciente correcto.
+    const antes = window.DiaMonSesion.leerUsuario();
     let currentUser = null;
-
     try {
-      if (window.supabaseClient && window.supabaseClient.auth) {
-        const { data } = await window.supabaseClient.auth.getUser();
-        currentUser = data?.user || null;
-      }
-    } catch (_) {}
-
-    // Modo Demo local si se guardó en sessionStorage o localStorage
-    const localDemoSession = sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user');
-    if (!currentUser && localDemoSession) {
-      try {
-        currentUser = JSON.parse(localDemoSession);
-      } catch (_) {}
+      currentUser = await window.DiaMonSesion.iniciarDesdeSupabase();
+    } catch (_) {
+      currentUser = antes; // sin internet se usa la ultima copia
     }
+    const codAntes = antes && antes.pacienteVinculado ? antes.pacienteVinculado.codigoPaciente : null;
+    const codAhora = currentUser && currentUser.pacienteVinculado ? currentUser.pacienteVinculado.codigoPaciente : null;
+    if (codAntes !== codAhora && !sessionStorage.getItem('diamon_recargado')) {
+      sessionStorage.setItem('diamon_recargado', '1');
+      window.location.reload();
+      return;
+    }
+    sessionStorage.removeItem('diamon_recargado');
+    const pacienteActual = window.DiaMonSesion.pacienteActivo(currentUser);
+    mostrarAvisoSinPaciente(currentUser, pacienteActual);
+    // Clase del rol en el body para mostrar u ocultar opciones con CSS
+    const rolBody = window.DiaMonSesion.rolDe(currentUser);
+    ['invitado', 'usuario', 'cuidador', 'admin'].forEach(r => document.body.classList.toggle('dm-rol-' + r, r === rolBody));
 
     const btnMetasMedicoHeader = document.getElementById('btnMetasMedicoHeader');
     const btnConfigGeocercaBanner = document.getElementById('btnConfigGeocercaBanner');
@@ -237,12 +300,13 @@
       // Usuario autenticado (Paciente, Cuidador o Admin)
       const rawNombre = currentUser.nombre || currentUser.email || 'Usuario';
       const { primerNombre, nombreCompleto, iniciales } = formatearNombreHumano(rawNombre);
-      const esAdmin = currentUser.rol === 'admin';
-      const esCuidador = currentUser.rol === 'cuidador';
+      const rolActual = window.DiaMonSesion.rolDe(currentUser);
+      const esAdmin = rolActual === 'admin';
+      const esCuidador = rolActual === 'cuidador';
       const esPaciente = !esAdmin && !esCuidador;
       const esSupervisor = esAdmin || esCuidador;
-      const paciente = currentUser.pacienteVinculado || null;
-      const codigoPropio = currentUser.codigoPaciente || (paciente && paciente.codigoPaciente) || 'DM-8492';
+      const paciente = pacienteActual;
+      const codigoPropio = (paciente && paciente.codigoPaciente) || currentUser.codigoPaciente || '—';
 
       // Foto o iniciales del usuario
       const fotoUrl = currentUser.foto || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || currentUser.picture || null;
@@ -290,7 +354,7 @@
         if (btnConfigGeocercaBanner) btnConfigGeocercaBanner.style.display = 'inline-flex';
         if (btnMisMonitoreadosBanner) btnMisMonitoreadosBanner.style.display = 'inline-flex';
         if (btnPanelAdminBanner) btnPanelAdminBanner.style.display = 'none';
-        const pacNombre = (paciente && paciente.nombre) ? paciente.nombre : 'Damián Díaz Balseiro';
+        const pacNombre = (paciente && paciente.nombre) ? paciente.nombre : 'Sin paciente';
         const totalVinc = Array.isArray(currentUser.pacientesVinculados) ? currentUser.pacientesVinculados.length : 1;
         if (badgeRolBanner) {
           badgeRolBanner.innerHTML = `<i class="fas fa-user-nurse"></i> Panel del Cuidador · ${totalVinc} Monitoreado(s)`;
@@ -310,8 +374,8 @@
 
       if (greetingSubtitle) {
         if (esSupervisor && paciente) {
-          const pacNombre = typeof paciente === 'object' ? paciente.nombre : 'Damián Díaz Balseiro';
-          const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : paciente;
+          const pacNombre = paciente.nombre;
+          const pacCod = paciente.codigoPaciente;
           const etiquetaRol = esAdmin ? 'Modo Administrador · Supervisando a:' : 'Cuidador Vinculado a:';
           greetingSubtitle.innerHTML = `${etiquetaRol} <strong>${pacNombre}</strong> · Código Único: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${pacCod}</strong>`;
 
@@ -330,19 +394,18 @@
         } else if (esPaciente) {
           greetingSubtitle.innerHTML = `Vista Simplificada del Paciente · Tu Código Único para compartir con tu cuidador es: <strong style="color:var(--dc-primary); background:var(--dc-primary-light); padding:2px 8px; border-radius:6px; font-family:monospace;">${codigoPropio}</strong>`;
         } else {
-          greetingSubtitle.textContent = 'Monitoreo clínico en tiempo real · Barrio Chapacuá, Cartagena de Indias.';
+          greetingSubtitle.textContent = esAdmin ? 'Modo Administrador · Aún no supervisas a ningún paciente.' : 'Aún no tienes un paciente vinculado.';
         }
       }
 
       if (sidebarName) sidebarName.textContent = nombreCompleto;
       if (sidebarRole) {
         if (esAdmin) {
-          sidebarRole.innerHTML = `Administrador · <a href="admin.html" style="color:#5eead4; text-decoration:underline;">Panel Admin</a>`;
+          sidebarRole.innerHTML = `Administrador · <a href="#" onclick="window.switchView('admin'); return false;" style="color:#5eead4; text-decoration:underline;">Panel Admin</a>`;
         } else if (esCuidador) {
-          const pacCod = typeof paciente === 'object' ? paciente.codigoPaciente : (paciente || 'DM-8492');
-          sidebarRole.textContent = `Cuidador (${pacCod})`;
+          sidebarRole.textContent = `Cuidador (${codigoPropio})`;
         } else {
-          sidebarRole.textContent = `Paciente (${currentUser.codigoPaciente || 'DM-8492'})`;
+          sidebarRole.textContent = `Paciente (${codigoPropio})`;
         }
       }
       if (sidebarAuthAction) {
@@ -359,28 +422,15 @@
     window.actualizarInterfazUsuario = initSessionState;
 
     window.cerrarSesionDiaMon = async function () {
-      sessionStorage.removeItem('diamon_demo_user');
-      localStorage.removeItem('diamon_current_user');
+      window.DiaMonSesion.limpiarSesion();
       if (window.supabaseClient && window.supabaseClient.auth) {
         try { await window.supabaseClient.auth.signOut(); } catch (_) {}
       }
       window.location.href = 'login.html';
     };
-
-    window.iniciarDemoDiaMon = function (rol = 'usuario') {
-      const demoUser = rol === 'admin'
-        ? { id: 'admin-demo', nombre: 'Dra. María Martínez', email: 'admin@diamon.co', rol: 'admin' }
-        : { id: 'familiar-demo', nombre: 'Carlos Mendoza', email: 'familiar@diamon.co', rol: 'usuario' };
-      
-      sessionStorage.setItem('diamon_demo_user', JSON.stringify(demoUser));
-      window.cerrarModalAuth();
-      initSessionState();
-    };
   }
 
-  // ============================================================
-  // 5. MODALES ACCESIBLES (Auth & Legal)
-  // ============================================================
+  // Modales accesibles (auth & legal)
   function initAccessibleModals() {
     const authModal = document.getElementById('dcAuthModal');
     const legalModal = document.getElementById('dcLegalModal');
@@ -445,9 +495,7 @@
     });
   }
 
-  // ============================================================
-  // 6. CONSENTIMIENTO DE COOKIES & ANALÍTICA (Habeas Data)
-  // ============================================================
+  // Consentimiento de cookies & analítica (habeas data)
   function initCookieConsent() {
     const banner = document.getElementById('dcCookieBanner');
     if (!banner) return;

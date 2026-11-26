@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiaMon — Mi perfil</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/icon-diamon.svg">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/historial.css">
     <link rel="stylesheet" href="../assets/css/perfil.css">
@@ -148,8 +149,8 @@
                         <div id="perfilMensaje" class="perfil-mensaje"></div>
                     </div>
 
-                    <!-- Ficha Médica PulseCard & QR de Emergencia -->
-                    <div class="perfil-section">
+                    <!-- Ficha Médica PulseCard & QR de Emergencia (solo para la cuenta del paciente) -->
+                    <div class="perfil-section" id="seccionFichaMedica">
                         <h3 class="perfil-section-title"><i class="fas fa-id-card-alt" style="color:#ef4444;"></i> Ficha Médica PulseCard & Código QR SOS</h3>
                         <p class="perfil-field-hint" style="margin-bottom:14px;">
                             Esta información se codifica en tu Código QR para que los paramédicos y servicios de emergencia en Cartagena puedan atenderte rápidamente.
@@ -285,6 +286,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/js/sesion.js"></script>
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/auth.js"></script>
@@ -292,28 +294,43 @@
 
 <!-- Scripts módulos innovadores DiaMon -->
 <script src="../assets/js/vendor/qrcode.min.js"></script>
+<script src="../assets/js/datos-supabase.js"></script>
 <script src="../assets/js/medical-qr.js"></script>
 <script src="../assets/js/diabot.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        if (!window.medicalQRManager) return;
-        const p = window.medicalQRManager.profile;
+        // La ficha medica es del paciente; admin y cuidador no tienen ficha propia
+        let ses = null;
+        try { ses = JSON.parse(sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user') || 'null'); } catch (_) {}
+        const esPaciente = ses && (ses.rol === 'usuario' || ses.rol === 'monitoreado');
+        const seccionFicha = document.getElementById('seccionFichaMedica');
+        if (seccionFicha && !esPaciente) seccionFicha.style.display = 'none';
+
+        if (!window.medicalQRManager || !esPaciente) return;
         const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-        
-        setVal('inputMedCondicion', p.condicion);
-        setVal('inputMedTratamiento', p.tratamiento);
-        setVal('inputMedSangre', p.grupoSanguineo);
-        setVal('inputMedAlergias', p.alergias);
-        setVal('inputMedContactoNombre', p.contactoNombre);
-        setVal('inputMedContactoTel', p.contactoTelefono);
-        setVal('inputMedCentro', p.centroReferencia);
-        setVal('inputMedNotas', p.notasEmergencia);
+
+        // La ficha se trae del perfil del paciente en Supabase
+        window.alCargarFichaMedica = (p) => {
+            setVal('inputMedCondicion', p.condicion);
+            setVal('inputMedTratamiento', p.tratamiento);
+            setVal('inputMedSangre', p.grupoSanguineo);
+            setVal('inputMedAlergias', p.alergias);
+            setVal('inputMedContactoNombre', p.contactoNombre);
+            setVal('inputMedContactoTel', p.contactoTelefono);
+            setVal('inputMedCentro', p.centroReferencia);
+            setVal('inputMedNotas', p.notasEmergencia);
+        };
+        window.DiaMonDatos.cargarTodo().then(d => {
+            if (!d || !d.perfil) return;
+            const f = d.perfil.ficha || {};
+            window.medicalQRManager.cargarDesdePerfil({ ...f, nombre: d.perfil.nombre, condicion: d.perfil.diagnostico || '' });
+        });
 
         const btnGuardar = document.getElementById('btnGuardarFichaMedica');
         const msgEl = document.getElementById('perfilMedMsg');
         if (btnGuardar) {
-            btnGuardar.addEventListener('click', () => {
+            btnGuardar.addEventListener('click', async () => {
                 const updated = {
                     condicion: document.getElementById('inputMedCondicion').value,
                     tratamiento: document.getElementById('inputMedTratamiento').value,
@@ -324,7 +341,7 @@
                     centroReferencia: document.getElementById('inputMedCentro').value,
                     notasEmergencia: document.getElementById('inputMedNotas').value
                 };
-                window.medicalQRManager.saveProfile(updated);
+                await window.medicalQRManager.saveProfile(updated);
                 if (msgEl) {
                     msgEl.textContent = '¡Ficha médica y Código QR actualizados exitosamente!';
                     msgEl.className = 'perfil-mensaje visible exito';

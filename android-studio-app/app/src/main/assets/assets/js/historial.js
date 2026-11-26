@@ -1,4 +1,4 @@
-// ============ HISTORIAL DE RUTAS ============
+// ============ historial de rutas ============
 // Carga rutas del usuario (o de admins si es cuidador) desde Supabase.
 // Filtra por período: hoy / 7 días / 30 días / año.
 // Muestra KPIs y tabla con detalle de cada ruta.
@@ -16,7 +16,7 @@ document.addEventListener('dashboardListo', async (e) => {
   await cargarRutas(userId);
 });
 
-// ============ CARGA DE DATOS ============
+// ============ carga de datos ============
 
 async function cargarRutas(userId) {
   mostrarCargando();
@@ -70,7 +70,7 @@ async function cargarRutas(userId) {
   aplicarFiltros();
 }
 
-// ============ FILTROS ============
+// ============ filtros ============
 
 function aplicarFiltros() {
   let filtradas = todasLasRutas;
@@ -169,7 +169,7 @@ function renderKPIs(rutas) {
   set('historialMin', (minGlucosa || '—') + (minGlucosa ? '<span class="unit">mg/dL</span>' : ''));
 }
 
-// ============ TABLA ============
+// ============ tabla ============
 
 function renderTabla(rutas) {
   const tbody = document.getElementById('tablaRutasBody');
@@ -216,7 +216,7 @@ function renderTabla(rutas) {
   }).join('');
 }
 
-// ============ UTILS ============
+// ============ utils ============
 
 function formatearFechaISO(iso) {
   if (!iso) return '—';

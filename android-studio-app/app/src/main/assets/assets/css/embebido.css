@@ -1,0 +1,49 @@
+/* Estilos para cuando perfil, zonas o admin se abren dentro del panel nuevo.
+   Se esconde la barra vieja y se cambian los colores oscuros por los claros del dashboard. */
+
+html.embebido {
+    --surface-0: #f8fafc;
+    --surface-1: #ffffff;
+    --surface-2: #f1f5f9;
+    --surface-3: #e2e8f0;
+    --surface-hover: rgba(13, 148, 136, 0.06);
+    --fg-1: #0f172a;
+    --fg-2: #1e293b;
+    --fg-3: #475569;
+    --fg-4: #64748b;
+    --border-1: #e2e8f0;
+    --border-2: #cbd5e1;
+    --border-emph: rgba(13, 148, 136, 0.45);
+    --brand-ink: #ffffff;
+}
+
+html.embebido,
+html.embebido body {
+    height: auto;
+    background: transparent;
+}
+
+/* La barra de arriba y la franja de admin ya estan en el panel nuevo */
+html.embebido .navbar,
+html.embebido .admin-strip,
+html.embebido #diabotWidget {
+    display: none !important;
+}
+
+html.embebido .page-content {
+    padding-top: 0;
+    max-width: none;
+}
+
+html.embebido .shell {
+    min-height: 0;
+}
+
+/* Los inputs y selects quedaban oscuros, se pasan a fondo blanco */
+html.embebido input,
+html.embebido select,
+html.embebido textarea {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}

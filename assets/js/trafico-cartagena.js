@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — Módulo de Tráfico y Congestión Automática en Cartagena
 // Detección automática por telemetría GPS, velocidad y geocercas
-// ============================================================
 
 const CORREDORES_TRAFICO_CARTAGENA = [
   {
@@ -190,9 +188,7 @@ class TraficoCartagenaManager {
     });
   }
 
-  // ============================================================
-  // DETECCIÓN AUTOMÁTICA EN TIEMPO REAL POR TELEMETRÍA GPS
-  // ============================================================
+  // Detección automática en tiempo real por telemetría GPS
   procesarTelemetriaGPS(lat, lng, velocidadReportada = null) {
     if (!lat || !lng) return;
 
@@ -258,10 +254,6 @@ class TraficoCartagenaManager {
       // Si no habíamos aplicado el retraso en esta sesión de trayecto, aplicarlo automáticamente
       if (!this.congestionesDetectadas.has(trancónDetectado.id)) {
         this.congestionesDetectadas.add(trancónDetectado.id);
-
-        if (window.safeWalkInstance && window.safeWalkInstance.isActive) {
-          window.safeWalkInstance.aplicarRetrasoAutomatico(trancónDetectado.retrasoMinutos, trancónDetectado.nombre);
-        }
       }
     } else {
       // Vía despejada

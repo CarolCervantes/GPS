@@ -1,4 +1,4 @@
-// ============ ZONAS SEGURAS ============
+// ============ zonas seguras ============
 let mapaZonas = null;
 let marcadorActual = null;
 let circuloActual = null;
@@ -49,17 +49,26 @@ document.addEventListener('dashboardListo', async (e) => {
 
   const banner = document.getElementById('monitoreadoBanner');
   const bannerName = document.getElementById('monitBannerName');
-  if (banner) banner.style.display = 'flex';
-  if (bannerName) bannerName.textContent = 'Damián Díaz Balseiro (Barrio Chapacuá · DM-8492)';
+  // El nombre sale del paciente que el cuidador o admin tiene vinculado
+  let pacienteSesion = null;
+  try {
+    const ses = JSON.parse(sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user') || 'null');
+    pacienteSesion = ses && ses.pacienteVinculado;
+  } catch (_) {}
+  if (banner) banner.style.display = pacienteSesion ? 'flex' : 'none';
+  if (bannerName && pacienteSesion) {
+    bannerName.textContent = `${pacienteSesion.nombre} (${pacienteSesion.codigoPaciente})`;
+  }
 
-  zonaOwner = usuarioId;
+  // Las zonas son del paciente: si entra el cuidador, se usan las del paciente que tiene vinculado
+  zonaOwner = (pacienteSesion && pacienteSesion.id) || usuarioId;
 
   await cargarZonas();
   wireFormulario();
   ocultarFormulario();
 });
 
-// ============ MAPA ============
+// ============ mapa ============
 function iniciarMapa() {
   mapaZonas = L.map('mapZonas', { zoomControl: true }).setView([10.39991, -75.47886], 15);
 
@@ -95,7 +104,7 @@ function colocarMarcador(lat, lng) {
   document.getElementById('mapaHint').style.display = 'none';
 }
 
-// ============ CARGAR ZONAS ============
+// ============ cargar zonas ============
 async function cargarZonas() {
   const ownerId = zonaOwner || usuarioId;
   let cargadasDeSupabase = null;
@@ -178,7 +187,7 @@ function renderCirculosEnMapa() {
   }
 }
 
-// ============ ACCIONES ============
+// ============ acciones ============
 function centrarZona(lat, lng) {
   mapaZonas.setView([lat, lng], 15);
 }
@@ -215,7 +224,7 @@ async function eliminarZona(id) {
   await cargarZonas();
 }
 
-// ============ FORMULARIO ============
+// ============ formulario ============
 function wireFormulario() {
   document.getElementById('btnNuevaZona')?.addEventListener('click', () => {
     limpiarFormulario();

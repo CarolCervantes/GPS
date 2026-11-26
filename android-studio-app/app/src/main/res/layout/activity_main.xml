@@ -20,7 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="DiaMon GPS · Chapacuá"
+            android:text="DiaMon GPS"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="15sp" />
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="38dp"
             android:layout_marginLeft="6dp"
-            android:text="Login / Cuenta"
+            android:text="Inicio"
             android:textSize="11sp"
             android:onClick="irALogin"
             android:backgroundTint="#0284C7"

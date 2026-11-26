@@ -1,71 +1,49 @@
 // Ficha medica y codigo QR de emergencia (PulseCard)
 
-const DEFAULT_MEDICAL_PROFILE = {
-  nombre: 'Damián Díaz Balseiro',
-  condicion: 'Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética',
-  tipoDiabetes: 'tipo2_hta',
-  tratamiento: '8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sábados: Ozempic',
-  glucosaObjetivo: 'Glucosa: 80 - 180 mg/dL | Presión Arterial: < 140/90 mmHg',
-  grupoSanguineo: 'O+',
-  alergias: 'Ninguna alergia medicamentosa reportada',
-  contactoNombre: 'Familiar / Cuidador Principal',
-  contactoTelefono: '+57 300 456 7890',
-  contactoRelacion: 'Familiar / Cuidador Principal',
-  medicoTratante: 'Enf. Jefe Elizabeth Vargas Caro',
-  medicoTelefono: '+57 310 987 6543',
-  ciudad: 'Barrio Chapacuá, Cartagena de Indias',
-  centroReferencia: 'Hospital Universitario del Caribe / Clínica Blas de Lezo',
-  notasEmergencia: 'Paciente de Chapacuá (Cartagena) en tratamiento con Insulina 24 UI a las 9:00 PM, Ozempic los sábados y antihipertensivos (Valsartán 2:00 PM + Nifedipina 8 AM/8 PM). Si presenta sudoración fría o mareo estando consciente, aplicar Regla 15-15 (15g de azúcar rápida) y medir presión arterial sentado.'
-};
-
 class MedicalQRManager {
   constructor() {
-    this.storageKey = 'diamon_medical_profile';
-    this.profile = this.loadProfile();
+    // La ficha es del paciente activo y se guarda en su perfil de Supabase (columna ficha)
+    const ses = window.DiaMonSesion;
+    const pac = ses ? ses.pacienteActivo(ses.leerUsuario()) : null;
+    this.codigo = (pac && pac.codigoPaciente) || 'DM-8492';
+    this.profile = { nombre: (pac && pac.nombre) || '', condicion: '', tratamiento: '', grupoSanguineo: '', alergias: '',
+      contactoNombre: '', contactoTelefono: '', centroReferencia: '', notasEmergencia: '' };
     this.qrInstance = null;
   }
 
-  loadProfile() {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        return { ...DEFAULT_MEDICAL_PROFILE, ...JSON.parse(saved) };
-      }
-    } catch (e) {
-      console.warn('Error leyendo perfil médico local:', e);
-    }
-    return { ...DEFAULT_MEDICAL_PROFILE };
+  // caso-estudio.js la llena cuando llegan los datos de Supabase
+  cargarDesdePerfil(datos) {
+    this.profile = { ...this.profile, ...datos };
+    this.generateQR();
+    if (typeof window.alCargarFichaMedica === 'function') window.alCargarFichaMedica(this.profile);
   }
 
-  saveProfile(updatedData) {
+  // Texto que va dentro del QR. Va la ficha completa en texto para que se pueda leer
+  // con cualquier celular aunque no tenga internet. Se quitan tildes para que todos los lectores lo muestren bien.
+  // El QR lleva un enlace a la ficha de emergencia en la pagina publicada.
+  // La clave (fichaToken) es secreta: sin ella nadie puede ver la ficha del paciente.
+  getTextoQR() {
+    const local = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.protocol === 'file:';
+    const base = local ? 'https://diamon-salud.vercel.app' : window.location.origin;
+    return this.profile.fichaToken ? `${base}/pages/ficha-emergencia.html?t=${this.profile.fichaToken}` : base;
+  }
+
+  // Guarda la ficha en el perfil del paciente (Supabase) y vuelve a dibujar el QR
+  async saveProfile(updatedData) {
     this.profile = { ...this.profile, ...updatedData };
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.profile));
-    } catch (e) {
-      console.warn('Error guardando perfil médico:', e);
+    const { nombre, condicion, fichaToken, ...ficha } = this.profile;
+    if (window.DiaMonDatos && window.DiaMonDatos.pacienteId()) {
+      await window.DiaMonDatos.guardarPerfilPaciente({ ficha, diagnostico: condicion });
     }
     this.generateQR();
     return this.profile;
   }
 
+  // "Abrir ficha" y el QR llevan al mismo enlace
   getEmergencyURL() {
-    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
-    const pagePrefix = window.location.pathname.includes('/pages/') ? '' : '/pages';
-    const compactData = {
-      n: this.profile.nombre,
-      c: this.profile.condicion,
-      t: this.profile.tratamiento,
-      s: this.profile.grupoSanguineo,
-      a: this.profile.alergias,
-      cn: this.profile.contactoNombre,
-      ct: this.profile.contactoTelefono,
-      h: this.profile.centroReferencia,
-      m: this.profile.notasEmergencia
-    };
-    const jsonStr = JSON.stringify(compactData);
-    const encoded = encodeURIComponent(jsonStr);
-    return `${baseUrl}${pagePrefix}/ficha-emergencia.html#${encoded}`;
+    return this.getTextoQR();
   }
+
 
   generateQR(containerId = 'qrcodeCanvas') {
     const container = document.getElementById(containerId);
@@ -76,9 +54,9 @@ class MedicalQRManager {
 
     if (typeof QRCode !== 'undefined') {
       this.qrInstance = new QRCode(container, {
-        text: emergencyURL,
-        width: 190,
-        height: 190,
+        text: this.getTextoQR(),
+        width: 300,
+        height: 300,
         colorDark: '#0B1220',
         colorLight: '#FFFFFF',
         correctLevel: QRCode.CorrectLevel.M

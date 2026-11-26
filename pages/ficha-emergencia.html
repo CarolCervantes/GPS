@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiaMon — Ficha Médica de Emergencia (SOS)</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/icon-diamon.svg">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/medical-qr.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -217,7 +218,7 @@
         </div>
         <div class="data-row">
             <span class="lbl">Tratamiento e Insulina:</span>
-            <span class="val" id="dispTratamiento">8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic</span>
+            <span class="val" id="dispTratamiento">8AM: Pantoprazol, Metformina, Firialta, Nifedipino | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic</span>
         </div>
         <div class="data-row">
             <span class="lbl">Ciudad / Ubicación:</span>
@@ -243,53 +244,53 @@
 
 </div>
 
+<script src="../assets/js/config.js"></script>
 <script>
-    // Decodificar datos desde el Hash de la URL o LocalStorage
-    document.addEventListener('DOMContentLoaded', () => {
-        let profile = null;
+    // La ficha se trae de Supabase con la clave secreta que va en el QR (?t=...).
+    // Solo devuelve datos de emergencia del paciente; sin la clave no se puede ver nada.
+    document.addEventListener('DOMContentLoaded', async () => {
+        const ids = ['dispNombre', 'dispCondicion', 'dispSangre', 'dispAlergias', 'dispTratamiento', 'dispCentro', 'dispNotas'];
+        ids.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+        const nombreEl = document.getElementById('dispNombre');
 
-        if (window.location.hash && window.location.hash.length > 1) {
-            try {
-                const raw = decodeURIComponent(window.location.hash.substring(1));
-                const parsed = JSON.parse(raw);
-                profile = {
-                    nombre: parsed.n,
-                    condicion: parsed.c,
-                    tratamiento: parsed.t,
-                    grupoSanguineo: parsed.s,
-                    alergias: parsed.a,
-                    contactoNombre: parsed.cn,
-                    contactoTelefono: parsed.ct,
-                    centroReferencia: parsed.h,
-                    notasEmergencia: parsed.m
-                };
-            } catch (e) {
-                console.warn('Error decodificando hash:', e);
+        const token = new URLSearchParams(window.location.search).get('t');
+        if (!token) {
+            if (nombreEl) nombreEl.textContent = 'Código QR no válido';
+            return;
+        }
+        if (nombreEl) nombreEl.textContent = 'Cargando ficha...';
+
+        try {
+            const cfg = window.SUPABASE_CONFIG;
+            const resp = await fetch(cfg.url + '/rest/v1/rpc/ficha_publica', {
+                method: 'POST',
+                headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ p_token: token })
+            });
+            const filas = await resp.json();
+            const d = Array.isArray(filas) ? filas[0] : null;
+            if (!d) {
+                if (nombreEl) nombreEl.textContent = 'Ficha no encontrada';
+                return;
             }
-        }
+            const f = d.ficha || {};
+            const poner = (id, valor) => { const el = document.getElementById(id); if (el && valor) el.textContent = valor; };
+            poner('dispNombre', d.nombre);
+            poner('dispCondicion', d.diagnostico);
+            poner('dispSangre', f.grupoSanguineo);
+            poner('dispAlergias', f.alergias);
+            poner('dispTratamiento', f.tratamiento);
+            poner('dispCentro', f.centroReferencia);
+            poner('dispNotas', f.notasEmergencia);
 
-        if (!profile) {
-            try {
-                const stored = localStorage.getItem('diamon_medical_profile');
-                if (stored) profile = JSON.parse(stored);
-            } catch (e) {}
-        }
-
-        if (profile) {
-            if (profile.nombre) document.getElementById('dispNombre').textContent = profile.nombre;
-            if (profile.condicion) document.getElementById('dispCondicion').textContent = profile.condicion;
-            if (profile.grupoSanguineo) document.getElementById('dispSangre').textContent = profile.grupoSanguineo;
-            if (profile.alergias) document.getElementById('dispAlergias').textContent = profile.alergias;
-            if (profile.tratamiento) document.getElementById('dispTratamiento').textContent = profile.tratamiento;
-            if (profile.centroReferencia) document.getElementById('dispCentro').textContent = profile.centroReferencia;
-            if (profile.notasEmergencia) document.getElementById('dispNotas').textContent = profile.notasEmergencia;
-
-            if (profile.contactoTelefono) {
-                const cleanPhone = profile.contactoTelefono.replace(/\s+/g, '');
+            if (f.contactoTelefono) {
                 const btn = document.getElementById('btnCallFamily');
-                btn.href = 'tel:' + cleanPhone;
-                document.getElementById('callFamilySub').textContent = (profile.contactoNombre || 'Familiar') + ' (' + profile.contactoTelefono + ')';
+                if (btn) btn.href = 'tel:' + f.contactoTelefono.replace(/\s+/g, '');
+                const sub = document.getElementById('callFamilySub');
+                if (sub) sub.textContent = (f.contactoNombre || 'Familiar') + ' (' + f.contactoTelefono + ')';
             }
+        } catch (e) {
+            if (nombreEl) nombreEl.textContent = 'Sin conexión: no se pudo cargar la ficha';
         }
     });
 </script>

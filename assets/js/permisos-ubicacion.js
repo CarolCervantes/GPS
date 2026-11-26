@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — Módulo de Solicitud y Permisos de Ubicación GPS
 // Notificación inicial clínica para monitoreo continuo del paciente
-// ============================================================
 
 class PermisosUbicacionManager {
   constructor() {
@@ -10,6 +8,9 @@ class PermisosUbicacionManager {
   }
 
   init() {
+    // Solo el paciente comparte su ubicacion. Al invitado, admin o cuidador no se le pide.
+    if (window.DiaMonSesion && window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) !== 'usuario') return;
+
     // Si ya tomó la decisión antes, solo re-iniciar el seguimiento si fue aceptado
     const saved = localStorage.getItem(this.storageKey);
     if (!saved) {
@@ -115,6 +116,9 @@ class PermisosUbicacionManager {
     } catch (_) {}
 
     this.activarGeolocalizacionNativa(tipo === 'siempre');
+    if (window.casoEstudio && !window.casoEstudio.transmitiendoGPSReal) {
+      window.casoEstudio.toggleTransmisionGPSReal();
+    }
 
     if (window.mostrarNotificacion) {
       window.mostrarNotificacion(
@@ -130,7 +134,7 @@ class PermisosUbicacionManager {
     const opciones = {
       enableHighAccuracy: true,
       maximumAge: modoContinuo ? 2000 : 10000,
-      timeout: 12000
+      timeout: 30000
     };
 
     navigator.geolocation.watchPosition(
@@ -174,4 +178,21 @@ class PermisosUbicacionManager {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.permisosUbicacionInstance = new PermisosUbicacionManager();
+});
+
+// Desde la seccion Seguridad el paciente puede volver a elegir el permiso de ubicacion
+window.cambiarPermisoUbicacion = function () {
+  const gestor = window.permisosUbicacionInstance;
+  if (gestor) gestor.mostrarModalPermiso();
+};
+
+// Texto que dice que permiso esta activo ahora
+document.addEventListener('DOMContentLoaded', () => {
+  const estado = document.getElementById('estadoPermisoUbicacion');
+  if (!estado) return;
+  const textos = {
+    siempre: 'Activo todo el tiempo. Toca para cambiarlo.',
+    en_uso: 'Activo solo con la app abierta. Toca para cambiarlo.'
+  };
+  estado.textContent = textos[localStorage.getItem('diamon_permiso_ubicacion_tipo')] || 'Aún no has elegido. Toca para decidir.';
 });

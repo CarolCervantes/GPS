@@ -67,7 +67,7 @@ public class ActividadCrudClinico extends Activity {
 
         try {
             casoDeUso.guardar(r);
-            Toast.makeText(getApplicationContext(), "Guardado en SQLite y sincronizado con Supabase", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Guardado en SQLite (celular). Enviando a Supabase...", Toast.LENGTH_SHORT).show();
             limpiarCampos(campo);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -153,7 +153,7 @@ public class ActividadCrudClinico extends Activity {
         try {
             RegistroClinico r = new RegistroClinico(id, paciente, glucosa, presion, medicamento, ubicacion);
             casoDeUso.modificar(r);
-            Toast.makeText(getApplicationContext(), "Modificado y sincronizado con Supabase", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Registro modificado en SQLite", Toast.LENGTH_LONG).show();
             limpiarCampos(campo);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "ERROR al modificar: " + e.getMessage(), Toast.LENGTH_LONG).show();

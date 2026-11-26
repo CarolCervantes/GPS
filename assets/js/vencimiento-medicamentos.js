@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — Control de Vencimiento de Medicamentos e Insulinas
 // Regla clínica de 28 días para insulinas en uso a temperatura ambiente
-// ============================================================
 
 const INVENTARIO_MEDICAMENTOS_DEFECTO = [
   {
@@ -22,7 +20,7 @@ const INVENTARIO_MEDICAMENTOS_DEFECTO = [
   },
   {
     id: 'firialta-valsartan-nifedipina',
-    nombre: 'Firialta + Valsartán + Nifedipina (Blíster Mensual)',
+    nombre: 'Firialta + Valsartán + Nifedipino (Blíster Mensual)',
     tipo: 'tableta',
     fechaVencimiento: '2027-09-30',
     diasVidaUtil: null,
@@ -46,24 +44,29 @@ function calcularFechaAtras(diasAtras) {
 
 class VencimientoMedicamentosManager {
   constructor() {
-    this.storageKey = 'diamon_vencimiento_damian_v4';
-    this.inventario = this.cargarInventario();
+    // El inventario se guarda en la ficha del paciente en Supabase (ficha.inventario)
+    this.ficha = {};
+    this.inventario = [];
     this.init();
+    window.addEventListener('diamon-datos', (e) => {
+      const perfil = e.detail && e.detail.perfil;
+      this.ficha = (perfil && perfil.ficha) || {};
+      const esDamian = document.documentElement.classList.contains('dm-caso-damian');
+      this.inventario = Array.isArray(this.ficha.inventario)
+        ? this.ficha.inventario
+        : (esDamian ? [...INVENTARIO_MEDICAMENTOS_DEFECTO] : []);
+      this.render();
+    });
   }
 
-  cargarInventario() {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch (_) {}
-    return [...INVENTARIO_MEDICAMENTOS_DEFECTO];
-  }
-
-  guardarInventario() {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.inventario));
-    } catch (_) {}
+  async guardarInventario() {
+    this.ficha = { ...this.ficha, inventario: this.inventario };
     this.render();
+    try {
+      await window.DiaMonDatos.guardarPerfilPaciente({ ficha: this.ficha });
+    } catch (_) {
+      if (window.mostrarNotificacion) window.mostrarNotificacion('No se pudo guardar el cambio. Revisa tu conexión.', 'warn');
+    }
   }
 
   init() {
@@ -112,20 +115,30 @@ class VencimientoMedicamentosManager {
               <button class="venc-btn-renovar" onclick="window.vencimientoMedsInstance.renovarInsulina('${item.id}')">
                 Abrí nueva pluma hoy
               </button>
+              <button class="venc-btn-renovar" style="background:#475569;" onclick="window.vencimientoMedsInstance.editar('${item.id}')">Editar</button>
             </div>
+            ${this.formEdicion(item)}
           </div>
         `;
       } else {
-        // Insumo o tableta
+        // Insumo o tableta: se revisa si ya vencio o vence en menos de 30 dias
+        const diasParaVencer = Math.floor((new Date(item.fechaVencimiento + 'T00:00:00') - new Date()) / 86400000);
+        const clase = diasParaVencer < 0 ? 'critico' : diasParaVencer <= 30 ? 'advertencia' : 'normal';
+        const texto = diasParaVencer < 0 ? 'Vencido' : diasParaVencer <= 30 ? `Vence en ${diasParaVencer} días` : 'Vigente';
         return `
-          <div class="venc-item normal">
+          <div class="venc-item ${clase}">
             <div class="venc-item-header">
               <div>
                 <div class="venc-name"><i class="fas fa-box"></i> ${item.nombre}</div>
-                <div class="venc-sub">Lote: ${item.lote} · Vence: ${item.fechaVencimiento}</div>
+                <div class="venc-sub">Lote: ${item.lote || '—'} · Vence: ${item.fechaVencimiento}</div>
               </div>
-              <span class="venc-badge normal">Vigente</span>
+              <span class="venc-badge ${clase}">${texto}</span>
             </div>
+            <div class="venc-item-footer">
+              <span></span>
+              <button class="venc-btn-renovar" style="background:#475569;" onclick="window.vencimientoMedsInstance.editar('${item.id}')">Editar</button>
+            </div>
+            ${this.formEdicion(item)}
           </div>
         `;
       }
@@ -135,7 +148,7 @@ class VencimientoMedicamentosManager {
       <article class="card" style="margin-top: var(--space-4);">
         <div class="card-header">
           <i class="fas fa-calendar-times" style="color: #f59e0b;"></i>
-          <h4>Control de Vencimiento de Insulinas</h4>
+          <h4>Control de Vencimiento de Medicamentos</h4>
         </div>
         <p style="font-size: 11px; color: var(--fg-3); margin: 0 0 12px 0;">
           Supervisa los 28 días de vida útil de tus plumas abiertas para asegurar que la insulina mantenga su potencia.
@@ -152,6 +165,39 @@ class VencimientoMedicamentosManager {
     const hoy = new Date();
     const diffMs = hoy - fechaApertura;
     return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
+  // Formulario oculto para editar nombre, lote y fecha de un medicamento
+  formEdicion(item) {
+    const esInsulina = item.tipo === 'insulina_en_uso';
+    const estilo = 'width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px; font-family:inherit;';
+    return `
+      <div id="venc-edit-${item.id}" style="display:none; margin-top:10px;">
+        <input id="venc-nombre-${item.id}" value="${item.nombre}" placeholder="Nombre" style="${estilo}">
+        <input id="venc-lote-${item.id}" value="${item.lote || ''}" placeholder="Lote" style="${estilo}">
+        <label style="font-size:11px; color:#64748b;">${esInsulina ? 'Fecha en que se abrió' : 'Fecha de vencimiento'}</label>
+        <input id="venc-fecha-${item.id}" type="date" value="${esInsulina ? item.fechaApertura : item.fechaVencimiento}" style="${estilo}">
+        <button class="venc-btn-renovar" onclick="window.vencimientoMedsInstance.guardarEdicion('${item.id}')">Guardar</button>
+      </div>`;
+  }
+
+  editar(id) {
+    const form = document.getElementById('venc-edit-' + id);
+    if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
+  guardarEdicion(id) {
+    const item = this.inventario.find(i => i.id === id);
+    if (!item) return;
+    const fecha = document.getElementById('venc-fecha-' + id).value;
+    item.nombre = document.getElementById('venc-nombre-' + id).value.trim() || item.nombre;
+    item.lote = document.getElementById('venc-lote-' + id).value.trim();
+    if (fecha) {
+      if (item.tipo === 'insulina_en_uso') item.fechaApertura = fecha;
+      else item.fechaVencimiento = fecha;
+    }
+    this.guardarInventario();
+    if (window.mostrarNotificacion) window.mostrarNotificacion('Medicamento actualizado.', 'success');
   }
 
   renovarInsulina(id) {

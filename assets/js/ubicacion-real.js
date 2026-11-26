@@ -1,4 +1,4 @@
-// ============ UBICACIÓN REAL DEL MONITOREADO ============
+// ============ ubicación real del monitoreado ============
 // Solo activo para rol "monitoreado".
 // Usa navigator.geolocation para obtener coordenadas reales
 // y las envía a gps_lecturas en Supabase cada 5 segundos.
@@ -19,7 +19,7 @@ document.addEventListener('dashboardListo', async (e) => {
   inyectarBotonSOS();
 });
 
-// ============ INYECTAR BOTÓN ============
+// ============ inyectar botón ============
 function inyectarBotonSOS() {
   const wrap = document.getElementById('sosWrap');
   console.log('[debug] inyectarBotonSOS', { wrap: !!wrap, existingBtnSOS: !!(wrap && wrap.querySelector('#btnSOS')) });
@@ -50,7 +50,7 @@ function inyectarBotonSOS() {
   document.getElementById('btnDetenerUbicacion')?.addEventListener('click', detenerCompartir);
 }
 
-// ============ INICIAR ============
+// ============ iniciar ============
 async function iniciarCompartir() {
   if (!navigator.geolocation) {
     alert('Tu navegador no soporta geolocalización.');
@@ -110,7 +110,7 @@ async function iniciarCompartir() {
   document.getElementById('ubicacionIndicador').style.display = 'flex';
 }
 
-// ============ ENVIAR POSICIÓN ============
+// ============ enviar posición ============
 async function enviarPosicion() {
   if (!ultimaPos || !compartiendo) return;
 
@@ -124,7 +124,7 @@ async function enviarPosicion() {
   });
 }
 
-// ============ DETENER ============
+// ============ detener ============
 async function detenerCompartir() {
   compartiendo = false;
 
@@ -155,7 +155,7 @@ async function detenerCompartir() {
   btn.innerHTML = '<i class="fas fa-location-arrow"></i> Compartir mi ubicación';
 }
 
-// ============ UTILS ============
+// ============ utils ============
 function actualizarStatus(texto) {
   const el = document.getElementById('ubicacionStatus');
   if (el) el.textContent = texto;

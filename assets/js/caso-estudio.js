@@ -2,15 +2,17 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEYS = {
-    PACIENTE: 'diamon_damian_paciente_v5',
-    METAS: 'diamon_damian_metas_v5',
-    GLUCOSA: 'diamon_damian_glucosa_v5',
-    PRESION: 'diamon_damian_presion_v5',
-    MEDICAMENTOS: 'diamon_damian_meds_v5',
-    ZONAS: 'diamon_damian_zonas_v5',
-    REGISTROS: 'diamon_damian_registros_v5'
-  };
+  // Damian (DM-8492) es el caso de estudio. Otros pacientes registrados tienen sus propios datos.
+  const CODIGO_CASO = 'DM-8492';
+  function codigoPacienteActivo() {
+    const ses = window.DiaMonSesion;
+    if (!ses) return CODIGO_CASO;
+    const pac = ses.pacienteActivo(ses.leerUsuario());
+    return (pac && pac.codigoPaciente) || CODIGO_CASO;
+  }
+  const CODIGO_ACTIVO = codigoPacienteActivo();
+  const ES_CASO_DAMIAN = CODIGO_ACTIVO === CODIGO_CASO;
+  document.documentElement.classList.toggle('dm-caso-damian', ES_CASO_DAMIAN);
 
   // Canales para sincronizar entre pestañas y entre dispositivos
   const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('diamon_telemetria_sync') : null;
@@ -31,25 +33,13 @@
     centroReferencia: 'Hospital Universitario del Caribe / Clínica Blas de Lezo',
     profesionalGuia: 'Enf. Jefe Elizabeth Vargas Caro',
     registroProfesional: 'Guía Clínica Adulto Mayor · Control Glucémico y Cardiovascular',
-    cuidadorPrincipal: 'Familiar / Cuidador Principal',
-    telefonoCuidador: '+57 300 456 7890',
+    cuidadorPrincipal: 'Valentina Díaz (nieta y cuidadora)',
+    telefonoCuidador: '+57 300 523 0379',
     telefonoEmergencia2: '+57 310 987 6543',
     barrioResidencia: 'Barrio Chapacuá, Cartagena de Indias',
     coordenadasCasa: { lat: 10.39991, lng: -75.47886 },
     radioSeguroMetros: 400
   };
-
-  const ZONAS_SEGURAS_DEFAULT = [
-    {
-      id: 1,
-      nombre: 'Casa Damián Díaz — Barrio Chapacuá',
-      centro_lat: 10.39991,
-      centro_lng: -75.47886,
-      radio_metros: 400,
-      nivel_riesgo: 'bajo',
-      activa: true
-    }
-  ];
 
   // Metas clínicas pautadas con la Enf. Jefe Elizabeth Vargas Caro
   const METAS_CASO_DEFAULT = {
@@ -69,14 +59,14 @@
   const ESQUEMA_MEDICAMENTOS_DAMIAN = [
     {
       id: 'med-8am-bloque',
-      nombre: 'Pantoprazol + Metformina + Firialta + Nifedipina',
+      nombre: 'Pantoprazol + Metformina + Firialta + Nifedipino',
       indicacion: 'Protector gástrico · Diabetes · Protección renal/cardiovascular · Hipertensión',
       horario: '08:00 AM',
       dosis: 'Esquema matutino completo (4 medicamentos)',
       momento: 'Mañana (8:00 AM)',
       icono: 'fa-sun',
       color: 'teal',
-      itemsDetalle: ['Pantoprazol (Ayunas)', 'Metformina', 'Firialta (Finerenona)', 'Nifedipina']
+      itemsDetalle: ['Pantoprazol (Ayunas)', 'Metformina', 'Firialta (Finerenona)', 'Nifedipino']
     },
     {
       id: 'med-2pm-valsartan',
@@ -124,31 +114,19 @@
     }
   ];
 
-  // Historial real de 7 días de Damián Díaz Balseiro en Chapacuá
-  function generarHistorialInicialGlucosa() {
-    const ahora = Date.now();
-    const h = 3600 * 1000;
-    return [
-      { id: 'gl-1', valor: 114, contexto: 'ayunas', ContextoLabel: 'En ayunas (8:00 AM)', notas: 'Buena respuesta a las 24 UI de insulina de las 9:00 PM. Tomó esquema de 8 AM.', ts: ahora - 2 * h },
-      { id: 'gl-2', valor: 146, contexto: 'postprandial_2h', ContextoLabel: '2h después de almuerzo', notas: 'Estable en casa en Chapacuá. Tomó Valsartán de las 2:00 PM.', ts: ahora - 18 * h },
-      { id: 'gl-3', valor: 109, contexto: 'ayunas', ContextoLabel: 'En ayunas (8:00 AM)', notas: 'Sin síntomas de hipoglucemia nocturna.', ts: ahora - 26 * h },
-      { id: 'gl-4', valor: 158, contexto: 'nocturna', ContextoLabel: 'Antes de Insulina 9:00 PM', notas: 'Se aplicaron 24 unidades de insulina tras esquema oral de 8:00 PM.', ts: ahora - 40 * h },
-      { id: 'gl-5', valor: 121, contexto: 'ayunas', ContextoLabel: 'En ayunas', notas: 'Control supervisado según pauta de Enf. Jefe Elizabeth Vargas Caro.', ts: ahora - 50 * h },
-      { id: 'gl-6', valor: 138, contexto: 'preprandial', ContextoLabel: 'Antes de almuerzo', notas: 'Caminata suave por Chapacuá. Sin dolor neuropático gracias a Gabapentina + Lipotic.', ts: ahora - 68 * h },
-      { id: 'gl-7', valor: 119, contexto: 'ayunas', ContextoLabel: 'Sábado (Día de Ozempic)', notas: 'Aplicación semanal de Ozempic completada sin novedades.', ts: ahora - 92 * h }
-    ];
-  }
-
-  function generarHistorialInicialPresion() {
-    const ahora = Date.now();
-    const h = 3600 * 1000;
-    return [
-      { id: 'pa-1', sistolica: 126, diastolica: 78, pulso: 71, brazo: 'izquierdo', postura: 'sentado', notas: 'Control posterior a Nifedipina (8:00 AM). En meta (<140/90 mmHg).', ts: ahora - 2 * h },
-      { id: 'pa-2', sistolica: 132, diastolica: 80, pulso: 74, brazo: 'izquierdo', postura: 'sentado', notas: 'Toma de la tarde tras Valsartán (2:00 PM).', ts: ahora - 19 * h },
-      { id: 'pa-3', sistolica: 128, diastolica: 76, pulso: 70, brazo: 'izquierdo', postura: 'sentado', notas: 'Toma nocturna posterior a Nifedipino (8:00 PM).', ts: ahora - 42 * h },
-      { id: 'pa-4', sistolica: 138, diastolica: 86, pulso: 77, brazo: 'izquierdo', postura: 'sentado', notas: 'Tarde calurosa en Chapacuá, Cartagena. Se mantuvo hidratado.', ts: ahora - 66 * h },
-      { id: 'pa-5', sistolica: 124, diastolica: 76, pulso: 69, brazo: 'izquierdo', postura: 'sentado', notas: 'Presión arterial óptima.', ts: ahora - 90 * h }
-    ];
+  // Datos iniciales de un paciente nuevo (sin nada inventado)
+  function pacienteNuevoDefault() {
+    const ses = window.DiaMonSesion ? window.DiaMonSesion.pacienteActivo(window.DiaMonSesion.leerUsuario()) : null;
+    return {
+      id: 'pac-' + CODIGO_ACTIVO,
+      codigoPaciente: CODIGO_ACTIVO,
+      nombre: (ses && ses.nombre) || 'Paciente',
+      diagnosticoPrincipal: 'Diagnóstico sin registrar',
+      profesionalGuia: 'Profesional de salud sin asignar',
+      barrioResidencia: 'Dirección sin registrar',
+      coordenadasCasa: null,
+      radioSeguroMetros: 400
+    };
   }
 
   // Recorridos reales de Damián Díaz Balseiro desde su casa en Chapacuá (10.39991, -75.47886)
@@ -172,34 +150,32 @@
     }
   };
 
-  // ============================================================
-  // 2. GESTOR CENTRAL DEL CASO DE ESTUDIO + EMISOR GPS REAL
-  // ============================================================
+  // Gestor central del caso de estudio + emisor GPS real
   class CasoEstudioManager {
     constructor() {
-      this.paciente = this.cargarJSON(STORAGE_KEYS.PACIENTE, PACIENTE_CASO_DEFAULT);
-      this.metas = this.cargarJSON(STORAGE_KEYS.METAS, METAS_CASO_DEFAULT);
-      this.glucosas = this.cargarJSON(STORAGE_KEYS.GLUCOSA, generarHistorialInicialGlucosa());
-      this.presiones = this.cargarJSON(STORAGE_KEYS.PRESION, generarHistorialInicialPresion());
-      this.zonas = this.cargarJSON(STORAGE_KEYS.ZONAS, ZONAS_SEGURAS_DEFAULT);
+      // Todo empieza vacio y se llena con lo que hay en Supabase (cargarDesdeSupabase)
+      this.paciente = ES_CASO_DAMIAN ? { ...PACIENTE_CASO_DEFAULT } : pacienteNuevoDefault();
+      this.metas = { ...METAS_CASO_DEFAULT };
+      this.glucosas = [];
+      this.presiones = [];
+      this.zonas = [];
+      this.tomas = [];
       this.simulacionTimer = null;
       this.gpsLiveWatchId = null;
       this.transmitiendoGPSReal = false;
       this.modoAdultoMayor = false;
       this._ultimaAlertaGeocercaMapTs = 0;
 
-      this.sincronizarFichaQROficial();
       this.initSyncChannels();
+      this.cargarDesdeSupabase();
     }
 
     obtenerZonasSeguras() {
-      this.zonas = this.cargarJSON(STORAGE_KEYS.ZONAS, ZONAS_SEGURAS_DEFAULT);
       return this.zonas;
     }
 
     guardarZonasSeguras(nuevasZonas) {
       this.zonas = nuevasZonas;
-      this.guardarJSON(STORAGE_KEYS.ZONAS, nuevasZonas);
       if (typeof window.dibujarZonasSegurasEnMapaPrincipal === 'function') {
         window.dibujarZonasSegurasEnMapaPrincipal();
       }
@@ -227,7 +203,7 @@
       }
 
       // Está fuera de todas las zonas seguras activas
-      if (dispararAlertaSiSale && window.emitirAlerta24Horas && (Date.now() - this._ultimaAlertaGeocercaMapTs) > 8000) {
+      if (dispararAlertaSiSale && window.emitirAlerta24Horas && (Date.now() - this._ultimaAlertaGeocercaMapTs) > 5 * 60000) {
         this._ultimaAlertaGeocercaMapTs = Date.now();
         window.emitirAlerta24Horas({
           titulo: 'Salida de Zona Segura — ' + zonaCercana.nombre,
@@ -279,88 +255,127 @@
       });
     }
 
-    cargarJSON(key, fallback) {
+    // Trae del paciente: perfil, metas, lecturas, zonas, medicamentos y ultima ubicacion
+    async cargarDesdeSupabase() {
+      if (!window.DiaMonDatos || !window.DiaMonDatos.pacienteId()) return;
       try {
-        const raw = localStorage.getItem(key);
-        if (raw) return JSON.parse(raw);
-      } catch (_) {}
-      localStorage.setItem(key, JSON.stringify(fallback));
-      return JSON.parse(JSON.stringify(fallback));
-    }
-
-    guardarJSON(key, data) {
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch (_) {}
+        const d = await window.DiaMonDatos.cargarTodo();
+        if (!d) return;
+        if (d.perfil) {
+          const f = d.perfil.ficha || {};
+          this.paciente = {
+            ...this.paciente,
+            id: d.perfil.id,
+            nombre: d.perfil.nombre,
+            codigoPaciente: d.perfil.codigo_paciente,
+            fichaToken: d.perfil.ficha_token,
+            diagnosticoPrincipal: d.perfil.diagnostico || 'Diagnóstico sin registrar',
+            barrioResidencia: d.perfil.barrio || 'Dirección sin registrar',
+            profesionalGuia: d.perfil.profesional_guia || 'Profesional de salud sin asignar',
+            grupoSanguineo: f.grupoSanguineo || '',
+            alergias: f.alergias || '',
+            cuidadorPrincipal: f.contactoNombre || '',
+            telefonoCuidador: f.contactoTelefono || '',
+            centroReferencia: f.centroReferencia || '',
+            ficha: f
+          };
+        }
+        if (d.metas) {
+          Object.keys(d.metas).forEach(k => { if (d.metas[k] != null && k !== 'profesional') this.metas[k] = d.metas[k]; });
+        }
+        this.glucosas = d.glucosas;
+        this.presiones = d.presiones;
+        this.zonas = d.zonas;
+        this.tomas = d.tomas;
+        if (this.zonas[0]) {
+          this.paciente.coordenadasCasa = { lat: Number(this.zonas[0].centro_lat), lng: Number(this.zonas[0].centro_lng) };
+        }
+        // La ultima ubicacion guardada se muestra mientras llega el GPS en vivo (sin generar alertas)
+        if (!d.ultimoGPS && !this.transmitiendoGPSReal && window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) !== 'usuario') {
+          // El celular del paciente nunca ha enviado su ubicacion: se dice claro y se muestra su casa como referencia
+          const ubicEl = document.getElementById('kpiUbicacionVal');
+          const ubicBadge = document.getElementById('kpiUbicacionBadge');
+          if (ubicEl) ubicEl.textContent = 'Sin GPS del paciente todavía';
+          if (ubicBadge) { ubicBadge.className = 'dc-kpi-badge info'; ubicBadge.innerHTML = '<i class="fas fa-home"></i> Mostrando su casa en el mapa'; }
+        }
+        if (d.ultimoGPS && !this.transmitiendoGPSReal) {
+          const hora = new Date(d.ultimoGPS.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+          this.aplicarCoordenadaRecibida(d.ultimoGPS.lat, d.ultimoGPS.lng, `Última ubicación (${hora})`, 10, false);
+        }
+        this.sincronizarFichaQROficial();
+        if (typeof window.dibujarZonasSegurasEnMapaPrincipal === 'function') {
+          window.dibujarZonasSegurasEnMapaPrincipal(this.zonas);
+        }
+        this.actualizarTodaLaUI();
+        // Aviso para alertas, medicamentos y reporte, que tambien usan estos datos
+        window.dispatchEvent(new CustomEvent('diamon-datos', { detail: d }));
+      } catch (e) {
+        console.warn('No se pudieron cargar los datos del paciente desde Supabase', e);
+      }
     }
 
     sincronizarFichaQROficial() {
-      if (window.medicalQRManager) {
-        window.medicalQRManager.saveProfile({
-          nombre: this.paciente.nombre,
-          condicion: this.paciente.diagnosticoPrincipal,
-          tratamiento: '8AM: Pantoprazol, Metformina, Firialta, Nifedipina | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic',
-          glucosaObjetivo: `Glucosa: ${this.metas.glucosaMin}-${this.metas.glucosaMaxPost} mg/dL | PA: < ${this.metas.sistolicaMax}/${this.metas.diastolicaMax} mmHg`,
-          grupoSanguineo: this.paciente.grupoSanguineo,
-          alergias: this.paciente.alergias,
-          contactoNombre: this.paciente.cuidadorPrincipal,
-          contactoTelefono: this.paciente.telefonoCuidador,
-          medicoTratante: this.paciente.profesionalGuia,
-          centroReferencia: this.paciente.centroReferencia,
-          notasEmergencia: `Paciente de Chapacuá (Cartagena) en tratamiento con Insulina 24 UI nocturna, Ozempic semanal y antihipertensivos (Valsartán + Nifedipino). Si presenta sudoración fría o mareo estando consciente, aplicar Regla 15-15 (15g de azúcar rápida) y medir tensión arterial.`
-        });
-      }
+      if (!window.medicalQRManager) return;
+      const f = this.paciente.ficha || {};
+      window.medicalQRManager.cargarDesdePerfil({
+        nombre: this.paciente.nombre,
+        condicion: this.paciente.diagnosticoPrincipal,
+        tratamiento: f.tratamiento || (ES_CASO_DAMIAN ? '8AM: Pantoprazol, Metformina, Firialta, Nifedipino | 2PM: Valsartán | 8PM: Atorvastatina, Metformina, Gabapentina, Lipotic, Nifedipino | 9PM: Insulina 24 UI | Sáb: Ozempic' : ''),
+        glucosaObjetivo: `Glucosa en ayunas ${this.metas.glucosaMin}-${this.metas.glucosaMetaAyunas} mg/dL, después de comer < ${this.metas.glucosaMaxPost} mg/dL | PA: < ${this.metas.sistolicaMax}/${this.metas.diastolicaMax} mmHg`,
+        grupoSanguineo: f.grupoSanguineo || '',
+        alergias: f.alergias || '',
+        contactoNombre: f.contactoNombre || '',
+        contactoTelefono: f.contactoTelefono || '',
+        medicoTratante: this.paciente.profesionalGuia,
+        fichaToken: this.paciente.fichaToken,
+        centroReferencia: f.centroReferencia || '',
+        notasEmergencia: f.notasEmergencia || (ES_CASO_DAMIAN ? 'En tratamiento con insulina 24 UI en la noche, Ozempic los sábados y antihipertensivos (Valsartán + Nifedipino). Si presenta sudoración fría o mareo estando consciente, aplicar la regla 15-15 (15 g de azúcar rápida) y medir la presión.' : '')
+      });
     }
 
     initSyncChannels() {
-      // 1. Sincronización instantánea entre pestañas del mismo navegador
+      // Otra pestaña del mismo navegador mando una ubicacion
       if (syncChannel) {
         syncChannel.onmessage = (event) => {
           const msg = event.data;
-          if (!msg || !msg.type) return;
-          this.recargarDesdeStorage();
-          if (msg.type === 'GPS_EN_VIVO' && msg.coords) {
-            this.aplicarCoordenadaRecibida(msg.coords.lat, msg.coords.lng, msg.coords.etiqueta, msg.coords.precision);
+          if (msg && msg.type === 'GPS_EN_VIVO' && msg.coords) {
+            this.aplicarCoordenadaRecibida(msg.coords.lat, msg.coords.lng, msg.coords.etiqueta, msg.coords.precision, false);
           }
-          this.actualizarTodaLaUI();
         };
       }
 
-      window.addEventListener('storage', () => {
-        this.recargarDesdeStorage();
-        this.actualizarTodaLaUI();
-      });
-
-      // 2. Sincronización en tiempo real entre DOS CELULARES distintos vía Supabase Realtime Broadcast
       if (window.supabaseClient && typeof window.supabaseClient.channel === 'function') {
         try {
-          supabaseLiveChannel = window.supabaseClient.channel('diamon-damian-live');
+          // Ubicacion en vivo del celular del paciente (canal por paciente)
+          supabaseLiveChannel = window.supabaseClient.channel('diamon-live-' + CODIGO_ACTIVO);
           supabaseLiveChannel
-            .on('broadcast', { event: 'telemetria-damian' }, ({ payload }) => {
-              if (!payload) return;
-              if (payload.lat && payload.lng) {
-                this.aplicarCoordenadaRecibida(payload.lat, payload.lng, payload.etiqueta || 'GPS Móvil en Vivo', payload.precision || 6);
+            .on('broadcast', { event: 'telemetria' }, ({ payload }) => {
+              if (payload && payload.lat && payload.lng) {
+                this.aplicarCoordenadaRecibida(payload.lat, payload.lng, payload.etiqueta || 'GPS en vivo', payload.precision || 6, false);
               }
-              if (payload.glucosa) {
-                this.glucosas.unshift(payload.glucosa);
-                this.guardarJSON(STORAGE_KEYS.GLUCOSA, this.glucosas);
-              }
-              if (payload.presion) {
-                this.presiones.unshift(payload.presion);
-                this.guardarJSON(STORAGE_KEYS.PRESION, this.presiones);
-              }
-              this.actualizarTodaLaUI();
             })
             .subscribe();
         } catch (_) {}
       }
-    }
 
-    recargarDesdeStorage() {
-      this.paciente = this.cargarJSON(STORAGE_KEYS.PACIENTE, PACIENTE_CASO_DEFAULT);
-      this.metas = this.cargarJSON(STORAGE_KEYS.METAS, METAS_CASO_DEFAULT);
-      this.glucosas = this.cargarJSON(STORAGE_KEYS.GLUCOSA, generarHistorialInicialGlucosa());
-      this.presiones = this.cargarJSON(STORAGE_KEYS.PRESION, generarHistorialInicialPresion());
+      // Cuando alguien cambia algo del paciente en otro equipo se vuelve a cargar (agrupando cambios seguidos)
+      if (window.DiaMonDatos) {
+        let espera = null;
+        window.DiaMonDatos.escucharCambios((tabla, fila, evento) => {
+          // Ubicacion guardada por el celular del paciente (por ejemplo desde el servicio en segundo plano)
+          if (tabla === 'gps_lecturas') {
+            if (fila && fila.lat && !this.transmitiendoGPSReal) {
+              this.aplicarCoordenadaRecibida(fila.lat, fila.lng, 'GPS del celular del paciente', 10, false);
+            }
+            return;
+          }
+          if (tabla === 'alertas' && evento === 'INSERT' && typeof window.alertaNuevaRecibida === 'function') {
+            window.alertaNuevaRecibida(fila);
+          }
+          clearTimeout(espera);
+          espera = setTimeout(() => this.cargarDesdeSupabase(), 400);
+        });
+      }
     }
 
     emitirPorCanales(type, payload = {}) {
@@ -371,23 +386,24 @@
         try {
           supabaseLiveChannel.send({
             type: 'broadcast',
-            event: 'telemetria-damian',
+            event: 'telemetria',
             payload: { type, ...payload }
           });
         } catch (_) {}
       }
     }
 
-    // ============================================================
-    // 3. EMISOR GPS SATELITAL REAL (DESDE CUALQUIER CELULAR / PC)
+    // Emisor GPS satelital real (desde cualquier celular / pc)
     // No necesitas el celular físico del abuelo: cualquier celular
     // donde abras la app puede actuar como el transmisor GPS en vivo
-    // ============================================================
     toggleTransmisionGPSReal() {
       const btn = document.getElementById('btnTransmitirGPSReal');
 
       if (this.transmitiendoGPSReal) {
         this.transmitiendoGPSReal = false;
+        if (window.DiaMonNativo && typeof window.DiaMonNativo.detenerUbicacion === 'function') {
+          window.DiaMonNativo.detenerUbicacion();
+        }
         if (this.gpsLiveWatchId !== null && 'geolocation' in navigator) {
           navigator.geolocation.clearWatch(this.gpsLiveWatchId);
           this.gpsLiveWatchId = null;
@@ -408,6 +424,10 @@
       }
 
       this.transmitiendoGPSReal = true;
+      // Dentro de la app Android se activa tambien el servicio que sigue enviando la ubicacion con la pantalla apagada
+      if (window.DiaMonNativo && typeof window.DiaMonNativo.iniciarUbicacion === 'function') {
+        window.DiaMonNativo.iniciarUbicacion();
+      }
       if (btn) {
         btn.style.background = '#16a34a';
         btn.innerHTML = '<i class="fas fa-satellite-dish fa-fade"></i> Transmitiendo GPS Real en Vivo...';
@@ -424,6 +444,8 @@
           const etiqueta = `GPS Satelital en Vivo (±${acc}m)`;
 
           this.aplicarCoordenadaRecibida(lat, lng, etiqueta, acc);
+          this._ultimaPosicion = { lat, lng, precision: acc, etiqueta };
+          if (window.DiaMonDatos) window.DiaMonDatos.guardarGPS(lat, lng).catch(() => {});
           this.emitirPorCanales('GPS_EN_VIVO', {
             lat, lng, precision: acc, etiqueta,
             coords: { lat, lng, precision: acc, etiqueta }
@@ -431,12 +453,17 @@
         },
         (err) => {
           console.warn('Error en watchPosition:', err.message);
+          // Lo mas comun: la ubicacion del celular esta apagada o no hay senal de GPS
+          if (window.mostrarNotificacion && !this._avisoGPS) {
+            this._avisoGPS = true;
+            window.mostrarNotificacion('No llega señal de GPS. Revisa que la Ubicación del celular esté encendida.', 'warn');
+          }
         },
-        { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 }
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
       );
     }
 
-    aplicarCoordenadaRecibida(lat, lng, etiqueta, precision = 6) {
+    aplicarCoordenadaRecibida(lat, lng, etiqueta, precision = 6, alertar = true) {
       if (window.TelemetriaDiaMon) {
         window.TelemetriaDiaMon.ubicacion.lat = lat;
         window.TelemetriaDiaMon.ubicacion.lng = lng;
@@ -449,35 +476,34 @@
       const ubicBadge = document.getElementById('kpiUbicacionBadge');
       if (ubicEl) ubicEl.textContent = etiqueta;
       if (ubicBadge) {
-        ubicBadge.className = 'dc-kpi-badge success';
-        ubicBadge.innerHTML = `<i class="fas fa-satellite-dish"></i> En vivo (±${precision}m)`;
+        // Si es la ultima posicion guardada (no en vivo) se dice cuando fue
+        const enVivo = alertar || !/^Última ubicación/.test(etiqueta);
+        ubicBadge.className = 'dc-kpi-badge ' + (enVivo ? 'success' : 'info');
+        ubicBadge.innerHTML = enVivo ? `<i class="fas fa-satellite-dish"></i> En vivo (±${precision}m)` : '<i class="fas fa-history"></i> Última conocida';
       }
 
       if (typeof window.actualizarMarcadorUbicacionReal === 'function') {
         window.actualizarMarcadorUbicacionReal(lat, lng, precision);
       }
 
-      const dist = this.calcularDistanciaMetros(
-        lat, lng,
-        this.paciente.coordenadasCasa.lat,
-        this.paciente.coordenadasCasa.lng
-      );
-
+      // Se compara con las zonas seguras del paciente (y avisa si sale de todas)
       const estadoGeoEl = document.getElementById('casoGeocercaEstado');
-      if (estadoGeoEl) {
-        if (dist > this.paciente.radioSeguroMetros) {
+      const check = this.evaluarPosicionEnZonas(lat, lng, alertar);
+      if (estadoGeoEl && check) {
+        if (check.zonaNombre === 'Sin geocerca activa') {
+          estadoGeoEl.className = 'dc-kpi-badge info';
+          estadoGeoEl.innerHTML = '<i class="fas fa-info-circle"></i> Sin zonas seguras';
+        } else if (!check.dentro) {
           estadoGeoEl.className = 'dc-kpi-badge danger';
-          estadoGeoEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Fuera de Chapacuá (${Math.round(dist)}m)`;
+          estadoGeoEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Fuera de zona segura (${Math.round(check.distancia)}m)`;
         } else {
           estadoGeoEl.className = 'dc-kpi-badge success';
-          estadoGeoEl.innerHTML = `<i class="fas fa-shield-alt"></i> En Chapacuá (${Math.round(dist)}m)`;
+          estadoGeoEl.innerHTML = `<i class="fas fa-shield-alt"></i> En ${check.zonaNombre}`;
         }
       }
     }
 
-    // ============================================================
-    // 4. EVALUACIÓN CLÍNICA CON METAS PERSONALIZADAS
-    // ============================================================
+    // Evaluación clínica con metas personalizadas
     evaluarGlucosa(valor, contexto = 'ayunas') {
       const m = this.metas;
       const v = Number(valor);
@@ -502,7 +528,7 @@
       const sis = Number(sistolica);
       const dia = Number(diastolica);
       if (sis >= m.sistolicaCritica || dia >= m.diastolicaCritica) {
-        return { nivel: 'crisis_hta', etiqueta: 'Crisis Hipertensiva', clase: 'danger', requiereAlerta: true, protocolo: 'Reposo sentado inmediato, verificar si tomó Nifedipina (8 AM/8 PM) y Valsartán (2 PM), y contactar asistencia médica.' };
+        return { nivel: 'crisis_hta', etiqueta: 'Crisis Hipertensiva', clase: 'danger', requiereAlerta: true, protocolo: 'Reposo sentado inmediato, verificar si tomó Nifedipino (8 AM/8 PM) y Valsartán (2 PM), y contactar asistencia médica.' };
       }
       if (sis < m.sistolicaMin || dia < m.diastolicaMin) {
         return { nivel: 'hipotension', etiqueta: 'Hipotensión (Riesgo Caída)', clase: 'danger', requiereAlerta: true, protocolo: 'Sentarse o recostarse de inmediato para evitar mareo por vasodilatación.' };
@@ -510,12 +536,10 @@
       if (sis > m.sistolicaMax || dia > m.diastolicaMax) {
         return { nivel: 'elevada', etiqueta: 'Presión Elevada', clase: 'warn', requiereAlerta: true, protocolo: 'Supera 140/90 mmHg. Repetir medición en 10 minutos tras reposo.' };
       }
-      return { nivel: 'normal', etiqueta: 'Presión Controlada', clase: 'success', requiereAlerta: false, protocolo: 'Respuesta adecuada al esquema de Nifedipina + Valsartán + Firialta.' };
+      return { nivel: 'normal', etiqueta: 'Presión Controlada', clase: 'success', requiereAlerta: false, protocolo: 'Respuesta adecuada al esquema de Nifedipino + Valsartán + Firialta.' };
     }
 
-    // ============================================================
-    // 5. REGISTRO REAL DE GLUCOSA Y PRESIÓN ARTERIAL
-    // ============================================================
+    // Registro real de glucosa y presión arterial
     async registrarGlucosaManual({ valor, contexto = 'ayunas', notas = '' }) {
       const v = parseInt(valor, 10);
       if (isNaN(v) || v < 25 || v > 600) {
@@ -541,23 +565,10 @@
         ts: Date.now()
       };
 
+      // Se guarda en Supabase con el id del paciente (lo registre el paciente o su cuidador)
+      const guardada = await window.DiaMonDatos.guardarGlucosa({ valor: v, contexto, notas: nuevaLectura.notas, ts: nuevaLectura.ts });
+      nuevaLectura.id = guardada.id;
       this.glucosas.unshift(nuevaLectura);
-      this.guardarJSON(STORAGE_KEYS.GLUCOSA, this.glucosas);
-
-      if (window.supabaseClient) {
-        try {
-          const { data: { user } } = await window.supabaseClient.auth.getUser();
-          if (user) {
-            await window.supabaseClient.from('glucosa_lecturas').insert({
-              user_id: user.id,
-              valor: v,
-              fuente: 'meter',
-              notas: `[${nuevaLectura.ContextoLabel}] ${nuevaLectura.notas}`,
-              ts: new Date(nuevaLectura.ts).toISOString()
-            });
-          }
-        } catch (_) {}
-      }
 
       if (evalClinica.requiereAlerta && window.emitirAlerta24Horas) {
         const coords = window.TelemetriaDiaMon?.ubicacion || this.paciente.coordenadasCasa;
@@ -576,7 +587,6 @@
       }
 
       this.actualizarTodaLaUI();
-      this.emitirPorCanales('GLUCOSA_ACTUALIZADA', { glucosa: nuevaLectura });
       return nuevaLectura;
     }
 
@@ -602,46 +612,27 @@
         ts: Date.now()
       };
 
+      const guardadaPA = await window.DiaMonDatos.guardarPresion({ sistolica: sis, diastolica: dia, pulso: bpm, brazo, postura, notas: nuevaPA.notas, ts: nuevaPA.ts });
+      nuevaPA.id = guardadaPA.id;
       this.presiones.unshift(nuevaPA);
-      this.guardarJSON(STORAGE_KEYS.PRESION, this.presiones);
 
       if (evalPA.requiereAlerta && window.emitirAlerta24Horas) {
         const coords = window.TelemetriaDiaMon?.ubicacion || this.paciente.coordenadasCasa;
         window.emitirAlerta24Horas({
           titulo: `${evalPA.etiqueta}: ${sis}/${dia} mmHg`,
           subtitulo: `${this.paciente.nombre} registró PA de ${sis}/${dia} mmHg y pulso ${bpm} BPM.`,
-          tipo: 'geocerca',
+          tipo: 'presion',
           color: evalPA.clase === 'danger' ? 'red' : 'amber',
           icono: 'fas fa-heartbeat',
           badgeTexto: evalPA.clase === 'danger' ? 'Crítica' : 'Vigilar',
           badgeClase: evalPA.clase === 'danger' ? 'badge-pendiente' : 'badge-aviso',
           coordenadas: { lat: coords.lat, lng: coords.lng },
           ubicacion: coords.zona || this.paciente.barrioResidencia,
-          descripcion: `Tensiómetro digital (${this.paciente.nombre}): ${sis}/${dia} mmHg (${bpm} BPM). Esquema antihipertensivo: Nifedipina (8 AM / 8 PM) y Valsartán (2 PM). Protocolo: ${evalPA.protocolo}`
+          descripcion: `Tensiómetro digital (${this.paciente.nombre}): ${sis}/${dia} mmHg (${bpm} BPM). Esquema antihipertensivo: Nifedipino (8 AM / 8 PM) y Valsartán (2 PM). Protocolo: ${evalPA.protocolo}`
         });
       }
 
       this.actualizarTodaLaUI();
-      this.emitirPorCanales('PRESION_ACTUALIZADA', { presion: nuevaPA });
-
-      if (window.supabaseClient) {
-        try {
-          const { data: { user } } = await window.supabaseClient.auth.getUser();
-          if (user) {
-            await window.supabaseClient.from('presion_arterial').insert({
-              user_id: user.id,
-              sistolica: sis,
-              diastolica: dia,
-              pulso_bpm: bpm,
-              brazo: brazo || 'izquierdo',
-              postura: postura || 'sentado',
-              sintomas: notas.trim() || evalPA.protocolo
-            });
-          }
-        } catch (e) {
-          console.warn('[CasoEstudio] Supabase offline o sin sesion para presion:', e);
-        }
-      }
 
       return nuevaPA;
     }
@@ -649,39 +640,17 @@
     async guardarMetasPersonalizadas(nuevasMetas, datosPaciente = {}) {
       this.metas = { ...this.metas, ...nuevasMetas };
       this.paciente = { ...this.paciente, ...datosPaciente };
-      this.guardarJSON(STORAGE_KEYS.METAS, this.metas);
-      this.guardarJSON(STORAGE_KEYS.PACIENTE, this.paciente);
+      await window.DiaMonDatos.guardarMetas(this.metas, this.paciente.profesionalGuia);
+      await window.DiaMonDatos.guardarPerfilPaciente({
+        nombre: this.paciente.nombre,
+        barrio: this.paciente.barrioResidencia,
+        profesional_guia: this.paciente.profesionalGuia
+      });
       this.sincronizarFichaQROficial();
       this.actualizarTodaLaUI();
-      this.emitirPorCanales('METAS_ACTUALIZADAS');
-
-      if (window.supabaseClient) {
-        try {
-          const { data: { user } } = await window.supabaseClient.auth.getUser();
-          if (user) {
-            await window.supabaseClient.from('metas_paciente').upsert({
-              user_id: user.id,
-              glucosa_min: parseInt(this.metas.glucosaMin, 10) || 80,
-              glucosa_meta_ayunas: parseInt(this.metas.glucosaMetaAyunas, 10) || 135,
-              glucosa_max_post: parseInt(this.metas.glucosaMaxPost, 10) || 180,
-              sistolica_min: parseInt(this.metas.sistolicaMin, 10) || 95,
-              sistolica_max: parseInt(this.metas.sistolicaMax, 10) || 140,
-              diastolica_min: parseInt(this.metas.diastolicaMin, 10) || 60,
-              diastolica_max: parseInt(this.metas.diastolicaMax, 10) || 90,
-              profesional_nombre: this.paciente.profesionalGuia || 'Enf. Jefe Elizabeth Vargas Caro',
-              profesional_registro: this.paciente.registroProfesional || 'Caso de Estudio Barrio Chapacua',
-              updated_at: new Date().toISOString()
-            });
-          }
-        } catch (e) {
-          console.warn('[CasoEstudio] Supabase offline o sin sesion para metas:', e);
-        }
-      }
     }
 
-    // ============================================================
-    // 6. ESCENARIOS DE TELEMETRÍA EN CHAPACUÁ (REALES + DEMO JURADO)
-    // ============================================================
+    // Escenarios de telemetría en Chapacuá (reales + demo jurado)
     simularEscenarioSustentacion(escenario) {
       if (this.simulacionTimer) {
         clearInterval(this.simulacionTimer);
@@ -786,16 +755,16 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // ============================================================
-    // 7. ACTUALIZACIÓN DE INTERFAZ Y MODALES
-    // ============================================================
+    // Actualización de interfaz y modales
     obtenerResumenClinicoActual() {
-      const ultimaGlucosa = this.glucosas[0] || { valor: 114, contexto: 'ayunas', ContextoLabel: 'En ayunas (8:00 AM)', ts: Date.now() };
-      const ultimaPresion = this.presiones[0] || { sistolica: 126, diastolica: 78, pulso: 71, ts: Date.now() };
-      const evalG = this.evaluarGlucosa(ultimaGlucosa.valor, ultimaGlucosa.contexto);
-      const evalP = this.evaluarPresion(ultimaPresion.sistolica, ultimaPresion.diastolica);
+      // Si todavia no hay lecturas se muestra un guion, nada inventado
+      const sinLectura = { etiqueta: 'Sin lecturas', clase: 'info', requiereAlerta: false, protocolo: '' };
+      const ultimaGlucosa = this.glucosas[0] || { valor: '—', contexto: 'ayunas', ContextoLabel: 'aún no registrada', ts: null };
+      const ultimaPresion = this.presiones[0] || { sistolica: '—', diastolica: '—', pulso: '—', ts: null };
+      const evalG = this.glucosas[0] ? this.evaluarGlucosa(ultimaGlucosa.valor, ultimaGlucosa.contexto) : sinLectura;
+      const evalP = this.presiones[0] ? this.evaluarPresion(ultimaPresion.sistolica, ultimaPresion.diastolica) : sinLectura;
 
-      const promedioG = Math.round(this.glucosas.reduce((acc, item) => acc + Number(item.valor), 0) / Math.max(1, this.glucosas.length));
+      const promedioG = this.glucosas.length === 0 ? '—' : Math.round(this.glucosas.reduce((acc, item) => acc + Number(item.valor), 0) / Math.max(1, this.glucosas.length));
       const enRangoG = Math.round(
         (this.glucosas.filter(g => g.valor >= this.metas.glucosaMin && g.valor <= this.metas.glucosaMaxPost).length / Math.max(1, this.glucosas.length)) * 100
       );
@@ -817,7 +786,7 @@
 
       const kpiGVal = document.getElementById('kpiGlucoseVal');
       const kpiGBadge = document.getElementById('kpiGlucoseBadge');
-      if (kpiGVal) kpiGVal.textContent = `${res.ultimaGlucosa.valor} mg/dL`;
+      if (kpiGVal) kpiGVal.textContent = this.glucosas.length ? `${res.ultimaGlucosa.valor} mg/dL` : '—';
       if (kpiGBadge) {
         kpiGBadge.className = `dc-kpi-badge ${res.evalG.clase}`;
         kpiGBadge.innerHTML = `<i class="fas fa-check-circle"></i> ${res.evalG.etiqueta} (${res.ultimaGlucosa.ContextoLabel})`;
@@ -825,7 +794,7 @@
 
       const kpiPAVal = document.getElementById('kpiPresionVal');
       const kpiPABadge = document.getElementById('kpiPresionBadge');
-      if (kpiPAVal) kpiPAVal.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg`;
+      if (kpiPAVal) kpiPAVal.textContent = this.presiones.length ? `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg` : '—';
       if (kpiPABadge) {
         kpiPABadge.className = `dc-kpi-badge ${res.evalP.clase}`;
         kpiPABadge.innerHTML = `<i class="fas fa-heartbeat"></i> ${res.evalP.etiqueta} · ${res.ultimaPresion.pulso} BPM`;
@@ -839,19 +808,15 @@
 
       if (bannerNombre) bannerNombre.textContent = `${res.paciente.nombre} · ${res.paciente.barrioResidencia}`;
       if (bannerDiag) bannerDiag.textContent = res.paciente.diagnosticoPrincipal;
-      if (bannerMetaG) bannerMetaG.textContent = `${res.metas.glucosaMin}–${res.metas.glucosaMaxPost} mg/dL`;
+      if (bannerMetaG) bannerMetaG.textContent = `ayunas ${res.metas.glucosaMin}–${res.metas.glucosaMetaAyunas}, después de comer < ${res.metas.glucosaMaxPost} mg/dL`;
       if (bannerMetaPA) bannerMetaPA.textContent = `< ${res.metas.sistolicaMax}/${res.metas.diastolicaMax} mmHg`;
       if (bannerProf) bannerProf.textContent = res.paciente.profesionalGuia;
 
       this.renderHistorialRecienteDashboard();
       this.actualizarVistaAdultoMayor(res);
 
-      const repPromG = document.getElementById('repKpiGlucosaProm');
-      const repPromPA = document.getElementById('repKpiPresionUlt');
-      const repTIR = document.getElementById('repKpiTiempoRango');
-      if (repPromG) repPromG.textContent = `${res.promedioG} mg/dL`;
-      if (repPromPA) repPromPA.textContent = `${res.ultimaPresion.sistolica}/${res.ultimaPresion.diastolica} mmHg`;
-      if (repTIR) repTIR.textContent = `${res.enRangoG}% en meta`;
+      // El reporte del dia se actualiza en reporte-diario.js
+      if (window.renderReporteDiario) window.renderReporteDiario();
     }
 
     renderHistorialRecienteDashboard() {
@@ -874,6 +839,11 @@
           ts: p.ts
         }))
       ].sort((a, b) => b.ts - a.ts).slice(0, 6);
+
+      if (combinados.length === 0) {
+        container.innerHTML = '<p style="font-size:13px; color:var(--dc-text-muted); margin:6px 0;">Aún no hay lecturas registradas. Usa "Registrar Glucosa / Presión".</p>';
+        return;
+      }
 
       container.innerHTML = combinados.map(item => {
         const hora = new Date(item.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -971,7 +941,7 @@
           <!-- FORMULARIO PRESIÓN ARTERIAL -->
           <form id="formModalPresion" style="display:${tabInicial === 'presion' ? 'block' : 'none'};" onsubmit="window.casoEstudio.submitPresionModal(event)">
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:14px; font-size:12px; color:#475569;">
-              <strong>Control de Hipertensión (Nifedipina 8 AM/8 PM + Valsartán 2 PM):</strong> Meta &lt; ${m.sistolicaMax}/${m.diastolicaMax} mmHg.
+              <strong>Control de Hipertensión (Nifedipino 8 AM/8 PM + Valsartán 2 PM):</strong> Meta &lt; ${m.sistolicaMax}/${m.diastolicaMax} mmHg.
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
               <div>
@@ -1131,10 +1101,41 @@
       }
     }
 
+    // Boton SOS del paciente: crea la alerta y la envia al cuidador con la ubicacion
+    activarSOSPaciente() {
+      const ubic = (window.TelemetriaDiaMon && window.TelemetriaDiaMon.gpsFijado) ? window.TelemetriaDiaMon.ubicacion : this._ultimaPosicion;
+      if (window.emitirAlerta24Horas) {
+        window.emitirAlerta24Horas({
+          titulo: `SOS: ${this.paciente.nombre} pidió ayuda`,
+          subtitulo: 'El paciente presionó el botón de emergencia.',
+          tipo: 'sos',
+          color: 'red',
+          icono: 'fas fa-bell',
+          badgeTexto: 'Pendiente',
+          badgeClase: 'badge-pendiente',
+          coordenadas: ubic ? { lat: ubic.lat, lng: ubic.lng } : null,
+          ubicacion: ubic ? `${Number(ubic.lat).toFixed(5)}, ${Number(ubic.lng).toFixed(5)}` : 'Ubicación no disponible',
+          descripcion: 'Llama al paciente y revisa su ubicación en el mapa. Si no responde, llama al 123.'
+        });
+      }
+      if (window.vozSOSInstance) window.vozSOSInstance.abrirPantallaEmergenciaGrande('Botón SOS Paciente');
+      if (window.mostrarNotificacion) window.mostrarNotificacion('Se envió la alerta SOS a tu cuidador.', 'success');
+    }
+
     // Vista simplificada de lectura grande para el paciente o adulto mayor
     toggleModoAdultoMayor(forzar) {
       this.modoAdultoMayor = forzar !== undefined ? forzar : !this.modoAdultoMayor;
       let overlay = document.getElementById('vistaAdultoMayorOverlay');
+
+      // La vista simplificada es solo para el paciente con sesion iniciada
+      const ses = window.DiaMonSesion ? window.DiaMonSesion.leerUsuario() : null;
+      const esPaciente = window.DiaMonSesion && window.DiaMonSesion.rolDe(ses) === 'usuario';
+      if (this.modoAdultoMayor && !esPaciente) {
+        this.modoAdultoMayor = false;
+        if (window.mostrarNotificacion) {
+          window.mostrarNotificacion('La vista simplificada es solo para la cuenta del paciente.', 'warn');
+        }
+      }
 
       if (!this.modoAdultoMayor) {
         if (overlay) overlay.style.display = 'none';
@@ -1149,15 +1150,8 @@
       }
 
       const res = this.obtenerResumenClinicoActual();
-      let nombreMostrar = res.paciente.nombre || 'Damián Díaz Balseiro';
-      try {
-        const ses = JSON.parse(sessionStorage.getItem('diamon_demo_user') || localStorage.getItem('diamon_current_user') || 'null');
-        if (ses && ses.rol === 'usuario' && ses.nombre) {
-          nombreMostrar = ses.nombre;
-        } else if (ses && ses.pacienteVinculado && ses.pacienteVinculado.nombre) {
-          nombreMostrar = ses.pacienteVinculado.nombre;
-        }
-      } catch (_) {}
+      // Aqui siempre es el paciente, asi que se saluda con su propio nombre
+      const nombreMostrar = ses.nombre || res.paciente.nombre;
 
       overlay.innerHTML = `
         <div style="max-width:640px; margin:0 auto;">
@@ -1189,7 +1183,7 @@
           <!-- Recordatorio claro de sus horarios de medicamentos -->
           <div style="background:rgba(15, 42, 64, 0.85); border:1px solid rgba(94,234,212,0.35); border-radius:16px; padding:14px 16px; margin-bottom:16px; font-size:14px; line-height:1.5;">
             <div style="font-weight:800; color:#5eead4; margin-bottom:6px; font-size:15px;"><i class="fas fa-clock"></i> Mis Horarios de Medicamentos:</div>
-            <div>• <strong>8:00 AM:</strong> Pantoprazol, Metformina, Firialta y Nifedipina</div>
+            <div>• <strong>8:00 AM:</strong> Pantoprazol, Metformina, Firialta y Nifedipino</div>
             <div>• <strong>2:00 PM:</strong> Valsartán</div>
             <div>• <strong>8:00 PM:</strong> Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino</div>
             <div>• <strong>9:00 PM:</strong> Insulina (24 Unidades) · <strong>Sábados:</strong> Ozempic</div>
@@ -1197,7 +1191,7 @@
 
           <!-- 4 BOTONES GIGANTES -->
           <div style="display:grid; grid-template-columns:1fr; gap:14px;">
-            <button onclick="if(window.vozSOSInstance) window.vozSOSInstance.abrirPantallaEmergenciaGrande('Botón SOS Paciente');" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; border-radius:20px; padding:22px; color:#ffffff; font-size:21px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:14px; cursor:pointer; box-shadow:0 10px 25px rgba(220,38,38,0.4);">
+            <button onclick="window.casoEstudio.activarSOSPaciente();" style="background:linear-gradient(135deg, #dc2626, #b91c1c); border:none; border-radius:20px; padding:22px; color:#ffffff; font-size:21px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:14px; cursor:pointer; box-shadow:0 10px 25px rgba(220,38,38,0.4);">
               <i class="fas fa-bell" style="font-size:28px;"></i> ¡PEDIR AYUDA SOS A MI CUIDADOR!
             </button>
 
@@ -1233,26 +1227,14 @@
     async confirmarPastillaRapidaAbuelo() {
       const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 
-      if (window.supabaseClient) {
-        try {
-          const { data: { user } } = await window.supabaseClient.auth.getUser();
-          if (user) {
-            await window.supabaseClient.from('tomas_medicamento').upsert({
-              user_id: user.id,
-              medicamento_id: 'esquema-general',
-              medicamento_nombre: 'Esquema Integral Damián Díaz (DM2 + HTA)',
-              dosis: 'Dosis programada según horario',
-              horario_programado: hora,
-              fecha: new Date().toISOString().split('T')[0],
-              tomada: true,
-              confirmado_por: 'paciente',
-              ts: new Date().toISOString()
-            }, { onConflict: 'user_id,medicamento_id,fecha' });
-          }
-        } catch (e) {
-          console.warn('[CasoEstudio] Supabase offline o sin sesion para toma medicamento:', e);
-        }
-      }
+      // Se marca la toma que corresponde a la hora actual (la misma lista de Salud y Medicamentos)
+      const h = new Date().getHours() + new Date().getMinutes() / 60;
+      const medId = h < 12 ? 'med-1' : h < 17 ? 'med-2' : h < 20.75 ? 'med-3' : 'med-4';
+      const med = (window.MEDICAMENTOS_DIARIOS || []).find(m => m.id === medId) || { nombre: 'Esquema del día', horario: hora };
+      await window.DiaMonDatos.guardarToma({
+        medicamentoId: medId, nombre: med.nombre, horario: med.horario,
+        fecha: window.DiaMonDatos.hoyISO(), tomada: true, quien: 'paciente'
+      });
 
       if (window.emitirAlerta24Horas) {
         window.emitirAlerta24Horas({
@@ -1279,6 +1261,23 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     window.casoEstudio.actualizarTodaLaUI();
+
+    // En la cuenta del paciente la ubicacion se transmite sola si ya dio permiso.
+    // Asi el celular del paciente puede quedarse en casa transmitiendo y el cuidador lo ve desde donde este.
+    const ses = window.DiaMonSesion ? window.DiaMonSesion.leerUsuario() : null;
+    const permiso = localStorage.getItem('diamon_permiso_ubicacion_tipo');
+    if (window.DiaMonSesion && window.DiaMonSesion.rolDe(ses) === 'usuario' && (permiso === 'siempre' || permiso === 'en_uso')) {
+      window.casoEstudio.toggleTransmisionGPSReal();
+    }
+
+    // Se reenvia la ultima posicion cada 30 s para que quien abra el panel despues tambien la vea
+    setInterval(() => {
+      const caso = window.casoEstudio;
+      if (caso.transmitiendoGPSReal && caso._ultimaPosicion) {
+        const p = caso._ultimaPosicion;
+        caso.emitirPorCanales('GPS_EN_VIVO', { ...p, coords: p });
+      }
+    }, 30000);
     if (window.location.hash === '#modo-abuelo' || localStorage.getItem('diamon_abrir_abuelo') === '1') {
       localStorage.removeItem('diamon_abrir_abuelo');
       window.casoEstudio.toggleModoAdultoMayor(true);

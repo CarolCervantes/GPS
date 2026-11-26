@@ -1,4 +1,4 @@
-// ============ APP.JS — Dashboard principal ============
+// APP.JS — Dashboard principal
 // Gestiona el historyMap (conectado a Supabase) y el guardado periódico de glucosa.
 
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -14,7 +14,7 @@ let marcadorFin = null;
 let tabActiva = 'hoy';
 let adminIds = [];
 
-// ============ INICIALIZAR HISTORY MAP ============
+// ============ inicializar history map ============
 document.addEventListener('DOMContentLoaded', () => {
   const historyMapEl = document.getElementById('historyMap');
   if (!historyMapEl) return;
@@ -73,44 +73,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ============ CARGA DE DATOS TRAS AUTH ============
+// ============ carga de datos tras auth ============
 document.addEventListener('dashboardListo', async (e) => {
   const userId = e.detail?.user?.id;
   if (!userId) return;
 
-  const rol = document.body.dataset.rol;
-
-  if (rol === 'cuidador') {
-    // Cuidador: obtiene IDs de sus personas monitoreadas vinculadas
-    const { data: vincs } = await supabaseClient
-      .from('vinculaciones')
-      .select('monitoreado_id')
-      .eq('cuidador_id', userId)
-      .eq('estado', 'activa');
-    adminIds = vincs?.map(v => v.monitoreado_id) || [];
-  } else {
-    // Admin y demás: obtener IDs de admins (quienes transmiten ubicación)
-    const { data: admins } = await supabaseClient
-      .from('profiles')
-      .select('id')
-      .in('rol', ['monitoreado', 'admin']);
-    adminIds = admins?.map(a => a.id) || [];
-  }
+  // El historial es siempre del paciente activo (el mismo paciente, o el que tiene vinculado el cuidador)
+  const pacienteId = window.DiaMonDatos ? window.DiaMonDatos.pacienteId() : null;
+  adminIds = pacienteId ? [pacienteId] : [];
 
   if (adminIds.length > 0) {
     await cargarHistorial('hoy');
-  } else if (rol === 'cuidador') {
-    mostrarHistorialVacio('Aún no tienes una persona monitoreada vinculada. Contacta al administrador.');
+    cargarLecturasRecientes(pacienteId);
   } else {
-    mostrarHistorialVacio('Sin administradores registrados');
+    mostrarHistorialVacio('Aún no hay un paciente vinculado.');
   }
-
-  // Cargar lecturas reales del paciente (o del abuelo monitoreado) sin inventar valores aleatorios
-  const targetUserId = (rol === 'cuidador' && adminIds.length > 0) ? adminIds[0] : userId;
-  cargarLecturasRecientes(targetUserId);
 });
 
-// ============ PANEL GLUCOSA — PULSE RING ============
+// ============ panel glucosa — pulse ring ============
 function actualizarPulso(valor) {
   const pulseEl  = document.getElementById('glucosePulse');
   const valueEl  = document.getElementById('glucoseValue');
@@ -195,7 +175,7 @@ async function cargarLecturasRecientes(userId) {
   setRange('rangeLow', pBaja);
 }
 
-// ============ CARGAR HISTORIAL DESDE SUPABASE ============
+// ============ cargar historial desde Supabase ============
 async function cargarHistorial(periodo) {
   if (!historyMap || adminIds.length === 0) return;
 
@@ -203,49 +183,25 @@ async function cargarHistorial(periodo) {
 
   const desde = calcularDesde(periodo);
 
-  // Paso 1: obtener rutas completadas del periodo
+  // Puntos GPS que el celular del paciente guardo en Supabase (cada 30 s mientras transmite)
   let query = supabaseClient
-    .from('rutas')
-    .select('id')
-    .in('user_id', adminIds)
-    .eq('estado', 'completada');
-
-  if (desde) query = query.gte('created_at', desde.toISOString());
-
-  const { data: rutas, error: rutasError } = await query;
-
-  if (rutasError) {
-    console.error('Error cargando rutas historial:', rutasError);
-    mostrarHistorialVacio('Error al cargar datos');
-    return;
-  }
-
-  if (!rutas || rutas.length === 0) {
-    mostrarHistorialVacio('Sin recorridos en este período');
-    return;
-  }
-
-  const rutaIds = rutas.map(r => r.id);
-
-  // Paso 2: cargar todos los puntos GPS de esas rutas
-  const { data: puntos, error: puntosError } = await supabaseClient
     .from('gps_lecturas')
-    .select('lat, lng, ts, ruta_id')
-    .in('ruta_id', rutaIds)
-    .order('ts', { ascending: true });
+    .select('lat, lng, ts')
+    .in('user_id', adminIds)
+    .order('ts', { ascending: true })
+    .limit(2000);
+  if (desde) query = query.gte('ts', desde.toISOString());
 
-  if (puntosError) {
-    console.error('Error cargando puntos GPS:', puntosError);
-    mostrarHistorialVacio('Error al cargar puntos GPS');
+  const { data: puntos, error } = await query;
+  if (error) {
+    mostrarHistorialVacio('Error al cargar las ubicaciones');
     return;
   }
-
   if (!puntos || puntos.length === 0) {
-    mostrarHistorialVacio('Sin puntos GPS registrados');
+    mostrarHistorialVacio('Sin ubicaciones en este período. Aparecen cuando el celular del paciente transmite su GPS.');
     return;
   }
-
-  dibujarHistorial(puntos, rutas.length);
+  dibujarHistorial(puntos, 1);
 }
 
 function calcularDesde(periodo) {
@@ -346,7 +302,7 @@ function mostrarHistorialCargando() {
   if (rutasEl) rutasEl.textContent = 'Cargando...';
 }
 
-// ============ REGISTRO REAL DE LECTURAS (SIN GENERACIÓN ALEATORIA) ============
+// ============ registro real de lecturas (sin generación aleatoria) ============
 // Las lecturas de glucosa capilar y presión arterial se registran manualmente
 // con el glucómetro/tensiómetro a través de assets/js/caso-estudio.js
 

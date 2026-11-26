@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — Modo de Accesibilidad Clínica
 // Diseñado para personas con baja visión, retinopatía diabética o temblor motor
-// ============================================================
 
 class AccesibilidadManager {
   constructor() {

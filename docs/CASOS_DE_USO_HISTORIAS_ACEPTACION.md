@@ -14,7 +14,7 @@ A continuación se muestra cómo cada **Caso de Uso (CU)** del sistema se transf
 | :--- | :--- | :--- | :--- | :--- |
 | **CU-01** | Registro y Autenticación por Rol con Código de Vinculación | Paciente, Cuidador, Admin | **HU-01** | **Como** usuario (Paciente, Cuidador o Admin), **quiero** registrarme e iniciar sesión con mi rol y código único (`DM-XXXX` o `DIAMON-ADMIN-2026`), **para** acceder a una interfaz adaptada a mis funciones y vincular al paciente con su familiar. |
 | **CU-02** | Registro y Evaluación de Glucosa Capilar | Paciente / Cuidador | **HU-02** | **Como** paciente monitoreado o cuidador, **quiero** registrar mis lecturas de glucosa capilar indicando el momento de la toma (ayunas, postprandial, nocturna), **para** que el sistema evalúe si estoy en meta clínica (80–180 mg/dL) o dispare alerta de hipoglucemia/hiperglucemia. |
-| **CU-03** | Registro y Evaluación de Presión Arterial (HTA) | Paciente / Cuidador | **HU-03** | **Como** paciente con hipertensión o cuidador, **quiero** registrar mi presión sistólica, diastólica y pulso, **para** verificar el control con Valsartán y Nifedipina (< 140/90 mmHg) y detectar crisis hipertensivas a tiempo. |
+| **CU-03** | Registro y Evaluación de Presión Arterial (HTA) | Paciente / Cuidador | **HU-03** | **Como** paciente con hipertensión o cuidador, **quiero** registrar mi presión sistólica, diastólica y pulso, **para** verificar el control con Valsartán y Nifedipino (< 140/90 mmHg) y detectar crisis hipertensivas a tiempo. |
 | **CU-04** | Monitoreo GPS Satelital y Geocercas (Zonas Seguras) | Paciente (Emisor) / Cuidador (Supervisor) | **HU-04** | **Como** cuidador familiar, **quiero** visualizar la ubicación GPS en tiempo real del paciente y definir un radio seguro (400m en Barrio Chapacuá), **para** recibir una alerta inmediata si el paciente sale del perímetro permitido. |
 | **CU-05** | Control de Adherencia Farmacológica e Insulina | Paciente / Cuidador | **HU-05** | **Como** paciente monitoreado, **quiero** consultar mis horarios de medicamentos (8:00 AM, 2:00 PM, 8:00 PM, Insulina 24 UI a las 9:00 PM y Ozempic los sábados) y confirmar cada toma, **para** notificar a mi familia y evitar dosis omitidas. |
 | **CU-06** | Activación de Alerta SOS y Ficha Médica QR | Paciente | **HU-06** | **Como** paciente en situación de mareo o emergencia, **quiero** activar un botón SOS de alto contraste o mostrar mi código QR médico (*PulseCard*), **para** enviar mis coordenadas GPS a mi cuidador y mostrar mi tratamiento a paramédicos. |
@@ -47,7 +47,7 @@ A continuación se muestra cómo cada **Caso de Uso (CU)** del sistema se transf
 - **Escenario 2 (Crisis hipertensiva):**
   - **Dado** que la meta de presión arterial es `< 140/90 mmHg`,
   - **Cuando** se registra una toma de `164/96 mmHg`,
-  - **Entonces** el sistema marca *"Crisis Hipertensiva"*, recomienda verificar la toma de Valsartán (2:00 PM) y Nifedipina (8:00 AM / 8:00 PM) y notifica al cuidador.
+  - **Entonces** el sistema marca *"Crisis Hipertensiva"*, recomienda verificar la toma de Valsartán (2:00 PM) y Nifedipino (8:00 AM / 8:00 PM) y notifica al cuidador.
 
 ### HU-04: Monitoreo GPS y Alerta por Salida de Geocerca
 - **Escenario 1 (Dentro de zona segura):**

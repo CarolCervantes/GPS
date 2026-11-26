@@ -5,6 +5,16 @@
 // - Si la página tiene #restrictedMessage y #pageContent, los conmuta según sesión
 // - Maneja la apertura del dropdown y el logout
 
+// Si la pagina se abre dentro del panel nuevo (?embed=1) se esconde su barra de arriba
+// y se usan los colores claros del dashboard, para que no parezca otra aplicacion.
+if (new URLSearchParams(window.location.search).get('embed') === '1') {
+  document.documentElement.classList.add('embebido');
+  const cssEmbebido = document.createElement('link');
+  cssEmbebido.rel = 'stylesheet';
+  cssEmbebido.href = '../assets/css/embebido.css';
+  document.head.appendChild(cssEmbebido);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const headerUserName = document.getElementById('headerUserName');
   const dropdownName = document.getElementById('dropdownName');
@@ -59,9 +69,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (rawSession) {
         localUser = JSON.parse(rawSession);
         user = {
-          id: localUser.id || 'pac-damian-diaz-01',
-          email: localUser.email || 'damian.diaz@diamon.co',
-          user_metadata: { nombre: localUser.nombre || 'Damián Díaz Balseiro' }
+          id: localUser.id,
+          email: localUser.email,
+          user_metadata: { nombre: localUser.nombre }
         };
       }
     } catch (_) {}
@@ -139,13 +149,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       sessionStorage.removeItem('diamon_demo_user');
       localStorage.removeItem('diamon_current_user');
+      localStorage.removeItem('diamon_abrir_abuelo');
       try { await supabaseClient.auth.signOut(); } catch (_) {}
       window.location.href = 'index.html';
     });
   }
 });
 
-// ---------- Inyección de UI cuando el rol es admin ----------
+// Inyección de UI cuando el rol es admin
 function inyectarAdminUI() {
   // 1) Strip superior — "MODO ADMINISTRADOR"
   const shell = document.querySelector('.shell');

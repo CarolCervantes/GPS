@@ -35,26 +35,40 @@ let filtroBusqueda = '';
 let filtroRol = '';
 
 async function initAdmin() {
-  cargarKPIs();
   await cargarUsuarios();
+  cargarKPIs();
   wireFiltros();
   initVinculaciones();
 }
 
-async function cargarKPIs() {
-  const { data, error } = await supabaseClient.rpc('admin_kpis').catch(() => ({ data: null, error: true }));
-  if (error || !data) {
-    setText('kpiTotal',   3);
-    setText('kpiAdmins',  1);
-    setText('kpiSemana',  3);
-    setText('kpiMes',     3);
-    return;
+// Las consultas de Supabase no tienen .catch(), por eso se usa try/catch
+async function llamarRpc(nombre, params) {
+  try {
+    return await supabaseClient.rpc(nombre, params);
+  } catch (err) {
+    return { data: null, error: err };
   }
-  const row = (data && data[0]) || {};
-  setText('kpiTotal',   row.total_usuarios ?? 3);
-  setText('kpiAdmins',  row.total_admins   ?? 1);
-  setText('kpiSemana',  row.ultimos_7d     ?? 3);
-  setText('kpiMes',     row.ultimos_30d    ?? 3);
+}
+
+async function cargarKPIs() {
+  {
+    const { data, error } = await llamarRpc('admin_kpis');
+    if (!error && data) {
+      const row = data[0] || {};
+      setText('kpiTotal',   row.total_usuarios ?? 0);
+      setText('kpiAdmins',  row.total_admins   ?? 0);
+      setText('kpiSemana',  row.ultimos_7d     ?? 0);
+      setText('kpiMes',     row.ultimos_30d    ?? 0);
+      return;
+    }
+  }
+  // Si la funcion de KPIs falla se calculan con la lista de usuarios
+  const ahora = Date.now();
+  const dias = (u) => (ahora - new Date(u.created_at || 0).getTime()) / 86400000;
+  setText('kpiTotal',  estadoUsuarios.length);
+  setText('kpiAdmins', estadoUsuarios.filter(u => u.rol === 'admin').length);
+  setText('kpiSemana', estadoUsuarios.filter(u => dias(u) <= 7).length);
+  setText('kpiMes',    estadoUsuarios.filter(u => dias(u) <= 30).length);
 }
 
 async function cargarUsuarios() {
@@ -62,18 +76,13 @@ async function cargarUsuarios() {
   if (!tbody) return;
   tbody.innerHTML = '<tr class="loading-row"><td colspan="4">cargando usuarios…</td></tr>';
 
-  const { data, error } = await supabaseClient.rpc('admin_list_users').catch(() => ({ data: null, error: true }));
-  if (error || !data || data.length === 0) {
-    estadoUsuarios = [
-      { id: 'pac-damian-diaz-01', nombre: 'Damián Díaz Balseiro (Paciente · DM-8492)', email: 'damian.diaz@diamon.co', rol: 'monitoreado', created_at: new Date().toISOString() },
-      { id: 'cuid-elizabeth-01', nombre: 'Enf. Jefe Elizabeth Vargas Caro (Guía Clínica)', email: 'elizabeth.vargas@diamon.co', rol: 'cuidador', created_at: new Date().toISOString() },
-      { id: 'adm-nieta-01', nombre: 'Valentina Díaz Martínez (Nieta / Cuidadora Principal · Chapacuá)', email: 'valentinadiazmartinez@diamon.co', rol: 'admin', created_at: new Date().toISOString() }
-    ];
-    renderUsuarios();
+  const { data, error } = await llamarRpc('admin_list_users');
+  if (error || !Array.isArray(data)) {
+    estadoUsuarios = [];
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">No se pudieron cargar los usuarios: ${escapeHtml(error ? error.message : 'sin respuesta')}. Inicia sesión con una cuenta de administrador.</td></tr>`;
     return;
   }
-
-  estadoUsuarios = data || [];
+  estadoUsuarios = data;
   renderUsuarios();
 }
 
@@ -140,10 +149,7 @@ async function alternarRol(btn) {
   btn.classList.add('is-loading');
   btn.disabled = true;
 
-  const { error } = await supabaseClient.rpc('admin_set_role', {
-    target_user: targetId,
-    new_role: newRol
-  });
+  const { error } = await llamarRpc('admin_set_role', { target_user: targetId, new_role: newRol });
 
   btn.classList.remove('is-loading');
   btn.disabled = false;
@@ -184,7 +190,7 @@ function wireFiltros() {
   }
 }
 
-// ---------- Utils ----------
+// Utils
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
@@ -215,7 +221,7 @@ function toast(msg, tipo) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ---------- Eliminar usuario ----------
+// Eliminar usuario
 
 async function confirmarEliminar(btn) {
   const targetId = btn.dataset.target;
@@ -227,7 +233,7 @@ async function confirmarEliminar(btn) {
   btn.classList.add('is-loading');
   btn.disabled = true;
 
-  const { error } = await supabaseClient.rpc('admin_delete_user', { target_user: targetId });
+  const { error } = await llamarRpc('admin_delete_user', { target_user: targetId });
 
   btn.classList.remove('is-loading');
   btn.disabled = false;
@@ -243,7 +249,7 @@ async function confirmarEliminar(btn) {
   cargarKPIs();
 }
 
-// ============ VINCULACIONES CUIDADOR <-> MONITOREADO ============
+// ============ vinculaciones cuidador <-> monitoreado ============
 
 async function initVinculaciones() {
   await cargarSelectores();
@@ -273,10 +279,13 @@ async function cargarVinculaciones() {
   const tbody = document.getElementById('tablaVinculacionesBody');
   if (!tbody) return;
 
-  const { data, error } = await supabaseClient
-    .from('vinculaciones')
-    .select('id, cuidador_id, monitoreado_id, estado')
-    .order('created_at', { ascending: false });
+  let data = null, error = null;
+  try {
+    ({ data, error } = await supabaseClient
+      .from('vinculaciones')
+      .select('id, cuidador_id, monitoreado_id, estado')
+      .order('created_at', { ascending: false }));
+  } catch (err) { error = err; }
 
   if (error) {
     tbody.innerHTML = `<tr><td colspan="4" class="empty">Error: ${escapeHtml(error.message)}</td></tr>`;
@@ -316,10 +325,7 @@ async function crearVinculacion() {
     return;
   }
 
-  const { error } = await supabaseClient.rpc('admin_vincular', {
-    p_cuidador:    cuidadorId,
-    p_monitoreado: monitoreadoId,
-  });
+  const { error } = await llamarRpc('admin_vincular', { p_cuidador: cuidadorId, p_monitoreado: monitoreadoId });
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
 
@@ -328,10 +334,7 @@ async function crearVinculacion() {
 }
 
 async function desvincular(cuidadorId, monitoreadoId) {
-  const { error } = await supabaseClient.rpc('admin_desvincular', {
-    p_cuidador:    cuidadorId,
-    p_monitoreado: monitoreadoId,
-  });
+  const { error } = await llamarRpc('admin_desvincular', { p_cuidador: cuidadorId, p_monitoreado: monitoreadoId });
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
 

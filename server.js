@@ -1,7 +1,17 @@
-﻿const http = require('http');
+const http = require('http');
+
+// Lee las claves del archivo .env (ANTHROPIC_API_KEY, GEMINI_API_KEY, DIAMON_ADMIN_CODE).
+// Ese archivo no se sube a GitHub; en Vercel las claves se ponen en Settings -> Environment Variables.
+try {
+  require('fs').readFileSync(require('path').join(__dirname, '.env'), 'utf8').split(/\r?\n/).forEach(linea => {
+    const m = linea.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  });
+} catch (_) {}
 const fs = require('fs');
 const path = require('path');
 const diabotHandler = require('./api/diabot');
+const validarAdminHandler = require('./api/validar-admin');
 
 const PORT = process.env.PORT || 8080;
 const ROOT = __dirname;
@@ -25,7 +35,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(self)');
 
@@ -36,6 +46,17 @@ const server = http.createServer((req, res) => {
   }
 
   let reqPath = req.url.split('?')[0].split('#')[0];
+
+  // Validacion del codigo de administrador (el codigo ya no esta en el navegador)
+  if (reqPath === '/api/validar-admin') {
+    let rawBody = '';
+    req.on('data', chunk => { rawBody += chunk.toString(); });
+    req.on('end', () => {
+      req.body = rawBody;
+      validarAdminHandler(req, res);
+    });
+    return;
+  }
 
   // Endpoint de IA Real para DiaBot (/api/diabot)
   if (reqPath === '/api/diabot') {

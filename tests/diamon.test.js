@@ -96,12 +96,16 @@ test('5. Endpoint /api/diabot: Rechaza peticiones vacías y no acepta API Keys d
   assert.equal(parsed.usedLiveContext, true);
 });
 
-test('6. Autenticación: soporta registro y login para Paciente, Cuidador y Admin con códigos', () => {
+test('6. Autenticación: registro y login de Paciente y Cuidador solo con Supabase', () => {
   const authModern = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'auth-modern.js'), 'utf8');
   const dashCtrl = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'dashboard-controller.js'), 'utf8');
 
-  assert.ok(authModern.includes('generarCodigoPacienteUnico'), 'auth-modern.js debe permitir registrar pacientes nuevos con código único DM-XXXX');
-  assert.ok(authModern.includes('DIAMON-ADMIN-2026'), 'auth-modern.js debe validar el código de administrador');
+  // El codigo DM-XXXX lo genera la base de datos (database/04_todo_en_supabase.sql)
+  const sql04 = fs.readFileSync(path.join(__dirname, '..', 'database', '04_todo_en_supabase.sql'), 'utf8');
+  assert.ok(sql04.includes('generar_codigo_paciente'), 'Supabase debe generar el código único DM-XXXX del paciente');
+  assert.ok(authModern.includes('signUp') && authModern.includes('signOut'), 'al registrarse no se entra directo: hay que confirmar e iniciar sesión');
+  assert.ok(!authModern.includes('DIAMON-ADMIN-2026'), 'el código de admin no debe estar en el navegador');
+  assert.ok(authModern.includes('signInWithPassword') && !authModern.includes('localStorage'), 'el login debe ser solo con Supabase, sin cuentas en el navegador');
   assert.ok(dashCtrl.includes('esPaciente'), 'dashboard-controller.js debe diferenciar la vista simplificada del paciente');
 });
 

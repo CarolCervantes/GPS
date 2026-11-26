@@ -102,7 +102,7 @@ document.addEventListener('mapaAdminListo', async function initMapaAdmin() {
   let routeAnimationActive = false;
   let route = [];
 
-  // ========== CANAL DE BROADCAST — sincroniza estado completo con el dashboard ==========
+  // CANAL DE BROADCAST — sincroniza estado completo con el dashboard
   // Usa Supabase Realtime Broadcast (sin cambios en BD) para enviar lat/lng/glucosa/estado/tipo.
 
   const adminBroadcast = supabaseClient.channel('gps-admin-estado', {
@@ -124,7 +124,7 @@ document.addEventListener('mapaAdminListo', async function initMapaAdmin() {
     });
   }
 
-  // ========== FUNCIONES DE RUTA LOCAL ==========
+  // ========== funciones de ruta local ==========
 
   function medicalPopupContent(lat, lng) {
     return `
@@ -321,7 +321,7 @@ document.addEventListener('mapaAdminListo', async function initMapaAdmin() {
     }
   }
 
-  // ========== RUTA AUTOMÁTICA ==========
+  // ========== ruta automática ==========
   // Carga la ruta predefinida de Cartagena y la repite en loop indefinidamente.
 
   async function toggleAutoRuta() {
@@ -354,7 +354,7 @@ document.addEventListener('mapaAdminListo', async function initMapaAdmin() {
     }
   }
 
-  // ========== TRANSMISIÓN A SUPABASE ==========
+  // ========== transmisión a Supabase ==========
 
   async function transmitirRuta() {
     if (route.length < 2 || transmisionActiva || !adminUserId) return;
@@ -431,7 +431,7 @@ document.addEventListener('mapaAdminListo', async function initMapaAdmin() {
     if (transmitStatus) transmitStatus.style.display = 'none';
   }
 
-  // ========== EVENT LISTENERS ==========
+  // ========== event listeners ==========
 
   if (updateBtn) updateBtn.addEventListener('click', () => { updateMarker(); drawRoute(); });
   if (simulateBtn) simulateBtn.addEventListener('click', () => startMovement(false));

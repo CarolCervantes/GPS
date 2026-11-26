@@ -1,111 +1,41 @@
-/**
- * DiaMon — Sistema Autónomo de Alertas e Incidencias Clínicas 24/7
- * 1. Monitoreo continuo 24/7 de Geocercas GPS (Salida de zona segura en Cartagena)
- * 2. Notificaciones push nativas del sistema operativo en segundo plano (Service Worker)
- * 3. Alarma sonora clínica de emergencia (Web Audio API)
- * 4. Sincronización en la nube (Supabase Realtime) y almacenamiento persistente
- */
-
+// Sistema Autónomo de Alertas e Incidencias Clínicas 24/7
+// - Monitoreo continuo 24/7 de Geocercas GPS (Salida de zona segura en Cartagena)
+// - Notificaciones push nativas del sistema operativo en segundo plano (Service Worker)
+// - Alarma sonora clínica de emergencia (Web Audio API)
+// - Sincronización en la nube (Supabase Realtime) y almacenamiento persistente
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'diamon_alertas_damian_v5';
-  const GEOFENCE_HOME = { lat: 10.39991, lng: -75.47886, radioMetros: 400 }; // Casa de Damián Díaz Balseiro — Chapacuá
-
-  // Base inicial de alertas de referencia del Caso de Estudio (Damián Díaz Balseiro)
-  const ALERTAS_INICIALES = [
-    {
-      id: 'alt-001',
-      titulo: 'Esquema matutino 8:00 AM confirmado',
-      subtitulo: 'Damián Díaz Balseiro confirmó: Pantoprazol, Metformina, Firialta y Nifedipina.',
-      tiempoTexto: 'Hace 25 min',
-      tipo: 'medicamento_tomado',
-      color: 'green',
-      icono: 'fas fa-check',
-      badgeTexto: 'Confirmada',
-      badgeClase: 'badge-confirmada',
-      estado: 'confirmada',
-      rango: '24h',
-      ts: Date.now() - 25 * 60000,
-      coordenadas: { lat: 10.39991, lng: -75.47886 },
-      ubicacion: 'Barrio Chapacuá (10.39991, -75.47886)',
-      descripcion: 'Registro de adherencia: El paciente Damián Díaz Balseiro confirmó su bloque farmacológico de las 8:00 AM según el plan supervisado por la Enf. Jefe Elizabeth Vargas Caro.'
-    },
-    {
-      id: 'alt-002',
-      titulo: 'Próxima toma: Valsartán (2:00 PM) e Insulina 24 UI (9:00 PM)',
-      subtitulo: 'Recordatorio activo para control de Hipertensión y Diabetes.',
-      tiempoTexto: 'Hace 1 h',
-      tipo: 'medicamento',
-      color: 'amber',
-      icono: 'fas fa-pills',
-      badgeTexto: 'Programada',
-      badgeClase: 'badge-aviso',
-      estado: 'aviso',
-      rango: '24h',
-      ts: Date.now() - 60 * 60000,
-      coordenadas: { lat: 10.39991, lng: -75.47886 },
-      ubicacion: 'Casa en Chapacuá, Cartagena',
-      descripcion: 'Cronograma activo: 2:00 PM Valsartán · 8:00 PM Atorvastatina, Metformina, Gabapentina, Lipotic y Nifedipino · 9:00 PM Insulina Basal 24 Unidades · Sábados: Ozempic.'
-    },
-    {
-      id: 'alt-003',
-      titulo: 'Geocerca Activa — Casa en Chapacuá',
-      subtitulo: 'Damián Díaz Balseiro se encuentra dentro del perímetro seguro (400m).',
-      tiempoTexto: 'Hace 2 h',
-      tipo: 'ubicacion',
-      color: 'blue',
-      icono: 'fas fa-map-marker-alt',
-      badgeTexto: 'En Zona',
-      badgeClase: 'badge-informacion',
-      estado: 'informacion',
-      rango: '24h',
-      ts: Date.now() - 120 * 60000,
-      coordenadas: { lat: 10.39991, lng: -75.47886 },
-      ubicacion: 'Barrio Chapacuá (Lat: 10.39991, Lng: -75.47886)',
-      descripcion: 'Telemetría GPS verificada en el domicilio de Chapacuá. Glucosa en ayunas (114 mg/dL) y Presión Arterial (126/78 mmHg) dentro de las metas definidas con la Enf. Jefe Elizabeth Vargas Caro.'
-    }
-  ];
-
   let filtroRangoActual = '7d';
   let swRegistration = null;
-  let ultimaAlertaGeocercaTs = 0;
 
-  // ============================================================
-  // 1. GESTIÓN Y PERSISTENCIA DE ALERTAS
-  // ============================================================
+  // Gestión y persistencia de alertas
+  // Las alertas viven en Supabase. Aqui solo hay una copia en memoria para pintarlas.
+  let alertasCache = [];
+
   function obtenerAlertas() {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (data) {
-        const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (_) {}
-    guardarAlertas(ALERTAS_INICIALES);
-    return ALERTAS_INICIALES;
+    return alertasCache;
   }
 
-  function guardarAlertas(alertas) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(alertas));
-    } catch (_) {}
+  // Cuando caso-estudio.js trae los datos del paciente, llegan tambien sus alertas
+  window.addEventListener('diamon-datos', (e) => {
+    alertasCache = (e.detail && e.detail.alertas) || [];
     actualizarBadgesContadores();
-  }
+    window.renderizarAlertasDiaMon();
+  });
 
   function actualizarBadgesContadores() {
     const alertas = obtenerAlertas();
     const pendientes = alertas.filter(a => a.estado === 'pendiente' || a.estado === 'aviso').length;
 
-    document.querySelectorAll('.dc-nav-badge, #topbarAlertCount').forEach(el => {
-      el.textContent = pendientes > 0 ? pendientes : '2';
-      el.style.display = 'inline-flex';
+    // El numero es el de alertas pendientes de verdad; si no hay, se esconde
+    document.querySelectorAll('.dc-nav-badge, .dc-btn-badge, #topbarAlertCount').forEach(el => {
+      el.textContent = pendientes;
+      el.style.display = pendientes > 0 ? 'inline-flex' : 'none';
     });
   }
 
-  // ============================================================
-  // 2. SINTETIZADOR DE AUDIO CLÍNICO 24/7 (WEB AUDIO API)
-  // ============================================================
+  // Sintetizador de audio clínico 24/7 (Web audio API)
   function reproducirAlarmaAudio(tipo = 'aviso') {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -173,9 +103,7 @@
     }
   };
 
-  // ============================================================
-  // 3. SERVICE WORKER Y NOTIFICACIONES PUSH DEL SISTEMA 24/7
-  // ============================================================
+  // Service worker y notificaciones push del sistema 24/7
   function initServiceWorker() {
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
       const swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : '/sw.js';
@@ -265,18 +193,7 @@
     }
   }
 
-  // ============================================================
-  // 4. MOTOR AUTÓNOMO DE MONITOREO 24/7
-  // ============================================================
-  function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
+  // Crear alertas y revisar cada 20 segundos (batería)
 
   window.emitirAlerta24Horas = function (alertaData) {
     const alertas = obtenerAlertas();
@@ -298,74 +215,30 @@
       descripcion: alertaData.descripcion || 'Incidencia generada automáticamente por el monitor 24/7.'
     };
 
+    // Se guarda en Supabase con el id del paciente; los demas equipos la reciben en tiempo real
+    if (window.DiaMonDatos && window.DiaMonDatos.pacienteId()) {
+      window.DiaMonDatos.guardarAlerta(nuevaAlerta).then(guardada => {
+        nuevaAlerta.id = guardada.id;
+      }).catch(err => console.warn('No se pudo guardar la alerta en Supabase:', err));
+    }
     alertas.unshift(nuevaAlerta);
-    guardarAlertas(alertas);
+    actualizarBadgesContadores();
     window.renderizarAlertasDiaMon();
 
     // Alarma sonora y notificación del sistema
     reproducirAlarmaAudio(nuevaAlerta.tipo);
     enviarNotificacionNativa(`⚠️ DiaMon: ${nuevaAlerta.titulo}`, nuevaAlerta.subtitulo);
 
-    // Toast flotante
     if (window.mostrarNotificacion) {
       window.mostrarNotificacion(`🔔 Nueva alerta: ${nuevaAlerta.titulo}`, 'warn');
-    }
-
-    // Sincronizar en Supabase si está activo
-    if (window.supabaseClient) {
-      (async () => {
-        try {
-          const { data: { user } } = await window.supabaseClient.auth.getUser();
-          const tiposPermitidos = ['zona_segura', 'geocerca', 'gps_perdido', 'glucosa_alta', 'glucosa_baja', 'presion_alta', 'presion_baja', 'medicacion_pendiente', 'medicamento', 'medicamento_tomado', 'ubicacion', 'emergencia_manual', 'sistema', 'recordatorio'];
-          const tipoFinal = tiposPermitidos.includes(nuevaAlerta.tipo) ? nuevaAlerta.tipo : 'sistema';
-          const alertaPayload = {
-            tipo: tipoFinal,
-            descripcion: `${nuevaAlerta.titulo} · ${nuevaAlerta.subtitulo || ""}`,
-            estado: 'activa',
-            ts: new Date().toISOString()
-          };
-          if (user?.id) {
-            alertaPayload.user_id = user.id;
-          }
-          await window.supabaseClient.from('alertas').insert(alertaPayload);
-        } catch (err) {
-          console.warn('[AlertasSistema] Error sincronizando alerta con Supabase:', err);
-        }
-      })();
     }
   };
 
   // Verificación continua de geocerca con el GPS en vivo
-  function verificarGeocercaEnTiempoReal(lat, lng) {
-    if (!lat || !lng) return;
-    const dist = calcularDistanciaMetros(lat, lng, GEOFENCE_HOME.lat, GEOFENCE_HOME.lng);
-    const ahora = Date.now();
-
-    // Si supera el radio de seguridad (> 1.2 km) y no ha alertado en los últimos 45 minutos
-    if (dist > GEOFENCE_HOME.radioMetros && (ahora - ultimaAlertaGeocercaTs) > 45 * 60000) {
-      ultimaAlertaGeocercaTs = ahora;
-      const km = (dist / 1000).toFixed(1);
-      window.emitirAlerta24Horas({
-        titulo: 'Salida de zona segura',
-        subtitulo: `Tu familiar salió de la zona segura (${km} km de su sector habitual).`,
-        tipo: 'geocerca',
-        color: 'red',
-        icono: 'fas fa-map-marker-alt',
-        badgeTexto: 'Pendiente',
-        badgeClase: 'badge-pendiente',
-        coordenadas: { lat, lng },
-        ubicacion: `Sector a ${km} km de San Fernando, Cartagena`,
-        descripcion: `El GPS registró coordenadas fuera del perímetro seguro (${km} km). Se recomienda verificar la ruta del paciente en el mapa y llamar al contacto de emergencia si es necesario.`
-      });
-    }
-  }
-
   // Escuchar posición viva de telemetría
   function iniciarLoopMonitoreo24h() {
     setInterval(() => {
-      if (window.TelemetriaDiaMon && window.TelemetriaDiaMon.ubicacion && window.TelemetriaDiaMon.gpsFijado) {
-        verificarGeocercaEnTiempoReal(window.TelemetriaDiaMon.ubicacion.lat, window.TelemetriaDiaMon.ubicacion.lng);
-      }
+      // La salida de zona segura la revisa caso-estudio.js con las zonas del paciente
 
       // Monitoreo de batería baja
       if (window.TelemetriaDiaMon && window.TelemetriaDiaMon.bateria) {
@@ -386,9 +259,7 @@
     }, 20000);
   }
 
-  // ============================================================
-  // 5. RENDERIZADO VISUAL
-  // ============================================================
+  // Renderizado visual
   window.renderizarAlertasDiaMon = function () {
     const containers = [
       document.getElementById('alertsList'),
@@ -485,7 +356,7 @@
   // Modal de detalle
   window.abrirDetalleAlerta = function (id) {
     const alertas = obtenerAlertas();
-    const alerta = alertas.find(a => a.id === id);
+    const alerta = alertas.find(a => String(a.id) === String(id));
     if (!alerta) return;
 
     const previo = document.getElementById('dmAlertModalDetail');
@@ -565,16 +436,26 @@
     }, 300);
   };
 
+  // Alerta creada en otro equipo (por ejemplo el SOS del celular del paciente): suena y avisa aqui
+  window.alertaNuevaRecibida = function (fila) {
+    if (alertasCache.some(a => String(a.id) === String(fila.id))) return;
+    const a = window.DiaMonDatos.aAlerta(fila);
+    reproducirAlarmaAudio(a.tipo);
+    enviarNotificacionNativa(`⚠️ DiaMon: ${a.titulo}`, a.subtitulo);
+    if (window.mostrarNotificacion) window.mostrarNotificacion(`🔔 Nueva alerta: ${a.titulo}`, 'warn');
+  };
+
   window.marcarAlertaAtendida = function (id) {
     const alertas = obtenerAlertas();
-    const alerta = alertas.find(a => a.id === id);
+    const alerta = alertas.find(a => String(a.id) === String(id));
     if (alerta) {
+      if (window.DiaMonDatos) window.DiaMonDatos.cambiarEstadoAlerta(alerta.id).catch(() => {});
       alerta.badgeTexto = 'Confirmada';
       alerta.badgeClase = 'badge-confirmada';
       alerta.estado = 'confirmada';
       alerta.color = 'green';
       alerta.icono = 'fas fa-check';
-      guardarAlertas(alertas);
+      actualizarBadgesContadores();
       window.renderizarAlertasDiaMon();
     }
     const modal = document.getElementById('dmAlertModalDetail');

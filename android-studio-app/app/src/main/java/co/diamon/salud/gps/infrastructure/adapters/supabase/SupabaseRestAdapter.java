@@ -1,5 +1,8 @@
 package co.diamon.salud.gps.infrastructure.adapters.supabase;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 import android.content.Context;
 import android.content.SharedPreferences;
 import org.json.JSONObject;
@@ -15,8 +18,8 @@ import co.diamon.salud.gps.domain.ports.RegistroClinicoRepositoryPort;
 // Sincroniza los registros de la app movil con la misma base de datos Supabase de la Web
 public class SupabaseRestAdapter implements RegistroClinicoRepositoryPort {
 
-    private static final String SUPABASE_URL = "https://reghfwloifpfeehkfyxv.supabase.co/rest/v1";
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZ2hmd2xvaWZwZmVlaGtmeXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1ODMyMjIsImV4cCI6MjA5NTE1OTIyMn0.5ix9vsVT9PFTxm3LEFoau4N4cb4ZbUrvoKVAgW1iPOM";
+    public static final String SUPABASE_URL = "https://reghfwloifpfeehkfyxv.supabase.co/rest/v1";
+    public static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZ2hmd2xvaWZwZmVlaGtmeXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1ODMyMjIsImV4cCI6MjA5NTE1OTIyMn0.5ix9vsVT9PFTxm3LEFoau4N4cb4ZbUrvoKVAgW1iPOM";
     private final Context context;
 
     public SupabaseRestAdapter() {
@@ -64,12 +67,28 @@ public class SupabaseRestAdapter implements RegistroClinicoRepositoryPort {
                     os.write(bytes);
                     os.flush();
                     os.close();
-                    conn.getResponseCode();
+                    int codigo = conn.getResponseCode();
                     conn.disconnect();
-                } catch (Exception ignored) {
+                    // 201 = Supabase guardo el registro
+                    avisar(codigo == 201 || codigo == 200
+                            ? "Sincronizado con Supabase"
+                            : "No se pudo subir a Supabase (código " + codigo + "). Queda guardado en el celular.");
+                } catch (Exception e) {
+                    avisar("Sin conexión con Supabase. Queda guardado en el celular.");
                 }
             }
         }).start();
+    }
+
+    // Muestra el resultado de la sincronizacion en pantalla (desde el hilo principal)
+    private void avisar(final String mensaje) {
+        if (context == null) return;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -79,7 +98,7 @@ public class SupabaseRestAdapter implements RegistroClinicoRepositoryPort {
 
     @Override
     public void editarRegistro(final RegistroClinico reg) {
-        agregarRegistro(reg);
+        // Los cambios se hacen en SQLite; en Supabase queda el registro original (antes se duplicaba)
     }
 
     @Override

@@ -1,0 +1,56 @@
+/* Ajustes solo para la app Android (html.dm-en-app). La web en el navegador no cambia.
+   Idea: menos ruido en pantalla, una columna y nada que se salga hacia la derecha. */
+
+html.dm-en-app, html.dm-en-app body { overflow-x: hidden; }
+
+/* Todo en una sola columna (las rejillas de 2 o 3 columnas se salian de la pantalla) */
+html.dm-en-app .dc-security-options-grid,
+html.dm-en-app .dc-kpi-grid,
+html.dm-en-app .dc-dashboard-grid,
+html.dm-en-app .dc-health-subgrid,
+html.dm-en-app [class*="grid"]:not(.leaflet-container):not([class*="leaflet"]) {
+    grid-template-columns: 1fr !important;
+}
+html.dm-en-app .dc-view * { min-width: 0; }
+html.dm-en-app .checkin-header,
+html.dm-en-app .dc-security-opt-card { flex-wrap: wrap; }
+
+/* Barra superior: sin fecha ni reloj (el celular ya los muestra) y botones solo con icono */
+html.dm-en-app .dc-pill-indicator:has(#dcLiveClock),
+html.dm-en-app .dc-pill-indicator:has(#dcLiveDate),
+html.dm-en-app #txtTopModoSimple { display: none !important; }
+
+/* Inicio mas sencillo: se quitan la grafica semanal, la alerta fija y textos largos */
+html.dm-en-app #view-inicio .dc-card:has(.dc-chart-wrap),
+html.dm-en-app #view-inicio .dc-alert-card,
+html.dm-en-app #view-inicio #dcWelcomeSubtitle,
+html.dm-en-app #view-inicio #casoPacienteDiag,
+html.dm-en-app #btnHistorialPdfBanner { display: none !important; }
+html.dm-en-app #view-inicio .dc-welcome-title { font-size: 24px; }
+html.dm-en-app #view-inicio #map { height: 260px !important; }
+
+/* DiaBot: solo el circulo, encima del menu de abajo para no taparlo */
+html.dm-en-app .diabot-btn-label { display: none !important; }
+html.dm-en-app #diabotWidget > button,
+html.dm-en-app .diabot-bubble {
+    bottom: 84px !important;
+    right: 14px !important;
+    padding: 6px !important;
+}
+
+/* Espacio para que el menu de abajo no tape el contenido */
+html.dm-en-app .dc-main,
+html.dm-en-app main { padding-bottom: 96px !important; }
+
+/* Inicio en la app: panel del paciente, 4 tarjetas, medicamentos del dia y SOS.
+   El mapa en vivo se muestra en la seccion Mapa y la bitacora queda en Reportes. */
+html.dm-en-app #view-inicio .dc-card:has(#listaBitacoraClinica) { display: none !important; }
+
+/* Salud en una sola columna y en este orden: medicamentos, como te sientes, guia, vencimientos */
+html.dm-en-app #view-salud div:has(> div > #medicamentosWidget) { display: flex !important; flex-direction: column; gap: 16px; }
+html.dm-en-app #view-salud div:has(> #medicamentosWidget),
+html.dm-en-app #view-salud div:has(> #estadoDiarioWidget) { display: contents !important; }
+html.dm-en-app #medicamentosWidget { order: 1; }
+html.dm-en-app #estadoDiarioWidget { order: 2; }
+html.dm-en-app #consejoDiarioWidget { order: 3; margin-top: 0 !important; }
+html.dm-en-app #vencimientoMedsWidget { order: 4; margin-top: 0 !important; }

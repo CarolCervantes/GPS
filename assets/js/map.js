@@ -1,7 +1,5 @@
 
-// ============================================================
 // Confirmación Automática de Llegada por Geocerca
-// ============================================================
 let _ultimaLlegadaId = null;
 function verificarLlegadaGeocerca(lat, lng) {
   const destinos = window.DESTINOS_PREDETERMINADOS_CTG || [
@@ -20,9 +18,7 @@ function verificarLlegadaGeocerca(lat, lng) {
     const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     if (dist <= 300) {
-      if (window.safeWalkInstance && window.safeWalkInstance.isActive && window.safeWalkInstance.destination?.id === d.id) {
-        window.safeWalkInstance.confirmArrival();
-      } else if (_ultimaLlegadaId !== d.id) {
+      if (_ultimaLlegadaId !== d.id) {
         _ultimaLlegadaId = d.id;
         const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         if (window.mostrarNotificacion) {
@@ -34,7 +30,7 @@ function verificarLlegadaGeocerca(lat, lng) {
   }
 }
 
-// ============ MAPA INTERACTIVO CON FUNCIONALIDADES GPS ============
+// ============ mapa interactivo con funcionalidades GPS ============
 
 const cartagenaCenter = [10.39991, -75.47886]; // Casa de Damián Díaz Balseiro — Barrio Chapacuá
 
@@ -42,7 +38,7 @@ function initializeGPSMap(userId) {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
 
-  // ========== INICIALIZACIÓN DEL MAPA ==========
+  // ========== inicialización del mapa ==========
   const map = L.map('map', {
     zoomControl: true,
     attributionControl: false
@@ -54,7 +50,7 @@ function initializeGPSMap(userId) {
     maxZoom: 19,
   }).addTo(map);
 
-  // ========== ICONOS PERSONALIZADOS ==========
+  // ========== iconos personalizados ==========
   const icons = {
     ambulance: L.divIcon({
       className: 'custom-icon patient-live-icon',
@@ -70,7 +66,7 @@ function initializeGPSMap(userId) {
     }),
   };
 
-  // ========== ELEMENTOS DEL FORMULARIO ==========
+  // ========== elementos del formulario ==========
   const form = {
     latitude: document.getElementById('mapLatitude'),
     longitude: document.getElementById('mapLongitude'),
@@ -79,14 +75,14 @@ function initializeGPSMap(userId) {
     type: document.getElementById('mapType'),
   };
 
-  // ========== ELEMENTOS DE INFORMACIÓN ==========
+  // ========== elementos de información ==========
   const info = {
     glucose: document.getElementById('mapInfoGlucose'),
     status: document.getElementById('mapInfoStatus'),
     type: document.getElementById('mapInfoType'),
   };
 
-  // ========== BOTONES Y CONTROLES ==========
+  // ========== botones y controles ==========
   const updateBtn = document.getElementById('mapUpdateBtn');
   const simulateBtn = document.getElementById('mapSimulateBtn');
   const stopBtn = document.getElementById('mapStopBtn');
@@ -96,19 +92,19 @@ function initializeGPSMap(userId) {
   const addRoutePointBtn = document.getElementById('mapAddRoutePointBtn');
   const clearRouteBtn = document.getElementById('mapClearRouteBtn');
 
-  // ========== VARIABLES DE ESTADO ==========
+  // ========== variables de estado ==========
   let routeModeActive = false;
   let routeMarkers = [];
   let routeAnimationActive = false;
   let route = [];
 
-  // ========== ESTADO SUPABASE ==========
+  // ========== estado Supabase ==========
   let rutaActivaId = null;
   let realtimeChannel = null;
   let cachedAdminIds = [];
   let gpsPoints = [];
 
-  // ========== BADGE DE ESTADO DE RUTA ==========
+  // ========== badge de estado de ruta ==========
   function mostrarEstadoRuta(estado) {
     const badge = document.getElementById('gpsRouteBadge');
     const nombreEl = document.getElementById('gpsRouteName');
@@ -124,7 +120,7 @@ function initializeGPSMap(userId) {
     badge.className = `gps-route-badge ${cfg.clase}`;
   }
 
-  // ========== POPUP CLÍNICO REAL DE DAMIÁN DÍAZ BALSEIRO ==========
+  // ========== popup clínico real de Damián Díaz Balseiro ==========
   function medicalPopupContent(lat, lng) {
     const res = (window.casoEstudio && typeof window.casoEstudio.obtenerResumenClinicoActual === 'function')
       ? window.casoEstudio.obtenerResumenClinicoActual()
@@ -229,7 +225,7 @@ function initializeGPSMap(userId) {
 
     marker.setLatLng(position);
     marker.setIcon(icons[form.type.value]);
-    marker.setPopupContent(medicalPopupContent(lat, lng)).openPopup();
+    marker.setPopupContent(medicalPopupContent(lat, lng));
     map.panTo(position, { animate: true, duration: 0.7 });
     updateInfoCard();
   }
@@ -324,16 +320,21 @@ function initializeGPSMap(userId) {
     if (stopBtn) stopBtn.disabled = true;
   }
 
-  // ========== INICIALIZACIÓN DEL MARCADOR Y CAPAS CARTAGENA ==========
+  // ========== inicialización del marcador y capas Cartagena ==========
   window.liveMapInstance = map;
-  const marker = L.marker(cartagenaCenter, {
+  // El marcador empieza en la casa del paciente (su primera zona segura) y solo se mueve con el GPS real
+  const zonasPac = window.casoEstudio ? window.casoEstudio.obtenerZonasSeguras() : [];
+  const inicioMapa = zonasPac.length ? [Number(zonasPac[0].centro_lat), Number(zonasPac[0].centro_lng)] : cartagenaCenter;
+  const marker = L.marker(inicioMapa, {
     icon: icons[form.type.value],
-    draggable: true,
+    draggable: false,
   }).addTo(map);
+  marker.bindTooltip('Última ubicación conocida (esperando GPS en vivo)');
+  map.setView(inicioMapa, map.getZoom());
   window._patientMarker = marker;
 
   // Círculo de precisión GPS
-  let accuracyCircle = L.circle(cartagenaCenter, {
+  let accuracyCircle = L.circle(inicioMapa, {
     radius: 30,
     color: '#0284c7',
     fillColor: '#0284c7',
@@ -370,7 +371,7 @@ function initializeGPSMap(userId) {
     cm.init(map);
   }
 
-  // Inicializar capa inteligente de Tráfico de Cartagena
+  // Capa de tráfico de Cartagena
   if (window.TraficoCartagenaManager && !window.traficoCartagenaInstance) {
     const tm = new window.TraficoCartagenaManager();
     tm.init(map);
@@ -382,9 +383,9 @@ function initializeGPSMap(userId) {
     dashArray: '8 6',
   }).addTo(map);
 
-  marker.bindPopup(medicalPopupContent(cartagenaCenter[0], cartagenaCenter[1])).openPopup();
+  marker.bindPopup(medicalPopupContent(cartagenaCenter[0], cartagenaCenter[1])); // se abre al tocar el marcador
 
-  // ========== INTEGRACIÓN CON TELEMETRÍA GPS EN TIEMPO REAL ==========
+  // ========== integración con telemetría GPS en tiempo real ==========
   window.actualizarMarcadorUbicacionReal = function (lat, lng, accuracy = 20) {
     if (!map || !marker) return;
     const newPos = L.latLng(lat, lng);
@@ -418,7 +419,7 @@ function initializeGPSMap(userId) {
     );
   }
 
-  // ========== EVENT LISTENERS ==========
+  // ========== event listeners ==========
   marker.on('dragend', () => {
     const position = marker.getLatLng();
     form.latitude.value = position.lat.toFixed(5);
@@ -429,7 +430,7 @@ function initializeGPSMap(userId) {
     if (window.casoEstudio && typeof window.casoEstudio.procesarMovimientoMapa === 'function') {
       window.casoEstudio.procesarMovimientoMapa(position.lat, position.lng);
     }
-    marker.setPopupContent(medicalPopupContent(position.lat, position.lng)).openPopup();
+    marker.setPopupContent(medicalPopupContent(position.lat, position.lng));
     verificarLlegadaGeocerca(position.lat, position.lng);
     if (accuracyCircle) accuracyCircle.setLatLng(position);
     if (window.traficoCartagenaInstance) {
@@ -443,14 +444,7 @@ function initializeGPSMap(userId) {
       return;
     }
 
-    form.latitude.value = event.latlng.lat.toFixed(5);
-    form.longitude.value = event.latlng.lng.toFixed(5);
-    marker.setLatLng(event.latlng);
-    if (accuracyCircle) accuracyCircle.setLatLng(event.latlng);
-    if (window.casoEstudio && typeof window.casoEstudio.procesarMovimientoMapa === 'function') {
-      window.casoEstudio.procesarMovimientoMapa(event.latlng.lat, event.latlng.lng);
-    }
-    marker.setPopupContent(medicalPopupContent(event.latlng.lat, event.latlng.lng)).openPopup();
+    // Hacer clic en el mapa ya no mueve al paciente: su ubicacion solo viene del GPS de su celular
   });
 
   if (updateBtn) updateBtn.addEventListener('click', () => {
@@ -480,7 +474,7 @@ function initializeGPSMap(userId) {
   setTimeout(() => map.invalidateSize(), 400);
   setTimeout(() => map.invalidateSize(), 1000);
 
-  // ========== CARGA DE RUTA DESDE SUPABASE ==========
+  // ========== carga de ruta desde Supabase ==========
 
   async function cargarPuntosExistentes(rutaId) {
     const { data, error } = await supabaseClient
@@ -619,7 +613,7 @@ function initializeGPSMap(userId) {
 
   cargarRutaActiva();
 
-  // ========== BROADCAST DEL ADMIN — recibe estado completo en tiempo real ==========
+  // BROADCAST DEL ADMIN — recibe estado completo en tiempo real
   // Canal dual:
   //   'estado'      → posición + glucosa + estado + tipo (se emite en cada waypoint)
   //   'inicio-ruta' → el admin inició una nueva transmisión (activa suscripción automática)

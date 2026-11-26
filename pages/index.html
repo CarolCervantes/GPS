@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -16,9 +16,22 @@
     <!-- Hojas de Estilo -->
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/dashboard-modern.css">
+    <style>
+        /* Si no hay paciente activo se esconden los datos clinicos */
+        body.dm-sin-paciente .dm-solo-con-paciente { display: none !important; }
+        /* Opciones que dependen del rol */
+        body:not(.dm-rol-admin) .dm-solo-admin { display: none !important; }
+        body:not(.dm-rol-usuario) .dm-solo-paciente { display: none !important; }
+        /* Bloques propios del caso de estudio de Damian */
+        html:not(.dm-caso-damian) .dm-solo-damian { display: none !important; }
+        html.dm-caso-damian .dm-solo-otro { display: none !important; }
+        body.dm-rol-admin .dm-sin-admin { display: none !important; }
+        body.dm-rol-usuario .dm-sin-paciente-rol { display: none !important; }
+        body:not(.dm-rol-admin):not(.dm-rol-cuidador) .dm-solo-supervisor { display: none !important; }
+        .dm-pagina-embebida { width: 100%; min-height: 600px; border: 0; display: block; background: transparent; }
+    </style>
     <link rel="stylesheet" href="../assets/css/medical-qr.css">
     <link rel="stylesheet" href="../assets/css/diabot.css">
-    <link rel="stylesheet" href="../assets/css/acompanamiento.css">
     <link rel="stylesheet" href="../assets/css/salud-diaria.css">
     <link rel="stylesheet" href="../assets/css/voz-sos.css">
     <link rel="stylesheet" href="../assets/css/vencimiento-medicamentos.css">
@@ -35,7 +48,7 @@
 
 <div class="dc-shell">
 
-    <!-- ==================== SIDEBAR LATERAL ==================== -->
+    <!-- Sidebar lateral -->
     <aside class="dc-sidebar" aria-label="Menú principal de navegación">
         <!-- Logo y Marca Oficial DiaMon -->
         <a href="#" class="dc-brand" onclick="window.switchView('inicio'); return false;" aria-label="DiaMon - Ir al Inicio">
@@ -69,7 +82,7 @@
             <button class="dc-nav-item" data-dc-tab="alertas" aria-label="Ver Notificaciones">
                 <i class="fas fa-bell" aria-hidden="true"></i>
                 <span>Notificaciones</span>
-                <span class="dc-nav-badge" aria-label="2 notificaciones nuevas">2</span>
+                <span class="dc-nav-badge" style="display:none;" aria-label="Notificaciones pendientes">0</span>
             </button>
             <button class="dc-nav-item" data-dc-tab="seguridad" aria-label="Opciones de Seguridad y Ficha QR">
                 <i class="fas fa-shield-alt" aria-hidden="true"></i>
@@ -114,7 +127,7 @@
         </div>
     </aside>
 
-    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <!-- Contenido principal -->
     <main class="dc-main">
 
         <!-- Topbar Superior -->
@@ -138,26 +151,26 @@
                 </div>
 
                 <!-- Botón Vista Simplificada del Paciente -->
-                <button class="dc-pill-indicator" id="btnTopModoSimple" onclick="if(window.casoEstudio) window.casoEstudio.toggleModoAdultoMayor(true)" style="background:var(--dc-primary-light); color:var(--dc-primary); border:1px solid var(--dc-primary-border); cursor:pointer; font-weight:700;" title="Abrir vista simplificada de 4 botones">
+                <button class="dc-pill-indicator dm-solo-paciente" id="btnTopModoSimple" onclick="if(window.casoEstudio) window.casoEstudio.toggleModoAdultoMayor(true)" style="background:var(--dc-primary-light); color:var(--dc-primary); border:1px solid var(--dc-primary-border); cursor:pointer; font-weight:700;" title="Abrir vista simplificada de 4 botones">
                     <i class="fas fa-universal-access" aria-hidden="true"></i>
                     <span id="txtTopModoSimple">Vista Simple</span>
                 </button>
 
-                <!-- Botón QR Descarga App Móvil (Android & iOS PWA) -->
-                <button class="dc-pill-indicator" onclick="window.location.href='descargar-app.html'" style="background:#0f172a; color:#ffffff; border:none; cursor:pointer; font-weight:600;" title="Código QR para instalar la App Móvil en Android y iPhone">
-                    <i class="fas fa-mobile-alt" aria-hidden="true"></i>
-                    <span>App Móvil QR</span>
-                </button>
+                <!-- Descarga directa de la app Android (APK) -->
+                <a class="dc-pill-indicator dm-solo-web" href="../assets/DiaMon-GPS.apk" download style="background:#0f172a; color:#ffffff; border:none; cursor:pointer; font-weight:600; text-decoration:none;" title="Descargar la app de DiaMon para Android">
+                    <i class="fab fa-android" aria-hidden="true"></i>
+                    <span>App Android</span>
+                </a>
 
                 <!-- Botón Ficha Médica QR SOS -->
-                <button class="dc-btn-icon" onclick="window.medicalQRManager.abrirModalQR()" title="Abrir Ficha QR Médica SOS" aria-label="Abrir Ficha Médica QR SOS">
+                <button class="dc-btn-icon dm-solo-con-paciente" onclick="window.medicalQRManager.abrirModalQR()" title="Abrir Ficha QR Médica SOS" aria-label="Abrir Ficha Médica QR SOS">
                     <i class="fas fa-qrcode" style="color:var(--dc-primary);" aria-hidden="true"></i>
                 </button>
 
                 <!-- Campana de Notificaciones -->
                 <button class="dc-btn-icon" onclick="window.switchView('alertas')" aria-label="Ver 3 notificaciones de salud">
                     <i class="fas fa-bell" aria-hidden="true"></i>
-                    <span class="dc-btn-badge" aria-label="3 pendientes">3</span>
+                    <span class="dc-btn-badge" style="display:none;" aria-label="Notificaciones pendientes">0</span>
                 </button>
 
                 <!-- Avatar de Usuario y Modal de Perfil Flotante -->
@@ -172,7 +185,7 @@
         <!-- Cuerpo de Vistas -->
         <div class="dc-content-body">
 
-            <!-- ==================== VISTA 1: INICIO (DASHBOARD) ==================== -->
+            <!-- Vista 1: inicio (dashboard) -->
             <section class="dc-view active" id="view-inicio">
                 <!-- Saludo Inteligente Reactivo a la Sesión -->
                 <div class="dc-view-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
@@ -180,18 +193,26 @@
                         <h2 class="dc-welcome-title" id="dcWelcomeGreeting">Bienvenido a <span style="color:var(--dc-primary);">DiaMon</span> 👋</h2>
                         <p class="dc-welcome-subtitle" id="dcWelcomeSubtitle">Caso de Estudio Clínico · Monitoreo en tiempo real de Glucosa, Presión Arterial y Ubicación GPS.</p>
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button type="button" onclick="window.casoEstudio.abrirModalRegistroClinico('glucosa')" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; border:none; border-radius:10px; padding:10px 14px; font-weight:700; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(13,148,136,0.25);">
+                    <div class="dm-solo-con-paciente" style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="dm-sin-admin" onclick="window.casoEstudio.abrirModalRegistroClinico('glucosa')" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#ffffff; border:none; border-radius:10px; padding:10px 14px; font-weight:700; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(13,148,136,0.25);">
                             <i class="fas fa-plus-circle"></i> Registrar Glucosa / Presión
                         </button>
-                        <button type="button" id="btnMetasMedicoHeader" onclick="window.casoEstudio.abrirModalRegistroClinico('metas')" style="background:#ffffff; color:#0f172a; border:1px solid var(--dc-border); border-radius:10px; padding:10px 14px; font-weight:600; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <button type="button" class="dm-sin-admin" id="btnMetasMedicoHeader" onclick="window.casoEstudio.abrirModalRegistroClinico('metas')" style="background:#ffffff; color:#0f172a; border:1px solid var(--dc-border); border-radius:10px; padding:10px 14px; font-weight:600; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                             <i class="fas fa-user-md" style="color:var(--dc-primary);"></i> Metas del Médico
                         </button>
                     </div>
                 </div>
 
+                <!-- Aviso cuando no hay paciente para mostrar (invitado o admin sin vincular) -->
+                <div class="dc-card" id="dmAvisoSinPaciente" style="display:none; margin-bottom:20px; text-align:center; padding:36px 24px;">
+                    <i class="fas fa-user-plus" style="font-size:34px; color:var(--dc-primary);" aria-hidden="true"></i>
+                    <h3 id="dmAvisoSinPacienteTitulo" style="margin:12px 0 6px; font-size:19px;">Inicia sesión para ver el monitoreo</h3>
+                    <p id="dmAvisoSinPacienteTexto" style="margin:0 auto 16px; max-width:520px; color:var(--dc-text-muted);">Los datos de salud y la ubicación solo se muestran a la persona monitoreada y a su cuidador.</p>
+                    <div id="dmAvisoSinPacienteBotones" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;"></div>
+                </div>
+
                 <!-- BANNER DEL CASO DE ESTUDIO / PERFIL ACTIVO -->
-                <div class="dc-card" style="margin-bottom:20px; background:linear-gradient(135deg, #061b2e 0%, #0a3442 60%, #0d9488 140%); color:#ffffff; border:1px solid rgba(20,184,166,0.4);">
+                <div class="dc-card dm-solo-con-paciente" style="margin-bottom:20px; background:linear-gradient(135deg, #061b2e 0%, #0a3442 60%, #0d9488 140%); color:#ffffff; border:1px solid rgba(20,184,166,0.4);">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
                         <div>
                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
@@ -203,26 +224,26 @@
                             <h3 style="font-size:17px; font-weight:800; margin:2px 0; color:#ffffff;" id="casoPacienteNombre">Damián Díaz Balseiro · Barrio Chapacuá, Cartagena</h3>
                             <p style="font-size:12.5px; color:#cbd5e1; margin:0;">
                                 <span id="casoPacienteDiag">Diabetes Mellitus Tipo 2 Insulinorrequiriente + Hipertensión Arterial + Neuropatía Diabética</span> ·
-                                Meta Glucosa: <strong id="casoMetaGlucosa" style="color:#5eead4;">80–180 mg/dL</strong> ·
+                                Meta Glucosa: <strong id="casoMetaGlucosa" style="color:#5eead4;">ayunas 80–135, después de comer &lt; 180 mg/dL</strong> ·
                                 Meta PA: <strong id="casoMetaPresion" style="color:#38bdf8;">&lt; 140/90 mmHg</strong>
                             </p>
                         </div>
 
                         <!-- Acciones Reales de Telemetría GPS y Geocercas -->
                         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <button type="button" id="btnTransmitirGPSReal" onclick="window.casoEstudio.toggleTransmisionGPSReal()" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#fff; border:1px solid #5eead4; border-radius:10px; padding:9px 13px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                            <button type="button" class="dm-solo-paciente" id="btnTransmitirGPSReal" onclick="window.casoEstudio.toggleTransmisionGPSReal()" style="background:linear-gradient(135deg, #0d9488, #0284c7); color:#fff; border:1px solid #5eead4; border-radius:10px; padding:9px 13px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                                 <i class="fas fa-satellite"></i> Transmitir GPS Real
                             </button>
-                            <a href="zonas-seguras.html" id="btnConfigGeocercaBanner" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:9px 13px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                            <a href="#" onclick="window.switchView('zonas'); return false;" id="btnConfigGeocercaBanner" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:9px 13px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                                 <i class="fas fa-shield-alt" style="color:#5eead4;"></i> Configurar Geocerca (Chapacuá)
                             </a>
                             <button type="button" id="btnMisMonitoreadosBanner" onclick="window.abrirModalPerfil(); setTimeout(() => window.mostrarVistaFamiliares(), 60);" style="display:none; background:rgba(255,255,255,0.14); color:#fff; border:1px solid #5eead4; border-radius:10px; padding:9px 13px; font-size:12px; font-weight:700; cursor:pointer; align-items:center; gap:6px;">
                                 <i class="fas fa-user-plus" style="color:#5eead4;"></i> Mis Monitoreados / Agregar
                             </button>
-                            <a href="registros_usuario.html" id="btnHistorialPdfBanner" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:9px 13px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                            <a href="#" onclick="window.switchView('reportes'); return false;" id="btnHistorialPdfBanner" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:9px 13px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                                 <i class="fas fa-clipboard-list" style="color:#38bdf8;"></i> Historial &amp; PDF
                             </a>
-                            <a href="admin.html" id="btnPanelAdminBanner" style="display:none; background:linear-gradient(135deg, #0284c7, #0d9488); color:#fff; border:1px solid #38bdf8; border-radius:10px; padding:9px 13px; font-size:12px; font-weight:700; text-decoration:none; align-items:center; gap:6px;">
+                            <a href="#" onclick="window.switchView('admin'); return false;" id="btnPanelAdminBanner" style="display:none; background:linear-gradient(135deg, #0284c7, #0d9488); color:#fff; border:1px solid #38bdf8; border-radius:10px; padding:9px 13px; font-size:12px; font-weight:700; text-decoration:none; align-items:center; gap:6px;">
                                 <i class="fas fa-user-shield"></i> Gestión de Usuarios (Admin)
                             </a>
                         </div>
@@ -230,7 +251,7 @@
                 </div>
 
                 <!-- TOP 4 KPI CARDS (Glucosa Capilar + Presión Arterial + GPS + Batería) -->
-                <div class="dc-kpi-grid">
+                <div class="dc-kpi-grid dm-solo-con-paciente">
                     <!-- Glucosa Actual -->
                     <div class="dc-kpi-card" style="cursor:pointer;" onclick="window.casoEstudio.abrirModalRegistroClinico('glucosa')" title="Haz clic para registrar lectura manual del glucómetro">
                         <div class="dc-kpi-icon-wrap blue">
@@ -268,7 +289,7 @@
                             <div class="dc-kpi-val" id="kpiUbicacionVal" style="font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Ubicación en tiempo real">Obteniendo GPS...</div>
                             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
                                 <span class="dc-kpi-badge info" id="kpiUbicacionBadge"><i class="fas fa-spinner fa-spin" style="font-size:8px;"></i> Buscando señal...</span>
-                                <span class="dc-kpi-badge success" id="casoGeocercaEstado" style="font-size:10px;"><i class="fas fa-shield-alt"></i> En zona segura</span>
+                                <span class="dc-kpi-badge info" id="casoGeocercaEstado" style="font-size:10px;"><i class="fas fa-satellite"></i> Esperando ubicación</span>
                             </div>
                         </div>
                     </div>
@@ -293,7 +314,7 @@
                 </div>
 
                 <!-- GRID PRINCIPAL DEL DASHBOARD -->
-                <div class="dc-dashboard-grid">
+                <div class="dc-dashboard-grid dm-solo-con-paciente">
 
                     <!-- Columna Principal (Izquierda) -->
                     <div class="dc-col-main">
@@ -394,7 +415,11 @@
                             </div>
 
                             <!-- Medicamentos del Día (Esquema Real Damián Díaz Balseiro) -->
-                            <div class="dc-card">
+                            <div class="dc-card dm-solo-otro">
+                                <div class="dc-card-title">Medicamentos del día</div>
+                                <p style="font-size:13px; color:var(--dc-text-muted); margin:10px 0 0;">Este paciente todavía no tiene su esquema de medicamentos cargado.</p>
+                            </div>
+                            <div class="dc-card dm-solo-damian">
                                 <div class="dc-card-header">
                                     <div class="dc-card-title">
                                         <i class="fas fa-pills" aria-hidden="true"></i>
@@ -410,7 +435,7 @@
                                         </div>
                                         <div class="dc-med-details">
                                             <div class="dc-med-name">8:00 AM · Esquema Matutino</div>
-                                            <div class="dc-med-dose">Pantoprazol · Metformina · Firialta · Nifedipina</div>
+                                            <div class="dc-med-dose">Pantoprazol · Metformina · Firialta · Nifedipino</div>
                                         </div>
                                         <span class="dc-med-badge active">Tomada</span>
                                     </div>
@@ -491,81 +516,19 @@
                             </div>
                             <h3>Emergencia Médica</h3>
                             <p>Solicita ayuda médica inmediata y comparte la ubicación GPS con acudientes.</p>
-                            <button class="dc-btn-emergency" onclick="window.medicalQRManager.abrirModalQR()" aria-label="Activar Alerta SOS y Ficha QR de Emergencia">
-                                <i class="fas fa-phone-alt" aria-hidden="true"></i> Activar Alerta SOS / Ficha QR
+                            <button class="dc-btn-emergency dm-solo-paciente" onclick="window.casoEstudio.activarSOSPaciente()" aria-label="Pedir ayuda a mi cuidador">
+                                <i class="fas fa-bell" aria-hidden="true"></i> Pedir ayuda SOS
                             </button>
-                        </div>
-
-                        <!-- SafeWalk (Acompañamiento en Cartagena) -->
-                        <div class="dc-card safewalk-card" style="margin:0;">
-                            <div class="safewalk-header">
-                                <div class="safewalk-title">
-                                    <i class="fas fa-shield-alt" style="color:var(--dc-success);" aria-hidden="true"></i>
-                                    <span>Acompañamiento SafeWalk</span>
-                                </div>
-                                <span class="safewalk-badge">Cartagena GPS</span>
-                            </div>
-
-                            <div id="safeWalkSetup">
-                                <p style="font-size:12px; color:var(--dc-text-muted); margin:0 0 10px 0; line-height:1.4;">
-                                    Monitorea el trayecto en transporte por Cartagena y genera aviso si expira el tiempo.
-                                </p>
-                                <div style="margin-bottom:8px;">
-                                    <label for="safeWalkTransportSelect" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Transporte</label>
-                                    <select id="safeWalkTransportSelect" class="safewalk-select" aria-label="Modo de transporte">
-                                        <option value="transcaribe" selected>🚌 Transcaribe / Buseta</option>
-                                        <option value="vehiculo">🚗 Particular / Moto / Taxi</option>
-                                        <option value="pie">🚶 A pie</option>
-                                    </select>
-                                </div>
-                                <div class="safewalk-form-grid">
-                                    <div>
-                                        <label for="safeWalkDestSelect" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Destino desde Chapacuá</label>
-                                        <select id="safeWalkDestSelect" class="safewalk-select" aria-label="Destino en Cartagena">
-                                            <option value="casa">🏠 Casa en Chapacuá</option>
-                                            <option value="udc-zarzagocilla">🏥 Cita Médica / Clínica Blas de Lezo</option>
-                                            <option value="udc-san-agustin">🌳 Parque / Iglesia de Chapacuá</option>
-                                            <option value="mall-plaza">💊 Droguería / Retiro Medicamentos EPS</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="safeWalkMinutes" style="font-size:11px; font-weight:600; color:var(--dc-text-body); display:block; margin-bottom:3px;">Tiempo</label>
-                                        <select id="safeWalkMinutes" class="safewalk-input" aria-label="Tiempo de viaje">
-                                            <option value="15">15 min</option>
-                                            <option value="25" selected>25 min</option>
-                                            <option value="40">40 min</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <button id="btnStartSafeWalk" class="btn-start-safewalk" style="margin-top:10px;" aria-label="Iniciar Recorrido Seguro SafeWalk">
-                                    <i class="fas fa-location-arrow" aria-hidden="true"></i> Iniciar Recorrido Seguro
-                                </button>
-                            </div>
-
-                            <div id="safeWalkActive" class="safewalk-active-box" style="display:none;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                    <div class="safewalk-active-dest"><i class="fas fa-map-pin" aria-hidden="true"></i> <span id="safeWalkActiveDest">—</span></div>
-                                    <span id="safeWalkActiveTransport" style="font-size:10px; background:#f1f5f9; padding:2px 8px; border-radius:10px; color:#475569;">Transcaribe</span>
-                                </div>
-                                <div class="safewalk-timer-wrap">
-                                    <div class="safewalk-timer-text" id="safeWalkTimerText">25:00</div>
-                                    <div style="font-size:11px; color:#64748b;">Tiempo restante estimado</div>
-                                    <div class="safewalk-progress-track">
-                                        <div class="safewalk-progress-bar" id="safeWalkProgressBar"></div>
-                                    </div>
-                                </div>
-                                <div class="safewalk-active-actions">
-                                    <button id="btnSafeWalkArrived" class="btn-walk-arrived" aria-label="Confirmar que he llegado a salvo"><i class="fas fa-check-circle" aria-hidden="true"></i> He llegado</button>
-                                    <button id="btnSafeWalkCancel" class="btn-walk-cancel" aria-label="Cancelar supervisión de recorrido">Cancelar</button>
-                                </div>
-                            </div>
+                            <button class="dc-btn-emergency dm-sin-paciente-rol" onclick="window.medicalQRManager.abrirModalQR()" aria-label="Ver ficha médica de emergencia">
+                                <i class="fas fa-id-card-alt" aria-hidden="true"></i> Ver ficha médica de emergencia
+                            </button>
                         </div>
 
                     </div>
                 </div>
             </section>
 
-            <!-- ==================== VISTA 2: MAPA & HOSPITALES ==================== -->
+            <!-- Vista 2: mapa & hospitales -->
             <section class="dc-view" id="view-mapa">
                 <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
                 <div class="dc-view-header">
@@ -606,54 +569,15 @@
                             <a class="dc-card-link" href="https://maps.google.com/?q=hospitales+cartagena" target="_blank" rel="noopener" aria-label="Abrir mapa externo con todos los hospitales">Ver todos →</a>
                         </div>
 
-                        <div class="dc-hospital-item">
-                            <div class="dc-hospital-info">
-                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
-                                <div>
-                                    <div class="dc-hospital-name">Hospital Naval de Cartagena</div>
-                                    <div class="dc-hospital-meta">A 2.5 km · ★ 4.8 (Urgencias 24h)</div>
-                                </div>
-                            </div>
-                            <a href="https://maps.google.com/?q=Hospital+Naval+Cartagena" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar al Hospital Naval">Cómo llegar</a>
-                        </div>
-
-                        <div class="dc-hospital-item">
-                            <div class="dc-hospital-info">
-                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
-                                <div>
-                                    <div class="dc-hospital-name">Clínica Blas de Lezo</div>
-                                    <div class="dc-hospital-meta">A 3.1 km · ★ 4.7 (Urgencias 24h)</div>
-                                </div>
-                            </div>
-                            <a href="https://maps.google.com/?q=Clinica+Blas+de+Lezo+Cartagena" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar a la Clínica Blas de Lezo">Cómo llegar</a>
-                        </div>
-
-                        <div class="dc-hospital-item">
-                            <div class="dc-hospital-info">
-                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
-                                <div>
-                                    <div class="dc-hospital-name">Hospital Universitario del Caribe</div>
-                                    <div class="dc-hospital-meta">A 4.2 km · ★ 4.6 (Zarzagocilla)</div>
-                                </div>
-                            </div>
-                            <a href="https://maps.google.com/?q=Hospital+Universitario+del+Caribe" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar al Hospital Universitario del Caribe">Cómo llegar</a>
-                        </div>
-
-                        <div class="dc-hospital-item">
-                            <div class="dc-hospital-info">
-                                <div class="dc-hospital-icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
-                                <div>
-                                    <div class="dc-hospital-name">Clínica MediHelp Bocagrande</div>
-                                    <div class="dc-hospital-meta">A 5.0 km · ★ 4.8 (Alta Complejidad)</div>
-                                </div>
-                            </div>
-                            <a href="https://maps.google.com/?q=Clinica+Medihelp+Bocagrande" target="_blank" rel="noopener" class="dc-btn-directions" aria-label="Cómo llegar a la Clínica MediHelp Bocagrande">Cómo llegar</a>
+                        <!-- Se llena con los centros mas cercanos a la ubicacion del paciente -->
+                        <div id="listaHospitalesCercanos">
+                            <p style="font-size:13px; color:var(--dc-text-muted); margin:6px 0;">Calculando distancias...</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ==================== VISTA 3: SALUD & MEDICAMENTOS ==================== -->
+            <!-- Vista 3: salud & medicamentos -->
             <section class="dc-view" id="view-salud">
                 <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
                 <div class="dc-view-header">
@@ -685,65 +609,64 @@
                 </div>
             </section>
 
-            <!-- ==================== VISTA 4: REPORTES ==================== -->
+            <!-- Vista 4: reportes -->
             <section class="dc-view" id="view-reportes">
                 <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
                 <div class="dc-view-header">
                     <div>
-                        <h2 class="dc-welcome-title">Reporte Semanal de Monitoreo</h2>
-                        <p class="dc-welcome-subtitle">Evolución de glucemia, adherencia farmacológica y actividad física en Cartagena.</p>
+                        <h2 class="dc-welcome-title">Reporte del día</h2>
+                        <p class="dc-welcome-subtitle">Glucosa, presión, medicamentos y alertas del día elegido, para llevarle a la enfermera.</p>
                     </div>
-                    <button class="dc-btn-alert-action" style="background:var(--dc-primary);" onclick="window.print();" aria-label="Descargar reporte clínico en PDF">
-                        <i class="fas fa-download" aria-hidden="true"></i> Descargar Reporte PDF
-                    </button>
-                </div>
-
-                <div class="dc-guest-notice" id="guestNoticeReport">
-                    <i class="fas fa-user-lock" aria-hidden="true"></i>
-                    <h4>Reporte clínico confidencial</h4>
-                    <p>Inicia sesión con tu rol de familiar o administrador para consultar el historial completo descargable.</p>
-                    <button class="dc-btn-submit-auth" style="max-width:240px; margin:0 auto;" onclick="window.abrirModalAuth('login')">
-                        Iniciar sesión
-                    </button>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <input type="date" id="reporteFecha" aria-label="Día del reporte" style="padding:9px 12px; border:1px solid var(--dc-border); border-radius:10px; font-family:inherit;">
+                        <button class="dc-btn-alert-action" style="background:var(--dc-primary);" onclick="window.descargarReporteDiarioPDF()" aria-label="Descargar reporte del día en PDF">
+                            <i class="fas fa-download" aria-hidden="true"></i> Descargar PDF
+                        </button>
+                    </div>
                 </div>
 
                 <div class="dc-kpi-grid">
                     <div class="dc-kpi-card">
                         <div class="dc-kpi-icon-wrap blue"><i class="fas fa-tint" aria-hidden="true"></i></div>
                         <div class="dc-kpi-info">
-                            <div class="dc-kpi-label">Glucosa Promedio (7d)</div>
-                            <div class="dc-kpi-val" id="repKpiGlucosaProm">118 mg/dL</div>
-                            <span class="dc-kpi-badge success" id="repKpiTiempoRango">100% en meta</span>
+                            <div class="dc-kpi-label">Glucosa promedio del día</div>
+                            <div class="dc-kpi-val" id="repKpiGlucosaProm">—</div>
+                            <span class="dc-kpi-badge info" id="repKpiTiempoRango">Sin lecturas</span>
                         </div>
                     </div>
                     <div class="dc-kpi-card">
                         <div class="dc-kpi-icon-wrap blue" style="background:#f3e8ff; color:#7c3aed;"><i class="fas fa-heartbeat" aria-hidden="true"></i></div>
                         <div class="dc-kpi-info">
-                            <div class="dc-kpi-label">Última Presión Arterial</div>
-                            <div class="dc-kpi-val" id="repKpiPresionUlt">128/78 mmHg</div>
-                            <span class="dc-kpi-badge success">Meta &lt; 140/90 mmHg</span>
+                            <div class="dc-kpi-label">Última presión del día</div>
+                            <div class="dc-kpi-val" id="repKpiPresionUlt">—</div>
+                            <span class="dc-kpi-badge info" id="repKpiPresionMeta">Meta &lt; 140/90 mmHg</span>
                         </div>
                     </div>
                     <div class="dc-kpi-card">
                         <div class="dc-kpi-icon-wrap green"><i class="fas fa-pills" aria-hidden="true"></i></div>
                         <div class="dc-kpi-info">
-                            <div class="dc-kpi-label">Adherencia (DM2 + HTA)</div>
-                            <div class="dc-kpi-val">7 / 7 días</div>
-                            <span class="dc-kpi-badge success">Losartán + Metformina</span>
+                            <div class="dc-kpi-label">Medicamentos tomados</div>
+                            <div class="dc-kpi-val" id="repKpiMeds">—</div>
+                            <span class="dc-kpi-badge info" id="repKpiMedsDetalle">Según lo marcado en Salud</span>
                         </div>
                     </div>
                     <div class="dc-kpi-card">
-                        <div class="dc-kpi-icon-wrap amber"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
+                        <div class="dc-kpi-icon-wrap amber"><i class="fas fa-bell" aria-hidden="true"></i></div>
                         <div class="dc-kpi-info">
-                            <div class="dc-kpi-label">Geocerca San Fernando</div>
-                            <div class="dc-kpi-val">650 m</div>
-                            <span class="dc-kpi-badge success">Monitoreo GPS activo</span>
+                            <div class="dc-kpi-label">Alertas del día</div>
+                            <div class="dc-kpi-val" id="repKpiAlertas">0</div>
+                            <span class="dc-kpi-badge info">Glucosa, presión, zona y SOS</span>
                         </div>
                     </div>
                 </div>
+
+                <div class="dc-card" style="margin-top:16px;">
+                    <div class="dc-card-title" style="margin-bottom:10px;">Detalle del día</div>
+                    <div id="reporteDetalle" style="font-size:13.5px; line-height:1.6;"></div>
+                </div>
             </section>
 
-            <!-- ==================== VISTA 5: ALERTAS (DISEÑO OFICIAL DE REFERENCIA) ==================== -->
+            <!-- Vista 5: alertas (diseño oficial de referencia) -->
             <section class="dc-view" id="view-alertas">
                 <div class="dm-alerts-view-wrap">
                     <!-- Botón Volver -->
@@ -811,99 +734,74 @@
                 </div>
             </section>
 
-            <!-- ==================== VISTA 6: SEGURIDAD (CON ALERTAS IMPORTANTES) ==================== -->
+            <!-- Vista 6: seguridad y privacidad -->
             <section class="dc-view" id="view-seguridad">
-                <div class="dm-alerts-view-wrap">
-                    <div class="dm-alerts-topbar">
-                        <button class="dm-alerts-back-btn" onclick="window.switchView('inicio')" aria-label="Volver al inicio">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </button>
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <div class="dc-view-header">
+                    <div>
+                        <h2 class="dc-welcome-title">Seguridad y privacidad</h2>
+                        <p class="dc-welcome-subtitle">Controla tu cuenta, tus permisos y quién puede ver tus datos.</p>
+                    </div>
+                </div>
+
+                <div class="dc-security-options-grid">
+                    <div class="dc-security-opt-card dm-solo-con-paciente" onclick="window.medicalQRManager.abrirModalQR()" role="button" tabindex="0" aria-label="Abrir Ficha Médica QR">
+                        <div class="dc-security-opt-icon"><i class="fas fa-qrcode" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Ficha médica QR</h4>
+                            <p>Antecedentes y contacto de emergencia para paramédicos.</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
 
-                    <!-- Título y selector de rango de días -->
-                    <div class="dm-alerts-header-row">
-                        <h1 class="dm-alerts-title">Alertas Importantes</h1>
-                        <div class="dm-alerts-dropdown-wrapper">
-                            <button type="button" class="dm-filter-dropdown-btn" onclick="window.toggleDropdownFiltroAlertas(event)">
-                                <span>Últimos 7 días</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
+                    <div class="dc-security-opt-card dm-solo-paciente" onclick="window.cambiarPermisoUbicacion()" role="button" tabindex="0" aria-label="Cambiar permiso de ubicación">
+                        <div class="dc-security-opt-icon"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Permiso de ubicación</h4>
+                            <p id="estadoPermisoUbicacion">Decide si tu cuidador puede ver tu ubicación.</p>
                         </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
 
-                    <!-- Banner superior de aviso -->
-                    <div class="dm-alerts-banner">
-                        <div class="dm-alerts-banner-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
+                    <div class="dc-security-opt-card" onclick="window.switchView('perfil')" role="button" tabindex="0" aria-label="Cambiar contraseña">
+                        <div class="dc-security-opt-icon"><i class="fas fa-key" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Contraseña y datos de la cuenta</h4>
+                            <p>Cambia tu nombre o tu contraseña desde Mi perfil.</p>
                         </div>
-                        <div class="dm-alerts-banner-text">
-                            Aquí encontrarás todas las alertas y notificaciones importantes.
-                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
 
-                    <!-- Tarjeta con la lista de alertas de seguridad -->
-                    <div class="dm-alerts-card-list" id="alertsListSecurity" style="margin-bottom: 28px;">
-                        <!-- Renderizado en tiempo real por alertas-sistema.js -->
+                    <div class="dc-security-opt-card" onclick="window.abrirModalLegal('privacidad')" role="button" tabindex="0" aria-label="Ver política de privacidad">
+                        <div class="dc-security-opt-icon"><i class="fas fa-lock" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Privacidad de datos</h4>
+                            <p>Solo se guardan los datos necesarios (Ley 1581 de 2012).</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
 
-                    <!-- Opciones clínicas adicionales de seguridad y Ficha QR -->
-                    <div class="dc-security-hero" style="border-radius:18px; margin-bottom:20px;">
-                        <div class="dc-security-hero-icon">
-                            <i class="fas fa-user-shield" aria-hidden="true"></i>
+                    <div class="dc-security-opt-card" onclick="window.abrirModalLegal('terminos')" role="button" tabindex="0" aria-label="Ver términos y condiciones">
+                        <div class="dc-security-opt-icon"><i class="fas fa-file-contract" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Términos y condiciones</h4>
+                            <p>Reglas de uso de DiaMon.</p>
                         </div>
-                        <h2>Herramientas de Protección y Ficha Médica QR</h2>
-                        <p>Acceso rápido a protocolos de emergencia, ficha de antecedentes y cifrado clínico en Cartagena.</p>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
 
-                    <div class="dc-security-options-grid">
-                        <div class="dc-security-opt-card" onclick="window.medicalQRManager.abrirModalQR()" role="button" tabindex="0" aria-label="Abrir Ficha Médica QR PulseCard">
-                            <div class="dc-security-opt-icon">
-                                <i class="fas fa-qrcode" aria-hidden="true"></i>
-                            </div>
-                            <div class="dc-security-opt-text">
-                                <h4>Ficha Médica QR (PulseCard)</h4>
-                                <p>Acceso instantáneo a antecedentes de diabetes y contacto SOS para paramédicos.</p>
-                            </div>
-                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    <div class="dc-security-opt-card" onclick="window.cerrarSesionDiaMon()" role="button" tabindex="0" aria-label="Cerrar sesión">
+                        <div class="dc-security-opt-icon" style="background:#fee2e2; color:#dc2626;"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Cerrar sesión</h4>
+                            <p>Sal de tu cuenta en este dispositivo.</p>
                         </div>
-
-                        <div class="dc-security-opt-card" onclick="window.abrirModalLegal('privacidad')" role="button" tabindex="0" aria-label="Ver política de privacidad y protección de datos">
-                            <div class="dc-security-opt-icon">
-                                <i class="fas fa-lock" aria-hidden="true"></i>
-                            </div>
-                            <div class="dc-security-opt-text">
-                                <h4>Protección y Cifrado de Datos</h4>
-                                <p>Solo datos necesarios bajo la Ley 1581 de 2012 y confidencialidad médica.</p>
-                            </div>
-                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                        </div>
-
-                        <div class="dc-security-opt-card" onclick="window.abrirModalLegal('terminos')" role="button" tabindex="0" aria-label="Ver términos y condiciones">
-                            <div class="dc-security-opt-icon">
-                                <i class="fas fa-file-contract" aria-hidden="true"></i>
-                            </div>
-                            <div class="dc-security-opt-text">
-                                <h4>Términos de Servicio y Reembolsos</h4>
-                                <p>Condiciones claras de uso y derecho de retracto Ley 1480.</p>
-                            </div>
-                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                        </div>
-
-                        <div class="dc-security-opt-card" onclick="window.switchView('ayuda')" role="button" tabindex="0" aria-label="Ir a DiaBot y Asistencia">
-                            <div class="dc-security-opt-icon">
-                                <i class="fas fa-headset" aria-hidden="true"></i>
-                            </div>
-                            <div class="dc-security-opt-text">
-                                <h4>Soporte y Asistencia 24/7</h4>
-                                <p>Asistente virtual DiaBot y enlace con líneas de emergencia de Cartagena.</p>
-                            </div>
-                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </div>
                 </div>
             </section>
 
-            <!-- ==================== VISTA 7: CONFIGURACIÓN ==================== -->
+            <!-- Vista 7: configuración -->
             <section class="dc-view" id="view-configuracion">
                 <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
                 <div class="dc-view-header">
@@ -912,14 +810,51 @@
                         <p class="dc-welcome-subtitle">Ajustes de geocercas, alertas sonoras y preferencias de monitoreo.</p>
                     </div>
                 </div>
-                <div class="dc-card">
-                    <p style="color:var(--dc-text-muted); font-size:13.5px; line-height:1.6;">
-                        Puedes gestionar tus zonas seguras predeterminadas desde <a href="zonas-seguras.html" style="color:var(--dc-primary); font-weight:600;">Zonas Seguras</a> o actualizar tu perfil en <a href="perfil.html" style="color:var(--dc-primary); font-weight:600;">Mi Perfil</a>.
-                    </p>
+                <div class="dc-security-options-grid">
+                    <div class="dc-security-opt-card" onclick="window.switchView('perfil')" role="button" tabindex="0">
+                        <div class="dc-security-opt-icon"><i class="fas fa-user-circle" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Mi perfil</h4>
+                            <p>Nombre, correo, rol y contraseña de tu cuenta.</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </div>
+                    <div class="dc-security-opt-card dm-solo-supervisor dm-solo-con-paciente" onclick="window.switchView('zonas')" role="button" tabindex="0">
+                        <div class="dc-security-opt-icon"><i class="fas fa-draw-polygon" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Zonas seguras</h4>
+                            <p>Áreas donde el paciente puede estar sin generar alertas.</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </div>
+                    <div class="dc-security-opt-card dm-solo-admin" onclick="window.switchView('admin')" role="button" tabindex="0">
+                        <div class="dc-security-opt-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></div>
+                        <div class="dc-security-opt-text">
+                            <h4>Administración</h4>
+                            <p>Usuarios, roles y vinculaciones cuidador ↔ paciente.</p>
+                        </div>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </div>
                 </div>
             </section>
 
-            <!-- ==================== VISTA 8: AYUDA & DIABOT ==================== -->
+            <!-- Paginas de perfil, zonas y admin cargadas dentro del panel (sin su barra vieja) -->
+            <section class="dc-view" id="view-perfil">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <iframe class="dm-pagina-embebida" data-src="perfil.html?embed=1" title="Mi perfil"></iframe>
+            </section>
+
+            <section class="dc-view" id="view-zonas">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <iframe class="dm-pagina-embebida" data-src="zonas-seguras.html?embed=1" title="Zonas seguras"></iframe>
+            </section>
+
+            <section class="dc-view" id="view-admin">
+                <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
+                <iframe class="dm-pagina-embebida" data-src="admin.html?embed=1" title="Panel de administración"></iframe>
+            </section>
+
+            <!-- Vista 8: ayuda & DiaBot -->
             <section class="dc-view" id="view-ayuda">
                 <button class="dc-back-btn" aria-label="Volver al inicio"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</button>
                 <div class="dc-view-header">
@@ -935,7 +870,7 @@
                 </div>
             </section>
 
-            <!-- ==================== FOOTER LEGAL (POLÍTICAS Y CUMPLIMIENTO) ==================== -->
+            <!-- Footer legal (políticas y cumplimiento) -->
             <footer class="dc-footer-legal-links" aria-label="Enlaces legales y de privacidad">
                 <span>© 2026 DiaMon — Monitoreo Inteligente de Diabetes en Cartagena.</span>
                 <a href="#" onclick="window.abrirModalLegal('privacidad'); return false;">Política de Privacidad (Datos Necesarios)</a>
@@ -943,13 +878,11 @@
                 <a href="#" onclick="window.abrirModalLegal('cookies'); return false;">Política de Cookies</a>
                 <span>·</span>
                 <a href="#" onclick="window.abrirModalLegal('terminos'); return false;">Términos y Condiciones</a>
-                <span>·</span>
-                <a href="#" onclick="window.abrirModalLegal('reembolsos'); return false;">Consentimiento en Reembolsos</a>
             </footer>
 
         </div>
 
-        <!-- ==================== INPUTS OCULTOS DE COMPATIBILIDAD CON MAP.JS ==================== -->
+        <!-- Inputs ocultos de compatibilidad con map.JS -->
         <div style="display:none;" aria-hidden="true">
             <span id="gpsRouteName">Ruta GPS · Cartagena</span>
             <span id="gpsRouteBadge">Activo</span>
@@ -981,7 +914,7 @@
     </main>
 </div>
 
-<!-- ==================== MODAL DE POLÍTICAS Y CUMPLIMIENTO LEGAL ==================== -->
+<!-- Modal de políticas y cumplimiento legal -->
 <div class="dc-modal-backdrop" id="dcLegalModal" role="dialog" aria-modal="true" aria-labelledby="legalModalTitle" aria-hidden="true">
     <div class="dc-modal-dialog wide">
         <button class="dc-modal-close" onclick="window.cerrarModalLegal()" aria-label="Cerrar modal legal">
@@ -1001,9 +934,6 @@
                 </button>
                 <button class="dc-legal-nav-btn" data-legal-tab="terminos" onclick="window.switchLegalTab('terminos')">
                     <i class="fas fa-file-contract" aria-hidden="true"></i> Términos de Servicio
-                </button>
-                <button class="dc-legal-nav-btn" data-legal-tab="reembolsos" onclick="window.switchLegalTab('reembolsos')">
-                    <i class="fas fa-hand-holding-usd" aria-hidden="true"></i> Reembolsos & Retracto
                 </button>
             </nav>
 
@@ -1040,21 +970,12 @@
                     <p>El usuario es responsable de custodiar sus claves de acceso y de verificar los números telefónicos registrados en la Ficha Médica QR.</p>
                 </article>
 
-                <!-- Reembolsos -->
-                <article class="dc-legal-pane" id="legal-pane-reembolsos">
-                    <h3>Consentimiento en Reembolsos y Derecho de Retracto</h3>
-                    <p>De conformidad con la Ley 1480 de 2011 (Estatuto del Consumidor de Colombia):</p>
-                    <h4>1. Derecho de Retracto</h4>
-                    <p>Cualquier suscripción, servicio premium de telemetría médica o donación cuenta con un plazo de cinco (5) días hábiles para solicitar el retracto y la devolución íntegra del dinero sin penalidad alguna.</p>
-                    <h4>2. Procedimiento</h4>
-                    <p>Para tramitar un reembolso o resolver dudas de facturación, comunícate a través de los canales oficiales de soporte o directamente en la pestaña de Ayuda.</p>
-                </article>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ==================== BANNER DE CONSENTIMIENTO DE COOKIES ==================== -->
+<!-- Banner de consentimiento de cookies -->
 <aside class="dc-cookie-banner" id="dcCookieBanner" role="region" aria-label="Consentimiento de cookies y privacidad">
     <div class="dc-cookie-text">
         <strong>Privacidad y Cookies en DiaMon:</strong> Utilizamos cookies necesarias para el inicio de sesión y telemetría analítica anónima para optimizar la seguridad médica en Cartagena. Cumplimos con la Ley 1581 de 2012 y el principio de <em>solo datos necesarios</em>.
@@ -1066,7 +987,7 @@
     </div>
 </aside>
 
-<!-- ==================== BARRA DE NAVEGACIÓN INFERIOR NATIVA PARA MÓVILES ==================== -->
+<!-- Barra de navegación inferior nativa para móviles -->
 <nav class="dc-mobile-bottom-nav" aria-label="Navegación principal en móviles">
     <button class="dc-mob-nav-btn active" data-dc-tab="inicio" aria-label="Ir a Inicio">
         <i class="fas fa-home" aria-hidden="true"></i>
@@ -1086,11 +1007,11 @@
     </button>
     <button class="dc-mob-nav-btn" data-dc-tab="seguridad" aria-label="Herramientas SOS de Emergencia">
         <i class="fas fa-shield-alt" aria-hidden="true"></i>
-        <span>SOS</span>
+        <span>Seguridad</span>
     </button>
 </nav>
 
-<!-- ==================== MODAL DE PERFIL FLOTANTE (RÉPLICA EXACTA IMAGEN 3) ==================== -->
+<!-- Modal de perfil flotante (réplica exacta imagen 3) -->
 <div class="dc-profile-drawer-backdrop" id="dcProfileModal" style="display: none;" onclick="window.cerrarModalPerfil(event)">
     <div class="dc-profile-drawer-card" onclick="event.stopPropagation()">
         <!-- Header -->
@@ -1111,21 +1032,22 @@
     </div>
 </div>
 
-<!-- ==================== SCRIPTS BASE ==================== -->
+<!-- Scripts base -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/js/sesion.js"></script>
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js?v=6"></script>
+<script src="../assets/js/datos-supabase.js"></script>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/app.js"></script>
 
-<!-- ==================== MÓDULOS DE INNOVACIÓN ==================== -->
+<!-- Módulos de innovación -->
 <script src="../assets/js/vendor/qrcode.min.js"></script>
 <script src="../assets/js/medical-qr.js"></script>
 <script src="../assets/js/centros-medicos-ctg.js"></script>
 <script src="../assets/js/trafico-cartagena.js"></script>
 <script src="../assets/js/map.js"></script>
-<script src="../assets/js/acompanamiento.js"></script>
 <script src="../assets/js/diabot.js"></script>
 <script src="../assets/js/salud-diaria.js"></script>
 <script src="../assets/js/voz-sos.js"></script>
@@ -1140,6 +1062,8 @@
 <script src="../src/infrastructure/adapters/SupabaseTelemetriaAdapter.js"></script>
 <script src="../assets/js/alertas-sistema.js"></script>
 <script src="../assets/js/caso-estudio.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../assets/js/reporte-diario.js"></script>
 <script src="../assets/js/profile-drawer.js"></script>
 <script src="../assets/js/dashboard-controller.js"></script>
 

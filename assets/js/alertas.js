@@ -1,4 +1,4 @@
-// ============ ALERTAS.JS ============
+// ============ alertas.JS ============
 // Carga alertas reales desde Supabase, muestra SOS para monitoreados,
 // y suscribe en tiempo real para notificar al cuidador.
 
@@ -15,7 +15,7 @@ document.addEventListener('dashboardListo', async (e) => {
   configurarSOS();
 });
 
-// ============ CARGAR ALERTAS ============
+// ============ cargar alertas ============
 async function cargarAlertas() {
   const lista = document.getElementById('alertsList');
   if (!lista) return;
@@ -93,7 +93,7 @@ function configAlerta(tipo) {
   }[tipo] || { clase: '', icono: 'fas fa-bell', titulo: tipo };
 }
 
-// ============ RESOLVER ALERTA ============
+// ============ resolver alerta ============
 async function resolverAlerta(id) {
   const { error } = await supabaseClient
     .from('alertas')
@@ -103,7 +103,7 @@ async function resolverAlerta(id) {
   if (!error) await cargarAlertas();
 }
 
-// ============ SUSCRIPCIÓN REALTIME ============
+// ============ suscripción realtime ============
 function suscribirAlertas() {
   supabaseClient
     .channel('alertas-realtime')
@@ -129,7 +129,7 @@ function mostrarToastAlerta(alerta) {
   setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
 }
 
-// ============ BADGE DEL CAMPANERO ============
+// ============ badge del campanero ============
 function actualizarBadge(count) {
   const badge = document.getElementById('bellBadge');
   if (!badge) return;
@@ -141,7 +141,7 @@ function actualizarBadge(count) {
   }
 }
 
-// ============ BOTÓN SOS ============
+// ============ botón SOS ============
 function configurarSOS() {
   const wrap = document.getElementById('sosWrap');
   const btn  = document.getElementById('btnSOS');
@@ -185,7 +185,7 @@ function configurarSOS() {
   });
 }
 
-// ============ UTILS ============
+// ============ utils ============
 function tiempoRelativo(iso) {
   if (!iso) return '—';
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;

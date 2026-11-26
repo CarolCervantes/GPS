@@ -1,10 +1,8 @@
-// ============================================================
 // DiaMon — Módulo Clínico Diario
 // 1. Estado Diario del Paciente (Check-in de bienestar)
 // 2. Control y Cumplimiento de Medicamentos
 // 3. Consejo Educativo Diario (Rotación automática cada 24 horas)
 // 4. Estado de Conexión y Telemetría GPS
-// ============================================================
 
 const CONSEJOS_EDUCATIVOS_24H = [
   {
@@ -18,9 +16,9 @@ const CONSEJOS_EDUCATIVOS_24H = [
     consejo: 'La insulina pierde su efecto biológico si se expone a más de 30°C. Si te desplazas en bus o a pie, utiliza siempre un estuche térmico con gel refrigerante y nunca dejes tus plumas en el bolsillo expuestas al sol del mediodía.'
   },
   {
-    tema: 'Nutrición y clases largas',
-    titulo: 'Colación de prevención antes de trayectos largos',
-    consejo: 'Si vas a tomar clases continuas o enfrentar un trayecto largo en transporte público, lleva siempre carbohidratos de absorción lenta (como avena o frutos secos) y un sobre de azúcar de rescate para evitar bajones imprevistos.'
+    tema: 'Insulina de la noche',
+    titulo: 'Cenar antes de la insulina de las 9:00 PM',
+    consejo: 'La insulina basal de la noche puede bajar el azúcar mientras duerme. Cenar a su hora, no saltarse la comida y tener a mano un jugo o un caramelo en la mesa de noche ayuda a prevenir una hipoglucemia nocturna.'
   },
   {
     tema: 'Hidratación y glucemia',
@@ -45,18 +43,20 @@ const CONSEJOS_EDUCATIVOS_24H = [
 ];
 
 const MEDICAMENTOS_PREDETERMINADOS = [
-  { id: 'med-1', nombre: 'Pantoprazol + Metformina + Firialta + Nifedipina', horario: '08:00 AM', dosis: 'Esquema matutino completo (4 medicamentos)', momento: 'Mañana' },
+  { id: 'med-1', nombre: 'Pantoprazol + Metformina + Firialta + Nifedipino', horario: '08:00 AM', dosis: 'Esquema matutino completo (4 medicamentos)', momento: 'Mañana' },
   { id: 'med-2', nombre: 'Valsartán (Control Hipertensión Arterial)', horario: '02:00 PM', dosis: '1 toma vespertina', momento: 'Tarde' },
   { id: 'med-3', nombre: 'Atorvastatina + Metformina + Gabapentina + Lipotic + Nifedipino', horario: '08:00 PM', dosis: 'Esquema nocturno oral (5 medicamentos)', momento: 'Noche' },
   { id: 'med-4', nombre: 'Insulina Basal — 24 Unidades', horario: '09:00 PM', dosis: '24 UI subcutáneas todas las noches', momento: 'Noche' },
   { id: 'med-5', nombre: 'Ozempic (Semaglutida Semanal)', horario: 'Sábados', dosis: '1 aplicación subcutánea cada sábado', momento: 'Semanal' }
 ];
 
+// Se deja disponible para el reporte del dia
+window.MEDICAMENTOS_DIARIOS = MEDICAMENTOS_PREDETERMINADOS;
+
 class SaludDiariaManager {
   constructor() {
     this.fechaHoy = this.obtenerFechaISO();
-    this.storageKeyEstado = 'diamon_estado_diario_' + this.fechaHoy;
-    this.storageKeyMeds = 'diamon_meds_cumplimiento_' + this.fechaHoy;
+    // El estado del dia y las tomas de medicamentos se guardan en Supabase (no en el navegador)
     this.init();
   }
 
@@ -73,9 +73,7 @@ class SaludDiariaManager {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  // ============================================================
-  // 1. CONSEJO EDUCATIVO DE ROTACIÓN CADA 24 HORAS
-  // ============================================================
+  // Consejo educativo de rotación cada 24 horas
   renderConsejo24H() {
     const container = document.getElementById('consejoDiarioWidget');
     if (!container) return;
@@ -83,39 +81,59 @@ class SaludDiariaManager {
     // Calcular índice determinista según día del año
     const d = new Date();
     const diaDelAnio = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-    const index = diaDelAnio % CONSEJOS_EDUCATIVOS_24H.length;
-    const consejo = CONSEJOS_EDUCATIVOS_24H[index];
+    // Se muestran 3 consejos y cambian cada dia
+    const total = CONSEJOS_EDUCATIVOS_24H.length;
+    const index = diaDelAnio % total;
+    const consejos = [0, 1, 2].map(n => CONSEJOS_EDUCATIVOS_24H[(index + n) % total]);
 
     const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
     const fechaTexto = d.toLocaleDateString('es-CO', opcionesFecha);
 
-    container.innerHTML = `
-      <div class="consejo-card">
+    container.innerHTML = consejos.map(consejo => `
+      <div class="consejo-card" style="margin-bottom:12px;">
         <div class="consejo-header">
           <span class="consejo-tag"><i class="fas fa-heart"></i> ${consejo.tema}</span>
           <span class="consejo-fecha">${fechaTexto}</span>
         </div>
         <h4 class="consejo-titulo">${consejo.titulo}</h4>
         <p class="consejo-texto">${consejo.consejo}</p>
-        <div class="consejo-footer">
-          <span class="consejo-nota"><i class="fas fa-shield-alt"></i> Guía educativa diaria · Rota cada 24 horas</span>
-        </div>
       </div>
-    `;
+    `).join('') + `
+      <div class="consejo-footer">
+        <span class="consejo-nota"><i class="fas fa-shield-alt"></i> Guía educativa · Cambia cada día</span>
+      </div>`;
   }
 
-  // ============================================================
-  // 2. ESTADO DIARIO DEL PACIENTE (CHECK-IN DE BIENESTAR)
-  // ============================================================
-  initCheckinEstado() {
+  // Estado diario del paciente (check-in de bienestar)
+  async initCheckinEstado() {
     const container = document.getElementById('estadoDiarioWidget');
     if (!container) return;
 
+    // Si ya registro su estado hoy, se trae de Supabase
     let saved = null;
     try {
-      const raw = localStorage.getItem(this.storageKeyEstado);
-      if (raw) saved = JSON.parse(raw);
+      const regs = window.DiaMonDatos && window.DiaMonDatos.pacienteId()
+        ? await window.DiaMonDatos.leerRegistrosDelDia('estado_diario') : [];
+      if (regs[0]) {
+        const extra = JSON.parse(regs[0].notas || '{}');
+        saved = { fecha: this.fechaHoy, animo: regs[0].valor, sintomas: extra.sintomas || [], hora: extra.hora };
+      }
     } catch (_) {}
+
+    // El formulario es para el paciente. El cuidador solo ve lo que el paciente registro hoy.
+    const rol = window.DiaMonSesion ? window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) : 'usuario';
+    if (rol !== 'usuario') {
+      const pac = window.DiaMonSesion.pacienteActivo(window.DiaMonSesion.leerUsuario());
+      const nombre = (pac && pac.nombre ? pac.nombre.split(' ')[0] : 'El paciente');
+      container.innerHTML = `
+        <div class="checkin-card">
+          <h4 class="checkin-title"><i class="fas fa-user-check"></i> ¿Cómo se siente ${nombre} hoy?</h4>
+          <div class="checkin-sub">${saved
+            ? `Registró <strong>${saved.animo}</strong> a las ${saved.hora || '—'}${saved.sintomas.length ? ' · Síntomas: ' + saved.sintomas.join(', ') : ' · Sin síntomas'}`
+            : 'Todavía no ha registrado cómo se siente hoy.'}</div>
+        </div>`;
+      return;
+    }
 
     container.innerHTML = `
       <div class="checkin-card">
@@ -193,7 +211,7 @@ class SaludDiariaManager {
 
     const saveBtn = document.getElementById('btnGuardarEstadoDiario');
     if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
+      saveBtn.addEventListener('click', async () => {
         if (!selectedMood) {
           alert('Por favor selecciona cómo te sientes hoy antes de guardar.');
           return;
@@ -212,8 +230,12 @@ class SaludDiariaManager {
         };
 
         try {
-          localStorage.setItem(this.storageKeyEstado, JSON.stringify(registro));
-        } catch (_) {}
+          await window.DiaMonDatos.guardarRegistro('estado_diario', registro.animo,
+            JSON.stringify({ sintomas: registro.sintomas, hora: registro.hora }));
+        } catch (err) {
+          if (window.mostrarNotificacion) window.mostrarNotificacion('No se pudo guardar el estado del día. Revisa tu conexión.', 'warn');
+          return;
+        }
 
         const pill = document.getElementById('checkinStatusPill');
         if (pill) {
@@ -234,25 +256,36 @@ class SaludDiariaManager {
     }
   }
 
-  // ============================================================
-  // 3. CUMPLIMIENTO DIARIO DE MEDICAMENTOS (CHECKLIST)
-  // ============================================================
+  // Cumplimiento diario de medicamentos (checklist)
   initMedicamentos() {
     const container = document.getElementById('medicamentosWidget');
     if (!container) return;
 
-    let savedMeds = {};
-    try {
-      const raw = localStorage.getItem(this.storageKeyMeds);
-      if (raw) savedMeds = JSON.parse(raw);
-    } catch (_) {}
-
-    this.renderMedicamentos(savedMeds);
+    // Las tomas de hoy llegan con los datos del paciente desde Supabase
+    this.renderMedicamentos({});
+    window.addEventListener('diamon-datos', (e) => {
+      const tomasHoy = ((e.detail && e.detail.tomas) || []).filter(t => t.fecha === this.fechaHoy);
+      const marcadas = {};
+      tomasHoy.forEach(t => {
+        marcadas[t.medicamento_id] = {
+          tomada: t.tomada,
+          hora: t.tomada && t.ts ? new Date(t.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
+        };
+      });
+      this.renderMedicamentos(marcadas);
+    });
   }
 
   renderMedicamentos(savedMeds) {
     const container = document.getElementById('medicamentosWidget');
     if (!container) return;
+
+    // El esquema de medicamentos cargado es el de Damian (caso de estudio).
+    // Para otro paciente no se muestra hasta que se registre el suyo.
+    if (!document.documentElement.classList.contains('dm-caso-damian')) {
+      container.innerHTML = '<p style="font-size:13px; color:#64748b; margin:0;">Este paciente todavía no tiene su esquema de medicamentos cargado.</p>';
+      return;
+    }
 
     const total = MEDICAMENTOS_PREDETERMINADOS.length;
     let tomadas = 0;
@@ -314,28 +347,15 @@ class SaludDiariaManager {
           hora: isChecked ? horaActual : null
         };
 
-        try {
-          localStorage.setItem(this.storageKeyMeds, JSON.stringify(savedMeds));
-        } catch (_) {}
-
-        if (window.supabaseClient) {
-          window.supabaseClient.auth.getUser().then(({ data: { user } }) => {
-            if (user) {
-              const medObj = MEDICAMENTOS_PREDETERMINADOS.find(m => m.id === id);
-              window.supabaseClient.from('tomas_medicamento').upsert({
-                user_id: user.id,
-                medicamento_id: id,
-                medicamento_nombre: medObj?.nombre || id,
-                dosis: medObj?.dosis || 'Dosis prescrita',
-                horario_programado: medObj?.horario || horaActual,
-                fecha: new Date().toISOString().split('T')[0],
-                tomada: isChecked,
-                confirmado_por: 'paciente',
-                ts: new Date().toISOString()
-              }, { onConflict: 'user_id,medicamento_id,fecha' }).then(() => {}).catch(err => console.warn('[SaludDiaria] Supabase sync:', err));
-            }
-          }).catch(() => {});
-        }
+        // Se guarda en Supabase; si lo marca el cuidador queda registrado quien fue
+        const medObj = MEDICAMENTOS_PREDETERMINADOS.find(m => m.id === id);
+        const rol = window.DiaMonSesion ? window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) : 'usuario';
+        window.DiaMonDatos.guardarToma({
+          medicamentoId: id, nombre: medObj?.nombre || id, horario: medObj?.horario || horaActual,
+          fecha: this.fechaHoy, tomada: isChecked, quien: rol === 'usuario' ? 'paciente' : rol
+        }).catch(() => {
+          if (window.mostrarNotificacion) window.mostrarNotificacion('No se pudo guardar la toma. Revisa tu conexión.', 'warn');
+        });
 
         this.renderMedicamentos(savedMeds);
 
@@ -350,9 +370,7 @@ class SaludDiariaManager {
     });
   }
 
-  // ============================================================
-  // 4. ESTADO DE CONEXIÓN Y TELEMETRÍA GPS
-  // ============================================================
+  // Estado de conexión y telemetría GPS
   initMonitorGPS() {
     const statusPill = document.querySelector('.status-row .right');
     if (!statusPill) return;

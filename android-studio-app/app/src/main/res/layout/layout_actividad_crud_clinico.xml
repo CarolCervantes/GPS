@@ -117,7 +117,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/etiMedicamento"
-            android:hint="8AM Pantoprazol, Metformina, Firialta, Nifedipina | 2PM Valsartán | 9PM Insulina 24 UI"
+            android:hint="8AM Pantoprazol, Metformina, Firialta, Nifedipino | 2PM Valsartán | 9PM Insulina 24 UI"
             android:inputType="text" />
 
         <TextView

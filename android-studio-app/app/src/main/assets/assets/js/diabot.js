@@ -1,7 +1,5 @@
-// ============================================================
 // DiaMon — DiaBot: Asistente Clínico con IA Real (Google Gemini API)
 // + Motor de Razonamiento Clínico Contextual en Vivo (Diabetes Tipo 2 + HTA)
-// ============================================================
 
 class DiaBotAssistant {
   constructor() {
@@ -45,7 +43,7 @@ class DiaBotAssistant {
         pulso: `${r.ultimaPresion.pulso} BPM`,
         estadoPresion: r.evalP.etiqueta,
         protocoloPresion: r.evalP.protocolo,
-        metaGlucosa: `${r.metas.glucosaMin}–${r.metas.glucosaMaxPost} mg/dL`,
+        metaGlucosa: `en ayunas ${r.metas.glucosaMin}–${r.metas.glucosaMetaAyunas} mg/dL y después de comer < ${r.metas.glucosaMaxPost} mg/dL`,
         metaPresion: `< ${r.metas.sistolicaMax}/${r.metas.diastolicaMax} mmHg`,
         ubicacion: ubic
       };
@@ -66,8 +64,8 @@ class DiaBotAssistant {
       diastolicaNum: 78,
       pulso: '71 BPM',
       estadoPresion: 'Presión Controlada',
-      protocoloPresion: 'Mantener esquema de Nifedipina (8 AM / 8 PM) y Valsartán (2 PM).',
-      metaGlucosa: '80–180 mg/dL',
+      protocoloPresion: 'Mantener esquema de Nifedipino (8 AM / 8 PM) y Valsartán (2 PM).',
+      metaGlucosa: 'en ayunas 80–135 mg/dL y después de comer < 180 mg/dL',
       metaPresion: '< 140/90 mmHg',
       ubicacion: 'Barrio Chapacuá, Cartagena de Indias'
     };
@@ -234,7 +232,7 @@ class DiaBotAssistant {
 
     // 1. Consultar endpoint Serverless (/api/diabot) donde la API Key vive solo en el servidor
     try {
-      const resp = await fetch('/api/diabot', {
+      const resp = await fetch(window.DiaMonSesion ? window.DiaMonSesion.urlApi('/api/diabot') : '/api/diabot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -292,7 +290,7 @@ class DiaBotAssistant {
       return `<strong>❤️ Manejo de Hipertensión Arterial (${ctx.nombre})</strong><br>` +
         `Su última lectura registrada es <strong>${ctx.presion}</strong> (${ctx.pulso}) — <strong>${ctx.estadoPresion}</strong>.<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
-        `<li><strong>Indicaciones actuales:</strong> ${alertaPA ? '⚠️ La presión supera la meta de ' + ctx.metaPresion + '. Pon a Don Damián en reposo sentado, verifica si ya tomó su <strong>Nifedipina (8:00 AM / 8:00 PM)</strong> o su <strong>Valsartán (2:00 PM)</strong> y repite la toma en 10 minutos.' : '✅ Se encuentra dentro de la meta cardiovascular (' + ctx.metaPresion + ') pautada con la ' + ctx.profesional + '.'}</li>` +
+        `<li><strong>Indicaciones actuales:</strong> ${alertaPA ? '⚠️ La presión supera la meta de ' + ctx.metaPresion + '. Pon a Don Damián en reposo sentado, verifica si ya tomó su <strong>Nifedipino (8:00 AM / 8:00 PM)</strong> o su <strong>Valsartán (2:00 PM)</strong> y repite la toma en 10 minutos.' : '✅ Se encuentra dentro de la meta cardiovascular (' + ctx.metaPresion + ') pautada con la ' + ctx.profesional + '.'}</li>` +
         `<li><strong>Signos de alarma:</strong> Si presenta dolor de cabeza intenso, visión borrosa, dolor torácico o presión ≥ 160/100 mmHg, activa el botón <strong>SOS</strong> o acude a urgencias cercanas a Chapacuá (Clínica Blas de Lezo / HUC).</li>` +
         `</ul>`;
     }
@@ -324,7 +322,7 @@ class DiaBotAssistant {
       return `<strong>💊 Esquema Farmacológico Completo — ${ctx.nombre}</strong><br>` +
         `Supervisado con la <strong>${ctx.profesional}</strong>:<br>` +
         `<ul style="margin:6px 0 6px 18px; padding:0;">` +
-        `<li><strong>08:00 AM:</strong> <strong>Pantoprazol</strong> (protector gástrico), <strong>Metformina</strong> (control glucémico), <strong>Firialta</strong> (finerenona: protección renal y cardiovascular en diabetes) y <strong>Nifedipina</strong> (antihipertensivo).</li>` +
+        `<li><strong>08:00 AM:</strong> <strong>Pantoprazol</strong> (protector gástrico), <strong>Metformina</strong> (control glucémico), <strong>Firialta</strong> (finerenona: protección renal y cardiovascular en diabetes) y <strong>Nifedipino</strong> (antihipertensivo).</li>` +
         `<li><strong>02:00 PM:</strong> <strong>Valsartán</strong> (control vespertino de presión arterial).</li>` +
         `<li><strong>08:00 PM:</strong> <strong>Atorvastatina</strong> (colesterol), <strong>Metformina</strong>, <strong>Gabapentina + Lipotic</strong> (ácido tióctico para neuropatía diabética) y <strong>Nifedipino</strong>.</li>` +
         `<li><strong>09:00 PM:</strong> <strong>Insulina Basal — 24 Unidades</strong> subcutáneas.</li>` +

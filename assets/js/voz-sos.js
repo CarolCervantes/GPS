@@ -1,8 +1,6 @@
-// ============================================================
 // DiaMon — Activación de Emergencia por Voz ("SOS por Voz")
 // Muestra la ubicación actual en GRANDE con Barrio, Referencia y Llamada directa
 // Optimizado 100% para celulares y pantallas táctiles
-// ============================================================
 
 // Base de sectores y barrios de Cartagena para geocodificación inversa inmediata
 const BARRIOS_CARTAGENA = [
@@ -265,7 +263,7 @@ class VozEmergenciaSOS {
             <div class="sos-med-chips">
               <span class="sos-med-chip red">Diabetes Tipo 2 (Insulina 24 UI + Ozempic) + Hipertensión</span>
               <span class="sos-med-chip">Sangre: ${profile?.grupoSanguineo || 'O+'}</span>
-              <span class="sos-med-chip">Valsartán + Nifedipina + Metformina + Firialta</span>
+              <span class="sos-med-chip">Valsartán + Nifedipino + Metformina + Firialta</span>
             </div>
             <p class="sos-first-aid-hint">
               <strong>Primeros auxilios:</strong> Si está consciente pero mareado o sudoroso, suminístrele 15g de azúcar rápida (jugo o agua con azúcar) y mida su presión arterial sentado. Si está inconsciente, no le dé líquidos y colóquelo de lado.

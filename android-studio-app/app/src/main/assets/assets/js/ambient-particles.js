@@ -1,8 +1,5 @@
-/**
- * DiaMon — Partículas de Luz Ambiental y Polvo Clínico en Canvas
- * Partículas suaves en suspensión con profundidad y movimiento browniano orgánico
- */
-
+// Partículas de Luz Ambiental y Polvo Clínico en Canvas
+// Partículas suaves en suspensión con profundidad y movimiento browniano orgánico
 (function () {
   'use strict';
 

@@ -1,16 +1,12 @@
-/**
- * DiaMon — Telemetría en Tiempo Real del Dispositivo
- * 1. Batería en tiempo real (Battery Status API)
- * 2. Ubicación GPS en vivo (Geolocation API con watchPosition + Geocodificación Inversa Nominatim)
- * 3. Podómetro con Reinicio Automático cada 24 horas (Medianoche 00:00:00 / DeviceMotion API)
- */
-
+// Datos del celular del paciente: batería, ubicación GPS y pasos del día.
+// La dirección se saca de las coordenadas con Nominatim (OpenStreetMap).
+// Los pasos vuelven a 0 a la medianoche.
 (function () {
   'use strict';
 
   // Almacén de estado de telemetría
   const Telemetria = {
-    bateria: { nivel: 87, cargando: false, disponible: false },
+    bateria: { nivel: null, cargando: false, disponible: false }, // null = el celular no informa la bateria
     ubicacion: { lat: 10.39991, lng: -75.47886, precision: 8, zona: 'Barrio Chapacuá (Casa Don Damián)', fijado: false },
     pasos: 0,
     pasosFecha: '',
@@ -22,24 +18,55 @@
   const geocodingCache = new Map();
 
   document.addEventListener('DOMContentLoaded', () => {
-    initBateriaEnTiempoReal();
-    initUbicacionEnTiempoReal();
-    initPodometro24Horas();
+    const esPaciente = !window.DiaMonSesion || window.DiaMonSesion.rolDe(window.DiaMonSesion.leerUsuario()) === 'usuario';
+    if (esPaciente) {
+      // Sensores del celular del paciente: bateria, GPS y pasos
+      initBateriaEnTiempoReal();
+      initUbicacionEnTiempoReal();
+      initPodometro24Horas();
+      // Cada 5 minutos se guarda en Supabase la bateria y los pasos para que el cuidador los vea
+      const enviarEstado = () => {
+        if (!window.DiaMonDatos || !window.DiaMonDatos.pacienteId()) return;
+        window.DiaMonDatos.guardarRegistro('dispositivo', Telemetria.pasos || 0,
+          JSON.stringify({ bateria: Telemetria.bateria.nivel, cargando: Telemetria.bateria.cargando, pasos: Telemetria.pasos || 0 })).catch(() => {});
+      };
+      setTimeout(enviarEstado, 15000);
+      setInterval(enviarEstado, 5 * 60000);
+    } else {
+      // El cuidador ve la bateria y los pasos del celular del paciente (lo ultimo que guardo)
+      window.addEventListener('diamon-datos', (e) => {
+        const disp = e.detail && e.detail.dispositivo;
+        const batEl = document.getElementById('kpiBateriaVal');
+        const pasosEl = document.getElementById('kpiPasosVal');
+        const badge = document.getElementById('kpiBateriaBadge');
+        if (!disp) {
+          if (batEl) batEl.textContent = '—';
+          if (pasosEl) pasosEl.textContent = '—';
+          if (badge) { badge.className = 'dc-kpi-badge info'; badge.textContent = 'Sin datos del celular'; }
+          return;
+        }
+        const hora = new Date(disp.ts).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        if (batEl) batEl.textContent = (disp.bateria != null ? disp.bateria + '%' : '—');
+        if (pasosEl) pasosEl.textContent = Number(disp.pasos || 0).toLocaleString();
+        if (badge) { badge.className = 'dc-kpi-badge info'; badge.textContent = 'Celular del paciente · ' + hora; }
+      });
+    }
   });
 
-  // ============================================================
-  // 1. BATERÍA EN TIEMPO REAL
-  // ============================================================
+  // Batería en tiempo real
   function initBateriaEnTiempoReal() {
     const batEl = document.getElementById('kpiBateriaVal');
     const batBadge = document.getElementById('kpiBateriaBadge');
 
     function actualizarUI(nivel, cargando) {
       if (batEl) {
-        batEl.innerHTML = `${nivel}% ${cargando ? '<i class="fas fa-bolt" style="color:#eab308; font-size:16px;"></i>' : ''}`;
+        batEl.innerHTML = `${nivel == null ? '—' : nivel + '%'} ${cargando ? '<i class="fas fa-bolt" style="color:#eab308; font-size:16px;"></i>' : ''}`;
       }
       if (batBadge) {
-        if (cargando) {
+        if (nivel == null) {
+          batBadge.className = 'dc-kpi-badge info';
+          batBadge.innerHTML = '<i class="fas fa-question-circle"></i> No disponible';
+        } else if (cargando) {
           batBadge.className = 'dc-kpi-badge info';
           batBadge.innerHTML = '<i class="fas fa-charging-station"></i> Cargando';
         } else if (nivel > 50) {
@@ -80,9 +107,7 @@
     }
   }
 
-  // ============================================================
-  // 2. UBICACIÓN GPS EN TIEMPO REAL CON GEOCODIFICACIÓN INVERSA
-  // ============================================================
+  // Ubicación GPS en tiempo real con geocodificación inversa
 
   // Estimador local enriquecido de zonas de Cartagena y Colombia (fallback ultrarrápido)
   function estimarZonaLocal(lat, lng) {
@@ -309,9 +334,7 @@
     };
   }
 
-  // ============================================================
-  // 3. PODÓMETRO CON REINICIO ESTRICTO CADA 24 HORAS
-  // ============================================================
+  // Podómetro con reinicio estricto cada 24 horas
   function initPodometro24Horas() {
     const pasosEl = document.getElementById('kpiPasosVal');
     const pasosBadge = document.getElementById('kpiPasosBadge');

@@ -1,4 +1,4 @@
-// ============ REGISTROS DE USUARIO ============
+// ============ registros de usuario ============
 // Carga y gestiona los registros de salud del usuario desde Supabase.
 
 let todosLosRegistros = [];
@@ -75,7 +75,7 @@ async function cargarDatos(userId) {
       tipo: 'medicacion',
       valor: `PA: ${p.sistolica}/${p.diastolica} mmHg (${p.pulso} BPM)`,
       etiquetas: ['tensiómetro', `brazo ${p.brazo}`, p.postura],
-      notas: p.notas || 'Control Hipertensión Arterial (Valsartán / Nifedipina)',
+      notas: p.notas || 'Control Hipertensión Arterial (Valsartán / Nifedipino)',
       ts: new Date(p.ts).toISOString()
     }));
 
@@ -84,7 +84,7 @@ async function cargarDatos(userId) {
         id: 'med-damian-8am',
         tipo: 'medicacion',
         valor: '8:00 AM · 4 Medicamentos',
-        etiquetas: ['Pantoprazol', 'Metformina', 'Firialta', 'Nifedipina'],
+        etiquetas: ['Pantoprazol', 'Metformina', 'Firialta', 'Nifedipino'],
         notas: 'Esquema matutino confirmado por Damián Díaz Balseiro (Chapacuá)',
         ts: new Date(Date.now() - 3 * 3600000).toISOString()
       },
@@ -122,7 +122,7 @@ async function cargarDatos(userId) {
   calcularGlucosaStats(glucosaData || []);
 }
 
-// ========== RENDER TABLA ==========
+// ========== render tabla ==========
 
 function formatearFecha(ts) {
   if (!ts) return '—';
@@ -184,7 +184,7 @@ function calcularKPIs(registros) {
   set('totalMedicacion', conteo.medicacion);
 }
 
-// ========== ESTADÍSTICAS GLUCOSA ==========
+// ========== estadísticas glucosa ==========
 
 function calcularGlucosaStats(lecturas) {
   if (!lecturas || lecturas.length === 0) return;
@@ -228,7 +228,7 @@ function calcularGlucosaStats(lecturas) {
   fillPct('.rango-item:nth-child(3) .rango-pct', pctBajo);
 }
 
-// ========== FILTROS ==========
+// ========== filtros ==========
 
 function initFiltros() {
   // Botones segmentados por tipo
@@ -280,7 +280,7 @@ function aplicarFiltros() {
   calcularKPIs(registrosFiltrados);
 }
 
-// ========== DESCARGA PDF ==========
+// ========== descarga PDF ==========
 
 function initPDF() {
   const btn = document.getElementById('btnDescargarPDF');
