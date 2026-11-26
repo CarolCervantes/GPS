@@ -15,7 +15,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -38,11 +40,26 @@ public class ServicioUbicacion extends Service implements LocationListener {
 
     private static final String CANAL = "diamon_ubicacion";
     private static final long CADA_MS = 30000;      // cada 30 segundos
-    private static final float CADA_METROS = 10f;    // o si se movio 10 metros
+    // 0 metros: Android entrega la posicion aunque el celular este quieto (antes con 10 m casi no llegaban datos en casa)
+    private static final float CADA_METROS = 0f;
     private static final String AUTH = "https://reghfwloifpfeehkfyxv.supabase.co/auth/v1";
 
     private LocationManager gps;
     private long ultimoEnvio = 0;
+    private Location ultima;   // ultima posicion conocida
+
+    // Latido: cada 30 s se envia la ultima posicion aunque Android no haya entregado una nueva
+    private final Handler reloj = new Handler(Looper.getMainLooper());
+    private final Runnable latido = new Runnable() {
+        @Override
+        public void run() {
+            if (System.currentTimeMillis() - ultimoEnvio >= CADA_MS) {
+                Location l = ultima != null ? ultima : ultimaDelSistema();
+                if (l != null) enviarAhora(l);
+            }
+            reloj.postDelayed(this, CADA_MS);
+        }
+    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -68,6 +85,10 @@ public class ServicioUbicacion extends Service implements LocationListener {
             return START_NOT_STICKY;
         }
         gps = (LocationManager) getSystemService(LOCATION_SERVICE);
+        // Si el servicio ya estaba corriendo no se duplican las peticiones
+        gps.removeUpdates(this);
+        reloj.removeCallbacks(latido);
+        reloj.postDelayed(latido, CADA_MS);
         try {
             if (gps.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, CADA_MS, CADA_METROS, this);
@@ -84,11 +105,25 @@ public class ServicioUbicacion extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location ubicacion) {
+        ultima = ubicacion;
         if (System.currentTimeMillis() - ultimoEnvio < CADA_MS) return;
+        enviarAhora(ubicacion);
+    }
+
+    private void enviarAhora(Location ubicacion) {
         ultimoEnvio = System.currentTimeMillis();
         final double lat = ubicacion.getLatitude();
         final double lng = ubicacion.getLongitude();
         new Thread(() -> enviar(lat, lng, true)).start();
+    }
+
+    private Location ultimaDelSistema() {
+        try {
+            Location l = gps.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            return l != null ? l : gps.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        } catch (SecurityException e) {
+            return null;
+        }
     }
 
     // Guarda la ubicacion en la tabla gps_lecturas con la sesion del paciente
@@ -165,6 +200,7 @@ public class ServicioUbicacion extends Service implements LocationListener {
 
     @Override
     public void onDestroy() {
+        reloj.removeCallbacks(latido);
         if (gps != null) gps.removeUpdates(this);
         super.onDestroy();
     }

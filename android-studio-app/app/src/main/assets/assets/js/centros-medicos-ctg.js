@@ -180,6 +180,8 @@ class CentrosMedicosCartagena {
     // Mientras llega el GPS se usa la casa del paciente (su primera zona segura)
     const zonas = window.casoEstudio ? window.casoEstudio.obtenerZonasSeguras() : [];
     if (zonas.length) this.patientCoords = [Number(zonas[0].centro_lat), Number(zonas[0].centro_lng)];
+    const btnMaps = document.getElementById('btnGoogleMapsPaciente');
+    if (btnMaps && zonas.length && /hospitales/.test(btnMaps.href)) btnMaps.href = `https://www.google.com/maps?q=${this.patientCoords[0]},${this.patientCoords[1]}`;
     this.renderListaCercanos();
   }
 

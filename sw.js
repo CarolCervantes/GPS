@@ -1,7 +1,7 @@
 // Service Worker de Monitoreo Clínico y Alertas 24/7
 // Incluye estrategia Network-First con Fallback a Caché (Soporte Offline Real)
 // y Notificaciones Push en segundo plano.
-const CACHE_NAME = 'diamon-cache-v8';
+const CACHE_NAME = 'diamon-cache-v9';
 const STATIC_ASSETS = [
   '/',
   '/pages/index.html',

@@ -485,6 +485,10 @@
       if (typeof window.actualizarMarcadorUbicacionReal === 'function') {
         window.actualizarMarcadorUbicacionReal(lat, lng, precision);
       }
+      // "Ver en Google Maps" abre la ultima posicion real del paciente (antes tenia una coordenada fija)
+      const btnMaps = document.getElementById('btnGoogleMapsPaciente');
+      if (btnMaps) btnMaps.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      if (window.centrosMedicosInstance) window.centrosMedicosInstance.setPatientCoords([lat, lng]);
 
       // Se compara con las zonas seguras del paciente (y avisa si sale de todas)
       const estadoGeoEl = document.getElementById('casoGeocercaEstado');
